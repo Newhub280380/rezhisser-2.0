@@ -13,7 +13,7 @@ def test_request_from_params_video_and_image(tmp_path, monkeypatch):
     video = cg.request_from_params(
         {"prompt": " neon ", "resolution": "720x1280", "video_length": 121, "image_start": [str(ref)]},
         {"fps": 24}, tmp_path)
-    assert video == {"kind": "video", "prompt": "neon", "image": ref, "width": 720, "height": 1280,
+    assert video == {"kind": "video", "prompt": "neon", "image": ref, "image_end": None, "width": 720, "height": 1280,
                      "ratio": "9:16", "resolution": "768P", "duration": 5}
     image = cg.request_from_params({"prompt": "p", "resolution": "1920x1080", "image_mode": 1}, {}, tmp_path)
     assert (image["kind"], image["ratio"], image["resolution"], image["image"]) == ("image", "16:9", "2K", None)
@@ -56,3 +56,31 @@ def test_env_settings_and_llm_override(tmp_path, monkeypatch):
     assert cg.llm_override()["remote_url"] == "https://x"
     assert cg.public_config()["keys"] == {"MINIMAX_API_KEY": False, "FAL_KEY": True,
                                           "MUAPI_API_KEY": False, "LLM_API_KEY": True}
+
+
+def test_last_frame_and_unsupported_modes(tmp_path):
+    first, last = tmp_path / "a.png", tmp_path / "b.png"
+    first.write_bytes(b"a")
+    last.write_bytes(b"b")
+    req = cg.request_from_params({"prompt": "p", "image_start": str(first), "image_end": str(last),
+                                  "video_length": 120}, {}, tmp_path)
+    assert req["image_end"] == last
+    roles = [c.get("role") for c in cg.MiniMax().video_body(req)["content"]]
+    assert roles == [None, "first_frame", "last_frame"] and "ratio" not in cg.MiniMax().video_body(req)
+    assert "end_image_url" in cg.Fal().endpoint_and_body(req)[1]
+    assert "last_image_url" in cg.MuApi().slug_and_body(req)[1]
+    assert cg.unsupported_reason({"prompt": "p", "image_start": "x"}, {}) is None
+    assert cg.unsupported_reason({"video_guide": "v.mp4"}, {}) == "source video"
+    assert cg.unsupported_reason({"edit_outpaint_shot_aware": True}, {}) == "outpaint"
+    assert cg.unsupported_reason({}, {"audio_only": True}) == "audio generation"
+
+
+def test_execute_rejects_unsupported_job(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAL_KEY", "k")
+    job = {"id": "j1", "out_dir": str(tmp_path), "params": {"prompt": "p", "image_mask": "m.png"}}
+    try:
+        cg.execute(job, "fal", {})
+    except cg.CloudError as error:
+        assert "mask" in str(error)
+    else:
+        raise AssertionError("mask job must not reach the cloud")

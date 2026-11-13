@@ -11,6 +11,7 @@ import io
 import mimetypes
 import os
 import time
+import uuid
 from pathlib import Path
 
 import requests
@@ -151,6 +152,21 @@ def _ratio(w: int, h: int) -> str:
     return min(options, key=lambda k: abs(options[k] - w / max(h, 1)))
 
 
+# Inputs the H3 cloud APIs cannot take; such jobs fail clearly instead of silently losing them.
+UNSUPPORTED_PARAMS = {
+    "video_guide": "source video", "video_source": "source video", "image_mask": "mask",
+    "video_mask": "mask", "audio_guide": "audio guide", "viggle_character": "Viggle character",
+    "sfx_mode": "sound effects", "edit_repaint_shot_aware": "repaint", "edit_outpaint_shot_aware": "outpaint",
+    "_blend_mode": "blend",
+}
+
+
+def unsupported_reason(params: dict, model_def: dict | None) -> str | None:
+    if (model_def or {}).get("audio_only"):
+        return "audio generation"
+    return next((label for key, label in UNSUPPORTED_PARAMS.items() if params.get(key)), None)
+
+
 def request_from_params(params: dict, model_def: dict | None, work_dir: Path) -> dict:
     """Map wgp job params to a provider-neutral request."""
     try:
@@ -165,6 +181,7 @@ def request_from_params(params: dict, model_def: dict | None, work_dir: Path) ->
         "kind": "image" if is_image else "video",
         "prompt": str(params.get("prompt") or "").strip(),
         "image": image,
+        "image_end": None if is_image else _first_image(params.get("image_end"), work_dir),
         "width": w, "height": h, "ratio": _ratio(w, h),
         # MiniMax H3 and fal H3 both accept 768P (native) and 2K (upscaled); 1080P is not valid.
         "resolution": "2K" if min(w, h) >= 1080 else "768P",
@@ -184,7 +201,7 @@ def _first_image(value, work_dir: Path) -> Path | None:
         return Path(value)
     if hasattr(value, "save"):  # PIL.Image
         work_dir.mkdir(parents=True, exist_ok=True)
-        path = work_dir / f"cloud_ref_{int(time.time() * 1000)}.png"
+        path = work_dir / f"cloud_ref_{uuid.uuid4().hex}.png"
         buf = io.BytesIO()
         value.save(buf, format="PNG")
         path.write_bytes(buf.getvalue())
@@ -211,7 +228,10 @@ class MiniMax:
         if req["image"]:
             content.append({"type": "image_url", "role": "first_frame",
                             "image_url": {"url": data_uri(req["image"])}})
-        else:
+        if req.get("image_end"):
+            content.append({"type": "image_url", "role": "last_frame",
+                            "image_url": {"url": data_uri(req["image_end"])}})
+        if not (req["image"] or req.get("image_end")):
             body["ratio"] = req["ratio"]
         return body
 
@@ -263,8 +283,11 @@ class Fal:
                     "image_size": {"width": req["width"], "height": req["height"]}}
             return env("FAL_IMAGE_MODEL", "fal-ai/moss-image"), body
         body = {"prompt": req["prompt"], "duration": max(5, req["duration"]), "resolution": req["resolution"]}
-        if req["image"]:
-            body["image_url"] = data_uri(req["image"])
+        if req["image"] or req.get("image_end"):
+            if req["image"]:
+                body["image_url"] = data_uri(req["image"])
+            if req.get("image_end"):
+                body["end_image_url"] = data_uri(req["image_end"])
             return env("FAL_VIDEO_MODEL", "minimax/h3/image-to-video"), body
         body["aspect_ratio"] = req["ratio"]
         return env("FAL_T2V_MODEL", "minimax/h3/text-to-video"), body
@@ -313,6 +336,8 @@ class MuApi:
         body["duration"] = max(5, req["duration"])
         if req["image"]:
             body["image_url"] = data_uri(req["image"])
+            if req.get("image_end"):
+                body["last_image_url"] = data_uri(req["image_end"])
             return env("MUAPI_VIDEO_MODEL", "minimax-h3-image-to-video"), body
         return env("MUAPI_T2V_MODEL", "minimax-h3-text-to-video"), body
 
@@ -346,6 +371,9 @@ def execute(job: dict, provider: str, model_def: dict | None, *, finalize: bool 
     if not ready(provider):
         raise CloudError(f"Cloud provider '{provider}' has no API key. Add it in Settings → Cloud.")
     params = job["params"]
+    reason = unsupported_reason(params, model_def)
+    if reason:
+        raise CloudError(f"Cloud generation does not support {reason}. Switch Generation backend to Local models for this job.")
     out_dir = Path(job.get("out_dir") or "outputs")
     req = request_from_params(params, model_def, out_dir / ".cloud_refs")
     if not req["prompt"]:
