@@ -608,7 +608,9 @@ def test_launch_attaches_native_routes_during_generation_submission_and_executes
     assert try_start and enhancement
     run_attach = [call for call in _attr_calls(run, "attach_native") if run.lineno <= call.lineno <= run.end_lineno]
     assert len(run_attach) == 1
-    execute_calls = _attr_calls(run, "execute")
+    # The cloud engine (cloud_generation.execute) is a separate branch; count only ComfyUI dispatches.
+    execute_calls = [call for call in _attr_calls(run, "execute")
+                     if not (isinstance(call.func.value, ast.Name) and call.func.value.id == "cloud_generation")]
     assert len(execute_calls) == 2
     native_dispatch = [max(execute_calls, key=lambda call: call.lineno)]
     assert max(call.lineno for call in try_start) < native_dispatch[0].lineno
