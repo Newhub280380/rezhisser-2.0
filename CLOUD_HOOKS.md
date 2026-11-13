@@ -148,11 +148,19 @@ git diff --stat main..HEAD          # без удалённых файлов
 
 ## Открытый вопрос по веткам
 
-В соседней ветке `rezhisser-2.0-full` есть два коммита, которых **здесь нет**:
+На момент проверки (HEAD `c359133`) ветка `rezhisser-2.0-full`
+(рабочая копия `C:\Users\User\workspace\rezhisser-2.0`) ушла вперёд на 5 коммитов,
+которых **здесь нет**:
 
 - `daf50de` — Match fal/MiniMax/MuAPI request fields to their docs
 - `ef905b8` — Cloud: last-frame support; reject masks/source video/repaint/outpaint/blend/audio clearly
+- `6254ebc` — Cloud: refuse clips over 15 s instead of clamping silently
+- `a6b7d44` — Test: cloud branch wired before native generation in launch.py
+- `6bbe55c` — Test: Director child job completes through the cloud engine
 
-То есть в этой ветке тела запросов ещё не сверены с документацией провайдеров
-и нет явного отказа от масок / source video / repaint / outpaint / blend / audio.
+Суммарный diff этих коммитов: `app/services/cloud_generation.py` (+50/−11)
+и `tests/test_cloud_generation.py` (+96/−11). Оба файла вне зоны помощника,
+поэтому перенос не делался: в этой ветке тела запросов ещё не сверены
+с документацией провайдеров, нет отказа от масок / source video / repaint /
+outpaint / blend / audio и нет ограничения длительности 15 с.
 Ветку `rezhisser-2.0-full` по условию задачи не трогал.
