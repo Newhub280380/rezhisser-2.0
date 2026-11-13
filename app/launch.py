@@ -8273,7 +8273,15 @@ def system_preflight():
     # CUDA — the generation pipeline is NVIDIA-only.
     try:
         import torch as _torch
-        if not _torch.cuda.is_available():
+        from services.cloud_generation import active_provider as _cloud_provider
+        if not _torch.cuda.is_available() and _cloud_provider():
+            checks.append({
+                "id": "cuda",
+                "level": "warning",
+                "message": "No CUDA GPU detected. Local models are unavailable; "
+                           f"generation runs in the cloud ({_cloud_provider()}).",
+            })
+        elif not _torch.cuda.is_available():
             checks.append({
                 "id": "cuda",
                 "level": "error",

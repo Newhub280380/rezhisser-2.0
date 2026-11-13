@@ -145,3 +145,11 @@ def test_director_submit_and_wait_runs_in_cloud(tmp_path, monkeypatch):
     assert len(outputs) == 1 and (tmp_path / outputs[0]).read_bytes() == b"mp4"
     assert sent[0][0].endswith("/v2/video_generation")
     assert sent[0][1]["content"][1]["role"] == "first_frame"
+
+
+def test_preflight_cuda_check_is_a_warning_in_cloud_mode():
+    source = (Path(__file__).resolve().parents[1] / "app" / "launch.py").read_text(encoding="utf-8")
+    start = source.index("def system_preflight():")
+    body = source[start:source.index("\n@api.", start)]
+    assert body.index('"level": "warning"') < body.index("generation runs in the cloud")
+    assert "requires an NVIDIA GPU" in body  # local-mode error kept unchanged
