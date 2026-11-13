@@ -31,6 +31,7 @@ import { ToolsPanel } from './ToolsPanel'
 import { HardwareStatusBar } from './HardwareStatusBar'
 import { VideoWorkflowSelector } from './VideoWorkflowSelector'
 import { ComfyUIEngineControl } from './ComfyUIEngineControl'
+import { CloudEngineControl } from '../shared/CloudEngineControl'
 import { ImageWorkflowSelector } from './ImageWorkflowSelector'
 import { ImageWorkflowControls } from './ImageWorkflowControls'
 import { ControlVideoSection } from './ControlVideoSection'
@@ -294,6 +295,7 @@ export function Sidebar({ onOpenWorlds, embedded = false }: { onOpenWorlds?: () 
         {(isVideoWorkspace || isImageWorkspace || isAudioWorkspace) && (
           <ComfyUIEngineControl modelType={selectedModel?.model_type || ''} kind={isImageWorkspace ? 'image' : isAudioWorkspace ? 'audio' : 'video'} />
         )}
+        {(isVideoWorkspace || isImageWorkspace) && <CloudEngineControl />}
       </div>}
       {isTitles ? (
         <Suspense fallback={<p role="status" className="m-3 text-xs text-text-muted">Loading Titles…</p>}>

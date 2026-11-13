@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { RefreshCw, ShieldAlert, ShieldCheck, Lock } from 'lucide-react'
 import { useStore } from '../../stores/useStore'
 import { ApiKeyField } from '../shared/ApiKeyField'
+import { CloudEngineControl } from '../shared/CloudEngineControl'
 import { RemoteModelMemoryControls } from './RemoteModelMemoryControls'
 
 const PUBLIC_PROVIDERS = new Set(['openai', 'anthropic'])
@@ -698,6 +699,9 @@ export function ServicesSettingsPanel() {
           The CivitAI key stays visible always since LoRA download
           rate-limit relief is broadly useful, not a power-user feature. */}
       <div className="space-y-4">
+        <h3 className="text-[11px] text-text-secondary uppercase tracking-wider font-medium">Cloud</h3>
+        <CloudEngineControl full />
+
         <h3 className="text-[11px] text-text-secondary uppercase tracking-wider font-medium">API Keys</h3>
 
         {servicesConfig.show_experimental && (

@@ -2341,6 +2341,33 @@ export async function applySystemDetect(): Promise<import('../types').SystemDete
   return res.json()
 }
 
+// --- Cloud engine (keys live in .env; only "is set" flags come back) ---
+
+export interface CloudConfig {
+  provider: string
+  providers: { name: string; ready: boolean }[]
+  keys: Record<string, boolean>
+  llm_base_url: string
+  llm_model: string
+}
+
+export async function fetchCloudConfig(): Promise<CloudConfig> {
+  return getJson(`${BASE}/api/v1/cloud-config`, 'Failed to fetch cloud config')
+}
+
+export async function updateCloudConfig(partial: Record<string, string>): Promise<CloudConfig> {
+  const res = await fetch(`${BASE}/api/v1/cloud-config`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(partial),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Update failed' }))
+    throw new Error(err.detail || 'Update failed')
+  }
+  return res.json()
+}
+
 // --- Services Config ---
 
 export async function fetchServicesConfig(): Promise<import('../types').ServicesConfig> {

@@ -22,6 +22,7 @@ import {
   modelOptionsForSelectedModel,
   supportsH3VaeUpsampling,
 } from '../../lib/h3VaeUpsampling'
+import { CloudEngineControl } from '../shared/CloudEngineControl'
 import type { DirectorPipelineType, DirectorShotImageGuidance, DirectorSkill, ModelOptions, ShortFilmCharacter, ShortFilmPath } from '../../types'
 
 // AUDIO_ACCEPT lists both audio formats AND video formats. When a video
@@ -2885,6 +2886,7 @@ function DirectorModelSelection({ disabled = false }: { disabled?: boolean }) {
         onChange={selectImageWorkflow}
         disabled={disabled}
       />
+      <CloudEngineControl />
     </div>
   )
 }
