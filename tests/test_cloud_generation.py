@@ -111,3 +111,37 @@ def test_launch_wiring_routes_cloud_before_native():
     assert run.index("cloud_generation.execute(") < run.index("wgp.generate_video(task")
     assert "llm_override()" in funcs["_ensure_llm_loaded"]
     assert '"/api/v1/cloud-config"' in source and "cloud_generation.save_env(body)" in funcs["update_cloud_config"]
+
+
+def test_director_submit_and_wait_runs_in_cloud(tmp_path, monkeypatch):
+    """Director's real child-job path finishes through the cloud engine (HTTP mocked)."""
+    import threading
+    from types import SimpleNamespace
+
+    from services import director_pipeline as dp
+
+    first = tmp_path / "scene.png"
+    first.write_bytes(b"png")
+    sent = []
+    monkeypatch.setenv("MINIMAX_API_KEY", "k")
+    monkeypatch.setattr(cg, "post_json", lambda url, h, body, timeout=120: sent.append((url, body)) or {"task_id": "t"})
+    monkeypatch.setattr(cg, "get_json", lambda url, h, timeout=60: {"task": {"status": "succeeded",
+                                                                             "content": {"url": "u"}}})
+    monkeypatch.setattr(cg, "download", lambda url, out: out.write_bytes(b"mp4") or out)
+    jobs = {}
+
+    def run_generation(job_id, **_):
+        job = jobs[job_id]
+        job["status"] = "running"
+        return cg.execute(job, "minimax", {"fps": 24})
+
+    for name, value in {"_jobs": jobs, "_run_generation": run_generation, "_gen_lock": threading.Lock(),
+                        "_wgp": SimpleNamespace(get_model_def=lambda mt: {"fps": 24}),
+                        "_active_gen_states": {}, "_prepare_generation_engine": None}.items():
+        monkeypatch.setattr(dp, name, value)  # restored after the test, unlike dp.init()
+    outputs = dp._submit_and_wait({"model_type": "minimax_h3", "prompt": "silk", "image_mode": 0,
+                                   "image_start": str(first), "resolution": "720x1280",
+                                   "video_length": 121}, timeout_s=30, out_dir=str(tmp_path))
+    assert len(outputs) == 1 and (tmp_path / outputs[0]).read_bytes() == b"mp4"
+    assert sent[0][0].endswith("/v2/video_generation")
+    assert sent[0][1]["content"][1]["role"] == "first_frame"
