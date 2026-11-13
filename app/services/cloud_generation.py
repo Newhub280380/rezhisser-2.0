@@ -214,21 +214,25 @@ class MiniMax:
             body["ratio"] = req["ratio"]
         return body
 
-    def image_body(self, req: dict) -> dict:
-        # shortcut: field names follow MiniMax /v1/image_generation (image-01); if H3-Image differs, adjust here.
-        body = {"model": env("MINIMAX_IMAGE_MODEL", "MiniMax-H3-Image"), "prompt": req["prompt"],
-                "aspect_ratio": req["ratio"], "response_format": "url", "n": 1}
+    def image_body(self, req: dict) -> tuple[str, dict]:
+        """H3-Image: /v1/images/generations, or /v1/images/edits with a reference image."""
+        body = {"model": env("MINIMAX_IMAGE_MODEL", "MiniMax-H3-Image"), "prompt": req["prompt"][:32000],
+                "aspect_ratio": req["ratio"], "area": "2K", "output_format": "png",
+                "response_format": "url", "n": 1}
         if req["image"]:
-            body["subject_reference"] = [{"type": "character", "image_file": data_uri(req["image"])}]
-        return body
+            body["images"] = [{"image_url": data_uri(req["image"])}]
+            return "/v1/images/edits", body
+        return "/v1/images/generations", body
 
     def run(self, req, out, cancelled):
         if req["kind"] == "image":
-            data = post_json(f"{self.base}/v1/image_generation", self.headers, self.image_body(req), timeout=300)
-            urls = (data.get("data") or {}).get("image_urls") or []
-            if not urls:
-                raise CloudError(f"MiniMax image: {(data.get('base_resp') or {}).get('status_msg', data)}")
-            return download(urls[0], out)
+            path, body = self.image_body(req)
+            # Not idempotent and may take minutes: one call, long timeout, no retry.
+            data = post_json(f"{self.base}{path}", self.headers, body, timeout=600)
+            item = (data.get("data") or [{}])[0]
+            if not item.get("url"):
+                raise CloudError(f"MiniMax image: {item.get('error') or data.get('error') or data}")
+            return download(item["url"], out)
         created = post_json(f"{self.base}/v2/video_generation", self.headers, self.video_body(req))
         task_id = created.get("task_id") or (created.get("task") or {}).get("id") or created.get("id")
         if not task_id:
@@ -296,7 +300,8 @@ class MuApi:
         return {"x-api-key": env("MUAPI_API_KEY"), "Content-Type": "application/json"}
 
     def slug_and_body(self, req: dict) -> tuple[str, dict]:
-        # shortcut: slugs/fields follow the MuAPI convention; if a call returns 4xx, fix them in .env.
+        # minimax-h3-image-to-video + image_url match muapi.ai docs; shortcut: the other slugs are
+        # unverified, if one returns 4xx fix it in .env.
         body = {"prompt": req["prompt"], "aspect_ratio": req["ratio"]}
         if req["kind"] == "image":
             if req["image"]:

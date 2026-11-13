@@ -29,7 +29,10 @@ def test_provider_routes(tmp_path):
     body = cg.MiniMax().video_body(t2v)
     assert body["model"] == "MiniMax-H3" and body["ratio"] == "16:9" and body["duration"] == 6
     assert cg.MiniMax().video_body(i2v)["content"][1]["role"] == "first_frame"
-    assert cg.MiniMax().image_body(img)["model"] == "MiniMax-H3-Image"
+    path, body = cg.MiniMax().image_body(img)
+    assert (path, body["model"], body["aspect_ratio"]) == ("/v1/images/generations", "MiniMax-H3-Image", "16:9")
+    path, body = cg.MiniMax().image_body(dict(img, image=ref))
+    assert path == "/v1/images/edits" and body["images"][0]["image_url"].startswith("data:image/png;base64,")
     assert cg.Fal().endpoint_and_body(t2v)[0] == "minimax/h3/text-to-video"
     assert cg.Fal().endpoint_and_body(i2v)[0] == "minimax/h3/image-to-video"
     assert cg.Fal().endpoint_and_body(img)[0] == "fal-ai/moss-image"
