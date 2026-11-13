@@ -8406,6 +8406,25 @@ async def update_cloud_config(request: Request):
     return cloud_generation.public_config()
 
 
+@api.get("/api/v1/assistant/status")
+def assistant_status():
+    """Assistant readiness. The API key never leaves .env."""
+    from services import assistant_chat
+    return assistant_chat.public_status()
+
+
+@api.post("/api/v1/assistant/chat")
+async def assistant_chat_route(request: Request):
+    from services import assistant_chat
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Expected a JSON object.")
+    try:
+        return assistant_chat.chat(body)
+    except assistant_chat.AssistantError as error:
+        raise HTTPException(status_code=error.status, detail=error.detail)
+
+
 @api.get("/api/v1/services-config")
 def get_services_config():
     """Return services settings with API keys masked."""
