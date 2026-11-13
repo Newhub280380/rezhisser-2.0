@@ -8378,6 +8378,26 @@ def _enhancement_settings_snapshot() -> dict:
                               **wgp.server_config.get("services", {})})
 
 
+@api.get("/api/v1/cloud-config")
+def get_cloud_config():
+    """Cloud engine provider and which keys are set (values never leave .env)."""
+    from services import cloud_generation
+    return cloud_generation.public_config()
+
+
+@api.put("/api/v1/cloud-config")
+async def update_cloud_config(request: Request):
+    from services import cloud_generation
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Expected a JSON object.")
+    provider = body.get("CLOUD_PROVIDER")
+    if provider is not None and provider not in {"local", *cloud_generation.PROVIDERS}:
+        raise HTTPException(status_code=400, detail="CLOUD_PROVIDER must be local, minimax, fal or muapi.")
+    cloud_generation.save_env(body)
+    return cloud_generation.public_config()
+
+
 @api.get("/api/v1/services-config")
 def get_services_config():
     """Return services settings with API keys masked."""
@@ -9230,6 +9250,12 @@ def _ensure_llm_loaded(model_id=None, device=None):
         desired_provider,
         services,
     )
+    # Cloud mode with LLM keys in .env: planners use that OpenAI-compatible endpoint.
+    from services.cloud_generation import llm_override
+    cloud_llm = llm_override() if desired_provider == "local" else None
+    if cloud_llm:
+        desired, desired_provider = cloud_llm["model_id"], cloud_llm["provider"]
+        desired_remote_url, desired_api_key = cloud_llm["remote_url"], cloud_llm["api_key"]
 
     # The loader reuses an identical configuration and also compares device,
     # endpoint and current credentials. Checking only model/provider here let
@@ -27690,6 +27716,14 @@ def _run_generation(job_id: str, *, finalize: bool = True, _slot_owned: bool = F
                     raise _ComfyServiceError(409, "This workflow already has an owned submission receipt: " + existing_comfy["job_id"])
             if job["params"].get("_comfyui_submission"):
                 return _comfy_adapter.execute(job, finalize=finalize)
+
+            # Cloud engine: same queue/job contract, no local weights are loaded.
+            from services import cloud_generation
+            cloud_provider = job.setdefault("cloud_provider", cloud_generation.active_provider())
+            if cloud_provider:
+                return cloud_generation.execute(
+                    job, cloud_provider, wgp.get_model_def(job["params"].get("model_type")), finalize=finalize,
+                )
 
             if (not _slot_owned and job["params"].get("viggle_character")
                     and (wgp.get_model_def(job["params"].get("model_type")) or {}).get("minimax_h3_viggle")):
