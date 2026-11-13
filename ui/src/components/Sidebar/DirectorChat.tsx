@@ -2886,7 +2886,7 @@ function DirectorModelSelection({ disabled = false }: { disabled?: boolean }) {
         onChange={selectImageWorkflow}
         disabled={disabled}
       />
-      <CloudEngineControl />
+      <CloudEngineControl compact />
     </div>
   )
 }

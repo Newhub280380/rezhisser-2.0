@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useState, type ChangeEvent } from 'react'
 import { fetchCloudConfig, updateCloudConfig, type CloudConfig } from '../../api/client'
 import { ApiKeyField } from './ApiKeyField'
 
@@ -12,7 +12,7 @@ const KEY_OF: Record<string, string> = { minimax: 'MINIMAX_API_KEY', fal: 'FAL_K
 
 /** Generation backend picker shared by Studio, Director and Settings.
  *  `full` adds the API key and cloud LLM fields (Settings). */
-export function CloudEngineControl({ full = false }: { full?: boolean }) {
+export function CloudEngineControl({ full = false, compact = false }: { full?: boolean; compact?: boolean }) {
   const id = useId()
   const [config, setConfig] = useState<CloudConfig | null>(null)
   const [error, setError] = useState('')
@@ -34,6 +34,24 @@ export function CloudEngineControl({ full = false }: { full?: boolean }) {
 
   if (!config) return null
   const missingKey = config.provider !== 'local' && !config.providers.find(p => p.name === config.provider)?.ready
+  const options = ['local', ...config.providers.map(p => p.name)].map(name => (
+    <option key={name} value={name}>{LABELS[name] || name}</option>
+  ))
+  const change = (e: ChangeEvent<HTMLSelectElement>) => void save({ CLOUD_PROVIDER: e.target.value }).catch(() => {})
+
+  if (compact) {
+    // Matches DirectorModelPicker rows (Video / Image) so the Director panel keeps its look.
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] text-text-muted uppercase tracking-wider w-11 shrink-0">Engine</span>
+        <select aria-label="Generation backend" value={config.provider} onChange={change}
+          title={missingKey ? 'API key for this provider is not set — Settings → Integrations → Cloud.' : undefined}
+          className={`flex-1 min-w-0 bg-bg-tertiary border rounded-lg px-2 py-1 text-[11px] text-text-primary focus:outline-none focus:border-accent-blue ${missingKey ? 'border-amber-400' : 'border-border'}`}>
+          {options}
+        </select>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-2">
@@ -41,15 +59,13 @@ export function CloudEngineControl({ full = false }: { full?: boolean }) {
       <select
         id={id}
         value={config.provider}
-        onChange={e => void save({ CLOUD_PROVIDER: e.target.value }).catch(() => {})}
+        onChange={change}
         className="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent-blue"
       >
-        {['local', ...config.providers.map(p => p.name)].map(name => (
-          <option key={name} value={name}>{LABELS[name] || name}</option>
-        ))}
+        {options}
       </select>
       {missingKey && (
-        <p role="status" className="text-xs text-amber-400">API key for this provider is not set — Settings → Services → Cloud.</p>
+        <p role="status" className="text-xs text-amber-400">API key for this provider is not set — Settings → Integrations → Cloud.</p>
       )}
       {full && (
         <>
