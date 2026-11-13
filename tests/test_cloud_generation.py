@@ -95,3 +95,19 @@ def test_execute_rejects_clip_longer_than_15s(tmp_path, monkeypatch):
         assert "15 s" in str(error)
     else:
         raise AssertionError("20 s clip must not be silently clamped")
+
+
+def test_launch_wiring_routes_cloud_before_native():
+    """Static check: the cloud branch runs before wgp.generate_video, LLM override and API exist."""
+    import ast
+
+    source = (Path(__file__).resolve().parents[1] / "app" / "launch.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    lines = source.splitlines()
+    wanted = {"_run_generation", "_ensure_llm_loaded", "update_cloud_config"}
+    funcs = {n.name: "\n".join(lines[n.lineno - 1:n.end_lineno]) for n in tree.body
+             if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name in wanted}
+    run = funcs["_run_generation"]
+    assert run.index("cloud_generation.execute(") < run.index("wgp.generate_video(task")
+    assert "llm_override()" in funcs["_ensure_llm_loaded"]
+    assert '"/api/v1/cloud-config"' in source and "cloud_generation.save_env(body)" in funcs["update_cloud_config"]
