@@ -44,7 +44,7 @@
 | Облачная LLM из `.env` | готово |
 | `/api/v1/cloud-config` + UI в Studio, Director, Настройках | готово |
 | Старт без CUDA | готово (`wgp.py`: одна строка) |
-| Крючки в `editor_*` | ждём `CLOUD_HOOKS.md` от помощника |
+| Крючки в `editor_*` | не нужны: по `CLOUD_HOOKS.md` (ветка помощника) `editor_*` генерацию не вызывают, операции Editor идут через общую очередь; тесты помощника 14/14 на этой ветке |
 
 Сверка с документацией:
 - MiniMax H3 видео: `POST /v2/video_generation`, `content[]` с `role` first_frame/last_frame, `ratio` только для текст→видео, `resolution` 768P | 2K, `duration` 4–15. Опрос `/v2/query/video_generation/{id}` → `task.content.url`.
