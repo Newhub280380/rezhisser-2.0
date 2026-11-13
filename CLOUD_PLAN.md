@@ -35,6 +35,26 @@
 - `wgp` не грузит веса при импорте (preload выключен по умолчанию) — модели грузятся только при локальной генерации.
 - Окружение на этом ПК: torch CPU + requirements без тяжёлых GPU-пакетов (onnxruntime-gpu, insightface, pyannote, whisper и т.п.). Если на старте падает импорт такого пакета — делаем импорт ленивым (перенос внутрь функции), не удаляем.
 
+## Статус (2026-11-13)
+
+| Пункт | Состояние |
+|---|---|
+| Ветка облака в `_run_generation` (Studio, Director, операции Editor через очередь) | готово |
+| MiniMax / fal / MuAPI, первый и последний кадр | готово, поля сверены с документацией |
+| Облачная LLM из `.env` | готово |
+| `/api/v1/cloud-config` + UI в Studio, Director, Настройках | готово |
+| Старт без CUDA | готово (`wgp.py`: одна строка) |
+| Крючки в `editor_*` | ждём `CLOUD_HOOKS.md` от помощника |
+
+Сверка с документацией:
+- MiniMax H3 видео: `POST /v2/video_generation`, `content[]` с `role` first_frame/last_frame, `ratio` только для текст→видео, `resolution` 768P | 2K, `duration` 4–15. Опрос `/v2/query/video_generation/{id}` → `task.content.url`.
+- MiniMax H3-Image: `POST /v1/images/generations`; с референсом — `/v1/images/edits` (`images[].image_url`). Ответ `data[0].url`.
+- fal: `minimax/h3/text-to-video` (`aspect_ratio`), `minimax/h3/image-to-video` (`image_url`, `end_image_url`), разрешения 480P/768P/2K/4K; `fal-ai/moss-image` — только текст→картинка.
+- MuAPI: `minimax-h3-text-to-video`, `minimax-h3-image-to-video` (`image_url`, `last_image_url`), `qwen2-1-image-to-image` (`images_list`). Поля `minimax-h3-image` в документации не описаны.
+
+Облако честно отказывает (понятная ошибка, а не тихая подмена) для: исходного видео, масок,
+аудио-гайда, Viggle, repaint/outpaint/recast, blend, генерации звука и клипов длиннее 15 с.
+
 ## Не трогаем
 
 Автозапуск, Планировщик, модели `app/models`, `wgp.py`-логику генерации, Editor, тесты.
