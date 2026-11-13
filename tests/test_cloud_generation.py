@@ -84,3 +84,14 @@ def test_execute_rejects_unsupported_job(tmp_path, monkeypatch):
         assert "mask" in str(error)
     else:
         raise AssertionError("mask job must not reach the cloud")
+
+
+def test_execute_rejects_clip_longer_than_15s(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAL_KEY", "k")
+    job = {"id": "j2", "out_dir": str(tmp_path), "params": {"prompt": "p", "video_length": 24 * 20}}
+    try:
+        cg.execute(job, "fal", {"fps": 24})
+    except cg.CloudError as error:
+        assert "15 s" in str(error)
+    else:
+        raise AssertionError("20 s clip must not be silently clamped")

@@ -378,6 +378,10 @@ def execute(job: dict, provider: str, model_def: dict | None, *, finalize: bool 
     req = request_from_params(params, model_def, out_dir / ".cloud_refs")
     if not req["prompt"]:
         raise CloudError("prompt is required for cloud generation")
+    seconds = int(params.get("video_length") or 0) / float((model_def or {}).get("fps") or 24)
+    if req["kind"] == "video" and seconds > 15.5:
+        raise CloudError(f"Cloud H3 makes clips up to 15 s; this job asks for {seconds:.1f} s. "
+                         "Shorten it or switch Generation backend to Local models.")
     started = time.monotonic()
     update_job(job, phase="cloud", message=f"Generating · {provider} {req['kind']}")
     ext = ".png" if req["kind"] == "image" else ".mp4"
