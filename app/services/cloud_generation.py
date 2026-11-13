@@ -166,7 +166,8 @@ def request_from_params(params: dict, model_def: dict | None, work_dir: Path) ->
         "prompt": str(params.get("prompt") or "").strip(),
         "image": image,
         "width": w, "height": h, "ratio": _ratio(w, h),
-        "resolution": "1080P" if min(w, h) >= 1080 else "768P",
+        # MiniMax H3 and fal H3 both accept 768P (native) and 2K (upscaled); 1080P is not valid.
+        "resolution": "2K" if min(w, h) >= 1080 else "768P",
         "duration": max(4, min(15, round(frames / fps))) if frames else 6,
     }
 
@@ -300,12 +301,13 @@ class MuApi:
         return {"x-api-key": env("MUAPI_API_KEY"), "Content-Type": "application/json"}
 
     def slug_and_body(self, req: dict) -> tuple[str, dict]:
-        # minimax-h3-image-to-video + image_url match muapi.ai docs; shortcut: the other slugs are
-        # unverified, if one returns 4xx fix it in .env.
+        # Checked against muapi.ai docs: minimax-h3-text-to-video, minimax-h3-image-to-video (image_url),
+        # qwen2-1-image-to-image (images_list). shortcut: minimax-h3-image fields are undocumented;
+        # if it returns 4xx, change MUAPI_IMAGE_MODEL in .env.
         body = {"prompt": req["prompt"], "aspect_ratio": req["ratio"]}
         if req["kind"] == "image":
             if req["image"]:
-                body["image_url"] = data_uri(req["image"])
+                body["images_list"] = [data_uri(req["image"])]  # qwen2-1-image-to-image takes a list
                 return env("MUAPI_EDIT_MODEL", "qwen2-1-image-to-image"), body
             return env("MUAPI_IMAGE_MODEL", "minimax-h3-image"), body
         body["duration"] = max(5, req["duration"])

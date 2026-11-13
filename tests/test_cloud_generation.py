@@ -16,7 +16,7 @@ def test_request_from_params_video_and_image(tmp_path, monkeypatch):
     assert video == {"kind": "video", "prompt": "neon", "image": ref, "width": 720, "height": 1280,
                      "ratio": "9:16", "resolution": "768P", "duration": 5}
     image = cg.request_from_params({"prompt": "p", "resolution": "1920x1080", "image_mode": 1}, {}, tmp_path)
-    assert (image["kind"], image["ratio"], image["resolution"], image["image"]) == ("image", "16:9", "1080P", None)
+    assert (image["kind"], image["ratio"], image["resolution"], image["image"]) == ("image", "16:9", "2K", None)
 
 
 def test_provider_routes(tmp_path):
@@ -38,7 +38,8 @@ def test_provider_routes(tmp_path):
     assert cg.Fal().endpoint_and_body(img)[0] == "fal-ai/moss-image"
     assert cg.MuApi().slug_and_body(i2v)[0] == "minimax-h3-image-to-video"
     assert cg.MuApi().slug_and_body(img)[0] == "minimax-h3-image"
-    assert cg.MuApi().slug_and_body(dict(img, image=ref))[0] == "qwen2-1-image-to-image"
+    slug, body = cg.MuApi().slug_and_body(dict(img, image=ref))
+    assert slug == "qwen2-1-image-to-image" and len(body["images_list"]) == 1
 
 
 def test_env_settings_and_llm_override(tmp_path, monkeypatch):
