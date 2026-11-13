@@ -18,20 +18,21 @@ export function CloudEngineControl({ full = false }: { full?: boolean }) {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchCloudConfig().then(setConfig).catch(err => setError(err instanceof Error ? err.message : String(err)))
+    // An older or offline backend must never break the surrounding Studio/Director panel.
+    fetchCloudConfig().then(c => setConfig(validConfig(c))).catch(() => setConfig(null))
   }, [])
 
   const save = async (partial: Record<string, string>) => {
     setError('')
     try {
-      setConfig(await updateCloudConfig(partial))
+      setConfig(validConfig(await updateCloudConfig(partial)))
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
       throw err
     }
   }
 
-  if (!config) return error ? <p role="alert" className="text-xs text-red-400">{error}</p> : null
+  if (!config) return null
   const missingKey = config.provider !== 'local' && !config.providers.find(p => p.name === config.provider)?.ready
 
   return (
@@ -76,6 +77,12 @@ export function CloudEngineControl({ full = false }: { full?: boolean }) {
       {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
     </div>
   )
+}
+
+function validConfig(value: unknown): CloudConfig | null {
+  const c = value as CloudConfig | null
+  return c && typeof c.provider === 'string' && Array.isArray(c.providers) && c.keys && typeof c.keys === 'object'
+    ? c : null
 }
 
 function TextSetting({ label, value, placeholder, onSave }: {

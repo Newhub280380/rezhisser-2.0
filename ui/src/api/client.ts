@@ -2355,6 +2355,15 @@ export async function fetchCloudConfig(): Promise<CloudConfig> {
   return getJson(`${BASE}/api/v1/cloud-config`, 'Failed to fetch cloud config')
 }
 
+/** True when queued jobs run on a cloud provider, so local weights need not be installed. */
+export async function cloudGenerationActive(): Promise<boolean> {
+  try {
+    return (await fetchCloudConfig()).provider !== 'local'
+  } catch {
+    return false
+  }
+}
+
 export async function updateCloudConfig(partial: Record<string, string>): Promise<CloudConfig> {
   const res = await fetch(`${BASE}/api/v1/cloud-config`, {
     method: 'PUT',

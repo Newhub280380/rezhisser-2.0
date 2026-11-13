@@ -82,7 +82,7 @@ async function prepareStudioTitle(settings: AnimatedTitleSettings, workspace: st
   const { models } = await api.fetchModels()
   const model = models.find(item => item.model_type === selectedModelType)
   if (!model) throw new Error('The selected video model is no longer available. Choose another model and try again.')
-  if (model.is_downloaded !== true) throw new Error(`Install ${model.name} in Settings before generating an animated title.`)
+  if (model.is_downloaded !== true && !(await api.cloudGenerationActive())) throw new Error(`Install ${model.name} in Settings before generating an animated title.`)
   const modelDefinition = model as ModelDef
   if (modelDefinition.world_model || !modelSupportsStudioVideoMediaIntent(modelDefinition, { workflow: 'frames', hasFrameGuidance: false,
     hasOmniReferences: false, hasAudioDrive: false })) {
@@ -166,7 +166,7 @@ export const useEditorTitleStore = create<TitleState>((set, get) => {
         const { models } = await api.fetchModels()
         const model = models.find(item => item.model_type === selectedModelType)
         if (!model) throw new Error('The selected video model is no longer available. Choose another model and try again.')
-        if (model.is_downloaded !== true) throw new Error(`Install ${model.name} in Settings before generating an animated title.`)
+        if (model.is_downloaded !== true && !(await api.cloudGenerationActive())) throw new Error(`Install ${model.name} in Settings before generating an animated title.`)
         const modelDefinition = model as ModelDef
         if (modelDefinition.world_model || !modelSupportsStudioVideoMediaIntent(modelDefinition, { workflow: 'frames', hasFrameGuidance: false,
           hasOmniReferences: false, hasAudioDrive: false })) {
