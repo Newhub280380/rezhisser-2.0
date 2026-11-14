@@ -1,91 +1,83 @@
-export type AssistantCategory = 'face_swap' | 'photo_to_video' | 'text_to_video'
+import { useEffect, useState } from 'react'
 
-export type KnowledgePreset = {
-  id: AssistantCategory
+/** Knowledge base lives in docs/assistant-knowledge; the server serves it at /api/v1/assistant/knowledge. */
+
+export type AssistantCategory = string
+
+export type KnowledgeCategory = {
+  id: string
   title: string
   short: string
-  screen: 'director' | 'studio' | 'editor'
   steps: string[]
+  progress_labels: string[]
+  prompt_template: string
+  autopilot: boolean
+}
+
+export type SlashCommand = {
+  command: string
+  title: string
+  result?: string | null
+  fields?: string[] | null
+  templates?: string[] | null
+  substitute?: string | null
+}
+
+export type Knowledge = { categories: KnowledgeCategory[]; commands: SlashCommand[] }
+
+export type KnowledgePreset = {
+  id: string
+  title: string
+  screen: 'director' | 'studio' | 'editor'
   defaultParams: Record<string, string | number>
   promptTemplate: string
 }
 
-export const KNOWLEDGE_PRESETS: KnowledgePreset[] = [
-  {
-    id: 'face_swap',
-    title: 'Замена лица',
-    short: 'Подставить лицо с фото в ролик или в кадр.',
-    screen: 'studio',
-    steps: [
-      'Открыть Студию',
-      'Загрузить фото лица как исходник',
-      'Выставить длительность и размер кадра',
-      'Подставить промпт из библиотеки и запустить генерацию',
-      'Следить за очередью и отдать готовый файл',
-    ],
-    defaultParams: {
-      duration_seconds: 5,
-      resolution: '480p',
-      mode: 'image_to_video',
-    },
-    promptTemplate:
-      'Тот же человек, что на загруженном фото. Лицо узнаваемое, естественный свет, без искажений. Сцена: {scene}',
-  },
-  {
-    id: 'photo_to_video',
-    title: 'Видео по фото',
-    short: 'Оживить одно или несколько фото в короткий ролик.',
-    screen: 'studio',
-    steps: [
-      'Открыть Студию',
-      'Загрузить исходное фото',
-      'Выставить длительность 5 секунд и 480p для пробы, больше — если нужно',
-      'Вписать сцену в промпт и запустить генерацию',
-      'Дождаться очереди и отдать ролик',
-    ],
-    defaultParams: {
-      duration_seconds: 5,
-      resolution: '480p',
-      mode: 'image_to_video',
-    },
-    promptTemplate:
-      'Оживи это фото: лёгкое естественное движение, стабильная камера, тот же свет и композиция. Сцена: {scene}',
-  },
-  {
-    id: 'text_to_video',
-    title: 'Текст в видео',
-    short: 'Собрать ролик только по описанию, без исходного фото.',
-    screen: 'director',
-    steps: [
-      'Открыть Режиссёра или Студию',
-      'Выставить длительность и размер',
-      'Собрать понятный промпт по описанию человека',
-      'Запустить генерацию',
-      'Следить за очередью и отдать файл',
-    ],
-    defaultParams: {
-      duration_seconds: 5,
-      resolution: '480p',
-      mode: 'text_to_video',
-    },
-    promptTemplate:
-      'Короткий кинокадр. {scene} Камера спокойная, свет естественный, движение простое и понятное.',
-  },
-]
+let cache: Knowledge | null = null
+let pending: Promise<Knowledge> | null = null
 
-export function knowledgeForPrompt(): string {
-  return KNOWLEDGE_PRESETS.map(preset => {
-    return [
-      `Категория: ${preset.title} (id: ${preset.id})`,
-      preset.short,
-      `Экран: ${preset.screen}`,
-      `Шаги: ${preset.steps.join(' → ')}`,
-      `Параметры по умолчанию: ${JSON.stringify(preset.defaultParams)}`,
-      `Шаблон промпта: ${preset.promptTemplate}`,
-    ].join('\n')
-  }).join('\n\n')
+export function loadKnowledge(): Promise<Knowledge> {
+  if (cache) return Promise.resolve(cache)
+  pending ??= fetch('/api/v1/assistant/knowledge')
+    .then(async response => {
+      if (!response.ok) throw new Error(`knowledge ${response.status}`)
+      const data = (await response.json()) as Knowledge
+      cache = { categories: data.categories || [], commands: data.commands || [] }
+      return cache
+    })
+    .catch(error => {
+      pending = null
+      throw error
+    })
+  return pending
 }
 
+export function useKnowledge(): Knowledge | null {
+  const [knowledge, setKnowledge] = useState<Knowledge | null>(cache)
+  useEffect(() => {
+    let alive = true
+    loadKnowledge().then(data => { if (alive) setKnowledge(data) }).catch(() => {})
+    return () => { alive = false }
+  }, [])
+  return knowledge
+}
+
+/** Recipe as the set_params tool needs it: a prompt template plus draft defaults (rules.md: 5 s, 480p first). */
 export function findPreset(id?: string | null): KnowledgePreset | undefined {
-  return KNOWLEDGE_PRESETS.find(preset => preset.id === id)
+  const category = cache?.categories.find(item => item.id === id)
+  if (!category) return undefined
+  return {
+    id: category.id,
+    title: category.title,
+    screen: category.id === 'text_to_video' ? 'director' : 'studio',
+    defaultParams: { duration_seconds: 5, resolution: '480p' },
+    promptTemplate: category.prompt_template || '{scene}',
+  }
+}
+
+export function matchCommands(draft: string, commands: SlashCommand[]): SlashCommand[] {
+  const typed = draft.trimStart()
+  if (!typed.startsWith('/') || /\s/.test(typed)) return []
+  const query = typed.toLowerCase()
+  return commands.filter(command => command.command.toLowerCase().startsWith(query)).slice(0, 8)
 }

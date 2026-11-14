@@ -29,7 +29,7 @@ SYSTEM_PROMPT = """Ты встроенный помощник Режиссёра
 - Сначала открой нужный экран, потом при необходимости попроси загрузить фото
   инструментом upload_photo, выставь параметры, запусти генерацию, следи за
   очередью и в конце отдай готовый файл.
-- Если ключ OpenRouter не задан, скажи открыть Настройки → Services → Cloud
+- Если ключ OpenRouter не задан, скажи открыть Настройки → Integrations → Cloud
   и вписать ключ в поле облачной LLM. Сам ключ никогда не проси прислать в чат.
 - Если генерация не запустилась, верни текст ошибки из инструмента и предложи,
   что проверить (модель, фото, ключ облака).
@@ -140,7 +140,7 @@ def chat(body: dict[str, Any], *, raw: bool = False) -> dict[str, Any]:
     api_key = (cloud_generation.env("LLM_API_KEY") or "").strip()
     if not api_key:
         raise AssistantError(
-            "Ключ OpenRouter не задан. Откройте Настройки → Services → Cloud и впишите его в поле облачной LLM.",
+            "Ключ OpenRouter не задан. Откройте Настройки → Integrations → Cloud и впишите его в поле облачной LLM.",
             status=400,
         )
 
@@ -185,7 +185,7 @@ def chat(body: dict[str, Any], *, raw: bool = False) -> dict[str, Any]:
             last_error = error
             if error.status in {401}:
                 raise AssistantError(
-                    "Ключ OpenRouter не принят. Проверьте его в Настройках → Services → Cloud.",
+                    "Ключ OpenRouter не принят. Проверьте его в Настройках → Integrations → Cloud.",
                     status=401,
                 ) from error
             if index < len(chain) - 1 and error.status in {402, 404, 429, 503, 502}:

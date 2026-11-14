@@ -10,6 +10,7 @@ import {
 } from '../api/client'
 import { useStore } from '../stores/useStore'
 import type { GenerateParams } from '../types'
+import { cancelAutopilot, fetchAutopilot, startAutopilot } from './autopilotApi'
 import { findPreset, type AssistantCategory } from './knowledge'
 import { useFrontendTool } from './useFrontendTool'
 
@@ -28,9 +29,15 @@ function asNumber(value: unknown): number | undefined {
 export function AssistantTools({
   category,
   fileInputRef,
+  attachments,
+  onAutopilot,
 }: {
   category: AssistantCategory | null
   fileInputRef: React.RefObject<HTMLInputElement | null>
+  /** Upload file names the person attached in the chat. */
+  attachments: string[]
+  /** Called with the run id so the chat shows live progress and the final player. */
+  onAutopilot: (runId: string) => void
 }) {
   const lastUpload = useRef<{ filename: string; path: string; url: string } | null>(null)
 
@@ -131,8 +138,7 @@ export function AssistantTools({
           resolution: { type: 'string', description: 'Размер кадра, например 480p или 720p' },
           category: {
             type: 'string',
-            enum: ['face_swap', 'photo_to_video', 'text_to_video'],
-            description: 'Категория из библиотеки знаний',
+            description: 'id рецепта из библиотеки знаний (recipes.json), например photo_to_video',
           },
           scene: { type: 'string', description: 'Короткое описание сцены для шаблона' },
         },
@@ -256,6 +262,83 @@ export function AssistantTools({
           url,
           kind: match.type,
         }
+      },
+    },
+    [],
+  )
+
+  useFrontendTool(
+    {
+      name: 'start_autopilot',
+      description:
+        'Автопилот: сам проходит весь рецепт и отдаёт готовый mp4. photo_to_film — ролик из фото ' +
+        '(фон → 4К → JPEG → раскадровка → сцены Wan 2.2 → склейка 1080x1920). viral_remake — ремейк ролика по ссылке. ' +
+        'Прогресс и плеер чат показывает сам.',
+      parameters: {
+        type: 'object',
+        properties: {
+          recipe: { type: 'string', enum: ['photo_to_film', 'viral_remake'] },
+          request: { type: 'string', description: 'Задача словами человека' },
+          total_seconds: { type: 'number', description: 'Длина ролика, с. По умолчанию 60; «2–3 минуты» = 150' },
+          aspect: { type: 'string', enum: ['9:16', '16:9', '1:1'] },
+          remove_background: { type: 'boolean', description: 'false для пейзажей и интерьеров' },
+          quality: { type: 'string', enum: ['draft', 'final'], description: 'draft = 480p, final = 720p' },
+          photos: { type: 'array', items: { type: 'string' }, description: 'Имена загруженных фото; по умолчанию все прикреплённые' },
+          source_url: { type: 'string', description: 'Ссылка на ролик для viral_remake' },
+          replace_photo: { type: 'string', description: 'Фото героя/продукта для замены в viral_remake' },
+        },
+        required: ['recipe'],
+        additionalProperties: false,
+      },
+      handler: async args => {
+        const recipe = asString(args.recipe) || 'photo_to_film'
+        const photos = Array.isArray(args.photos) && args.photos.length
+          ? args.photos.map(String)
+          : attachments
+        const body: Record<string, unknown> = { ...args, recipe, photos }
+        if (recipe === 'viral_remake' && !body.replace_photo && attachments.length) body.replace_photo = attachments[0]
+        if (recipe === 'photo_to_film' && !photos.length) {
+          return { ok: false, error: 'Нет фото. Попросите прикрепить фото кнопкой «Фото» в чате.' }
+        }
+        const run = await startAutopilot(body)
+        onAutopilot(run.id)
+        return { ok: true, run_id: run.id, note: 'Автопилот запущен; прогресс и готовый ролик чат покажет сам.' }
+      },
+    },
+    [attachments, onAutopilot],
+  )
+
+  useFrontendTool(
+    {
+      name: 'autopilot_status',
+      description: 'Узнать, на каком шаге автопилот и готов ли ролик.',
+      parameters: {
+        type: 'object',
+        properties: { run_id: { type: 'string' } },
+        required: ['run_id'],
+        additionalProperties: false,
+      },
+      handler: async ({ run_id }) => {
+        const run = await fetchAutopilot(asString(run_id))
+        return { ok: true, status: run.status, label: run.label, progress: run.progress, output: run.output, error: run.error }
+      },
+    },
+    [],
+  )
+
+  useFrontendTool(
+    {
+      name: 'cancel_autopilot',
+      description: 'Остановить автопилот.',
+      parameters: {
+        type: 'object',
+        properties: { run_id: { type: 'string' } },
+        required: ['run_id'],
+        additionalProperties: false,
+      },
+      handler: async ({ run_id }) => {
+        const run = await cancelAutopilot(asString(run_id))
+        return { ok: true, status: run.status }
       },
     },
     [],
