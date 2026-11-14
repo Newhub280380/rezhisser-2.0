@@ -15,7 +15,7 @@ from typing import Any
 from services import cloud_generation
 
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
-PRIMARY_MODEL = "nvidia/nemotron-3.5-lightning:free"
+PRIMARY_MODEL = "qwen/qwen3-235b-a22b-2507"  # answers storyboards as plain JSON; GLM is the spare
 FALLBACK_MODEL = "z-ai/glm-5.3-flash"
 LEGACY_DEFAULT_MODELS = {"", "MiniMax-M2", "minimax-m2"}
 
@@ -65,11 +65,16 @@ def _primary_model() -> str:
     return PRIMARY_MODEL
 
 
+def _fallback_model() -> str:
+    return (cloud_generation.env("LLM_FALLBACK_MODEL") or "").strip() or FALLBACK_MODEL
+
+
 def _model_chain() -> list[str]:
     primary = _primary_model()
     chain = [primary]
-    if FALLBACK_MODEL not in chain:
-        chain.append(FALLBACK_MODEL)
+    fallback = _fallback_model()
+    if fallback not in chain:
+        chain.append(fallback)
     return chain
 
 
@@ -82,7 +87,7 @@ def public_status() -> dict[str, Any]:
         "provider": "openrouter" if "openrouter.ai" in base else "custom",
         "base_url": base,
         "model": _primary_model(),
-        "fallback_model": FALLBACK_MODEL,
+        "fallback_model": _fallback_model(),
         "key_set": key_set,
     }
 

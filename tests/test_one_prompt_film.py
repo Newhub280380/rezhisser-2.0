@@ -53,7 +53,7 @@ BOARD = {"scenes": [
 class FakeDeps(autopilot.Deps):
     def __init__(self, ffmpeg, board=None):
         self._ffmpeg, self.board = ffmpeg, board or BOARD
-        self.prompts, self.media, self.tts_calls = [], [], []
+        self.prompts, self.media, self.tts_calls, self.voices = [], [], [], []
 
     def ffmpeg(self):
         return self._ffmpeg
@@ -80,8 +80,9 @@ class FakeDeps(autopilot.Deps):
                         "testsrc=size=480x854:rate=16:duration=2", "-pix_fmt", "yuv420p", str(out)], check=True)
         return out
 
-    def tts(self, text, language, out, cancelled):
+    def tts(self, text, language, out, cancelled, voice=None):
         self.tts_calls.append((text, language))
+        self.voices.append(voice)
         target = out.with_suffix(".wav")
         subprocess.run([self._ffmpeg, "-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=f=440:d=1.2",
                         str(target)], check=True)
@@ -178,8 +179,9 @@ def test_tts_kokoro_for_english_and_free_edge_tts_for_russian(tmp_path, monkeypa
     saved = []
 
     class Communicate:
-        def __init__(self, text, voice):
+        def __init__(self, text, voice, **shifts):
             self.text, self.voice = text, voice
+            self.shifts = shifts
 
         async def save(self, path):
             saved.append((self.text, self.voice))
@@ -201,6 +203,106 @@ def test_tts_kokoro_for_english_and_free_edge_tts_for_russian(tmp_path, monkeypa
     monkeypatch.setattr(deps, "fal_call", fail)
     deps.tts("Hi", "en", tmp_path / "v3", lambda: False)
     assert saved[-1] == ("Hi", "en-US-AriaNeural")
+
+
+WRITTEN = """Вертикальное видео 9:16. Хоррор под запись камеры наблюдения, зелёное ночное видение.
+
+Озвучка: монотонный низкий грубый мужской голос, медленно, на русском. Субтитры крупные.
+
+Сцены и текст озвучки:
+0–8 с. Девочка на кухне. Карточка «ДОМ №67 · жильцов: 0». «Ты решила рассказать обо всём маме.»
+8–12 с. Часы 23:47, окно напротив загорается. «23:47. Свет в соседнем доме загорелся.»
+12–19 с. Девочка замирает. Надпись «23:48». «Ты замерла. Ведь вчера ты не подходила к окну.»
+"""
+
+
+class WrittenDeps(FakeDeps):
+    """The person wrote scenes; the LLM must not be asked to write or doctor a script."""
+    tts_seconds = 3.0
+
+    def llm(self, messages):
+        text = messages[0]["content"]
+        self.prompts.append(text)
+        if text.startswith("Выпиши из сценария"):
+            return json.dumps({"assets": []}, ensure_ascii=False)
+        if text.startswith("Сделай раскадровку"):
+            return json.dumps({"scenes": [
+                {"index": 1, "seconds": 9, "prompt": "night vision kitchen, girl and mother", "voiceover": "ПЕРЕПИСАНО"},
+                {"index": 2, "seconds": 5, "prompt": "window lights up across the street", "voiceover": "ПЕРЕПИСАНО"},
+            ]}, ensure_ascii=False)
+        if text.startswith("Для каждой строки озвучки"):
+            return '{"keywords": ["маме", "23:47", "замерла"]}'
+        raise AssertionError("unexpected LLM step: " + text[:60])
+
+    def tts(self, text, language, out, cancelled, voice=None):
+        self.tts_calls.append((text, language))
+        self.voices.append(voice)
+        target = out.with_suffix(".wav")
+        subprocess.run([self._ffmpeg, "-y", "-loglevel", "error", "-f", "lavfi", "-i",
+                        f"sine=f=220:d={self.tts_seconds}", str(target)], check=True)
+        return target
+
+
+def test_parse_written_scenes_and_voice_profile():
+    scenes = autopilot.parse_user_scenes(WRITTEN)
+    assert [(s["start"], s["end"]) for s in scenes] == [(0, 8), (8, 12), (12, 19)]
+    assert [s["voiceover"] for s in scenes] == ["Ты решила рассказать обо всём маме.",
+                                                 "23:47. Свет в соседнем доме загорелся.",
+                                                 "Ты замерла. Ведь вчера ты не подходила к окну."]
+    assert "«ДОМ №67 · жильцов: 0»" in scenes[0]["description"] and "«23:48»" in scenes[2]["description"]
+    assert autopilot.parse_user_scenes("ролик 15 секунд про кота") == []
+    assert autopilot.voice_profile(WRITTEN) == {"gender": "male", "pitch": "-12Hz", "rate": "-15%"}
+    assert autopilot.voice_profile("Озвучка: женский голос, быстро") == {"gender": "female", "rate": "+15%"}
+    assert autopilot.voice_profile("ролик про кота") == {}
+
+
+def test_written_scenes_are_taken_verbatim_with_karaoke_subtitles(tmp_path, monkeypatch):
+    ffmpeg = _ffmpeg()
+    deps = WrittenDeps(ffmpeg)
+    monkeypatch.chdir(tmp_path)  # relative out folder, as the server passes "outputs"
+    state = autopilot.start("one_prompt_film", {"request": WRITTEN, "total_seconds": 0, "aspect": "9:16"},
+                            out_dir=Path("outputs"), work_root=Path("uploads") / "_autopilot", deps=deps,
+                            background=False)
+    assert state["status"] == "done", state["error"]
+    assert not any(p.startswith(("Ты сценарист", "Ты сценарный доктор")) for p in deps.prompts)
+    assert state["script"]["verbatim"] and state["script"]["voice"]["gender"] == "male"
+    assert [t for t, _ in deps.tts_calls] == [s["voiceover"] for s in autopilot.parse_user_scenes(WRITTEN)]
+    assert deps.voices == [{"gender": "male", "pitch": "-12Hz", "rate": "-15%"}] * 3
+    detail = state["scenes_detail"]
+    assert [d["seconds"] for d in detail] == [8, 5, 7]  # timing from the request (4 s -> Wan minimum 5 s)
+    assert detail[0]["prompt"] == "night vision kitchen, girl and mother"
+    assert detail[2]["prompt"].startswith("Девочка замирает")  # storyboard had no scene 3: the written picture
+    assert [d["keyword"] for d in detail] == ["маме", "23:47", "замерла"]
+    ass = next((tmp_path / "uploads" / "_autopilot").glob("autopilot_*/subs.ass")).read_text(encoding="utf-8")
+    assert ",5,80,80,0,1" in ass  # centred style
+    assert "{\\c&H0000FF&}маме.{\\r}" in ass or "{\\c&H0000FF&\\fscx115\\fscy115}маме.{\\r}" in ass
+    assert "{\\c&H00FFFF&\\fscx110\\fscy110}Ты{\\r}" in ass
+    out = tmp_path / "outputs" / state["output"]["filename"]
+    info = _streams(ffmpeg, out)
+    # 2 s mock clips hold their last frame under the 3 s voice: 3 * 3.4 - 2 * 0.3 = 9.6 s
+    assert "1080x1920" in info and "aac" in info and "Duration: 00:00:09.6" in info
+
+
+def test_voice_longer_than_written_scene_is_sped_up_to_fit(tmp_path):
+    ffmpeg = _ffmpeg()
+    deps = FakeDeps(ffmpeg)
+    voice = tmp_path / "voice_01.mp3"
+    subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=f=200:d=4", str(voice)], check=True)
+    runner = autopilot.Runner({"id": "x", "recipe": "one_prompt_film", "log": [], "_cancel": False}, {},
+                              out_dir=tmp_path, work_dir=tmp_path, deps=deps)
+    voices = {1: voice, 2: voice}
+    runner.fit_voices([{"target_seconds": 3.3}, {"target_seconds": 8}], voices)
+    assert voices[1].name == "voice_01_fit.mp3" and voices[2] == voice
+    assert 2.9 < deps.duration(voices[1]) < 3.3
+
+
+def test_karaoke_ass_marks_current_and_key_word():
+    ass = autopilot.karaoke_ass([("Свет в доме загорелся.", 1.0, 2.0, "загорелся")])
+    events = [line for line in ass.splitlines() if line.startswith("Dialogue:")]
+    assert len(events) == 4 and events[0].startswith("Dialogue: 0,0:00:01.00,")
+    assert "{\\c&H00FFFF&\\fscx110\\fscy110}Свет{\\r}" in events[0] and "{\\c&H0000FF&}загорелся.{\\r}" in events[0]
+    assert "{\\c&H0000FF&\\fscx115\\fscy115}загорелся.{\\r}" in events[3] and events[3].endswith("загорелся.{\\r}")
+    assert events[3].split(",")[2] == "0:00:03.00"
 
 
 def test_subtitle_cues_and_srt():

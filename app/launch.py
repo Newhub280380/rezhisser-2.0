@@ -8465,7 +8465,7 @@ async def assistant_autopilot_start(request: Request):
     uploads = Path(os.getcwd()) / "uploads"
     try:
         options = {
-            "request": str(body.get("request") or "")[:2000],
+            "request": str(body.get("request") or "")[:8000],
             "total_seconds": int(body.get("total_seconds") or 0),  # 0 -> the recipe's default
             "aspect": body.get("aspect") or "9:16",
             "remove_background": bool(body.get("remove_background", True)),

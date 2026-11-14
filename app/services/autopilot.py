@@ -155,12 +155,17 @@ class Deps:
         return files[0]
 
 
-    def tts(self, text: str, language: str, out: Path, cancelled) -> Path:
-        """Kokoro on fal for English (it has no Russian); free edge-tts for Russian and as the fallback."""
+    def tts(self, text: str, language: str, out: Path, cancelled, voice: dict | None = None) -> Path:
+        """Kokoro on fal for English (it has no Russian); free edge-tts for Russian and as the fallback.
+
+        voice: profile from the request (voice_profile): gender male/female, edge rate/pitch shifts."""
         out.parent.mkdir(parents=True, exist_ok=True)
+        voice = voice or {}
+        male = voice.get("gender") == "male"
         if language != "ru":
             try:
-                result = self.fal_call("fal-ai/kokoro/american-english", {"prompt": text, "voice": "af_heart"}, cancelled)
+                result = self.fal_call("fal-ai/kokoro/american-english",
+                                       {"prompt": text, "voice": "am_adam" if male else "af_heart"}, cancelled)
                 url = (result.get("audio") or {}).get("url")
                 if url:
                     return self.download(url, out.with_suffix(".wav"))
@@ -168,10 +173,38 @@ class Deps:
                 pass
         import asyncio
         import edge_tts
-        voice = "ru-RU-SvetlanaNeural" if language == "ru" else "en-US-AriaNeural"
+        if language == "ru":
+            name = "ru-RU-DmitryNeural" if male else "ru-RU-SvetlanaNeural"
+        else:
+            name = "en-US-GuyNeural" if male else "en-US-AriaNeural"
         target = out.with_suffix(".mp3")
-        asyncio.run(edge_tts.Communicate(text, voice).save(str(target)))
-        return target
+        shifts = {k: voice[k] for k in ("rate", "pitch") if voice.get(k)}
+        # The free Edge service now and then answers "no audio" (busy, or rate+pitch together):
+        # retry with a pause, then without the pitch shift (tone lowered by ffmpeg instead), then plain.
+        no_pitch = {k: v for k, v in shifts.items() if k != "pitch"}
+        tries = [shifts] * 4 + ([no_pitch] * 4 if "pitch" in shifts else []) + [{}] * 4
+        error = None
+        for attempt, kwargs in enumerate(tries):
+            if cancelled():
+                raise InterruptedError("Cancelled")
+            if attempt:
+                time.sleep(min(8.0, 2.0 * attempt))
+            raw = target if "pitch" in kwargs or "pitch" not in shifts else out.with_name(out.stem + "_plain.mp3")
+            try:
+                asyncio.run(edge_tts.Communicate(text, name, **kwargs).save(str(raw)))
+            except Exception as exc:  # edge_tts.exceptions.NoAudioReceived and network hiccups
+                error = exc
+                if raw.is_file() and raw.stat().st_size == 0:
+                    raw.unlink()  # an empty half-written file must not pass for a voice
+                continue
+            if raw != target:  # same speed, about −1.5 semitones
+                result = subprocess.run([self.ffmpeg(), "-y", "-hide_banner", "-loglevel", "error", "-i", str(raw),
+                                         "-af", "asetrate=24000*0.92,aresample=24000,atempo=1/0.92", str(target)],
+                                        capture_output=True, text=True)
+                if result.returncode != 0 or not target.is_file():
+                    raw.replace(target)
+            return target
+        raise AutopilotError(f"Озвучка не получилась (Edge): {error}")
 
     def music(self, seconds: float, out: Path) -> Path:
         """Royalty-free bed: a track from app/data/music if the owner put one there, else a synthesized ambient pad."""
@@ -207,6 +240,9 @@ class Deps:
 
 class Runner:
     def __init__(self, state: dict, options: dict, *, out_dir: Path, work_dir: Path, deps: Deps):
+        # Absolute paths: the final mix runs ffmpeg with cwd=work_dir (subs, fonts), so a relative out_dir
+        # such as "outputs" would resolve inside the work folder and the last step would fail.
+        out_dir, work_dir = Path(out_dir).resolve(), Path(work_dir).resolve()
         self.state, self.options, self.out_dir, self.work_dir, self.deps = state, options, out_dir, work_dir, deps
         self.recipes = kb.recipes()
         self.aspect = options.get("aspect") if options.get("aspect") in FRAME else "9:16"
@@ -410,16 +446,31 @@ class Runner:
         products = kb.product_in_text(phrase)
         common = {"phrase": phrase, "total_seconds": total, "aspect": self.aspect, "product_note": self.product_note(products)}
 
-        _progress(self.state, self.label(0), 3, "write_script")
-        draft = self.ask(prompts["script"], **common)
-        _progress(self.state, self.label(1), 8, "script_doctor")
-        doctored = self.ask(prompts["doctor"], **common, script=json.dumps(draft, ensure_ascii=False))
-        fixed = doctored.get("script") if isinstance(doctored.get("script"), dict) else doctored
-        script = fixed if isinstance(fixed.get("scenes"), list) and fixed["scenes"] else draft
+        given = parse_user_scenes(phrase)
+        voice = voice_profile(phrase)
+        if given:
+            # The person already wrote the scenes with timing and voiceover: no script writer, no doctor,
+            # the scene count, seconds and voiceover text stay exactly as written.
+            total = max(10, min(180, int(round(given[-1]["end"]))))
+            common["total_seconds"] = total
+            _progress(self.state, self.label(0), 3, "write_script")
+            script = {"title": "", "hook": "", "language": "ru" if re.search("[а-яё]", phrase.lower()) else "en",
+                      "scenes": [{"index": i, "seconds": g["seconds"], "description": g["description"],
+                                  "voiceover": g["voiceover"]} for i, g in enumerate(given, 1)]}
+            draft, doctored = {}, {}
+            _progress(self.state, self.label(1), 8, "script_doctor")
+        else:
+            _progress(self.state, self.label(0), 3, "write_script")
+            draft = self.ask(prompts["script"], **common)
+            _progress(self.state, self.label(1), 8, "script_doctor")
+            doctored = self.ask(prompts["doctor"], **common, script=json.dumps(draft, ensure_ascii=False))
+            fixed = doctored.get("script") if isinstance(doctored.get("script"), dict) else doctored
+            script = fixed if isinstance(fixed.get("scenes"), list) and fixed["scenes"] else draft
         with _LOCK:
             self.state["script"] = {"title": script.get("title", ""), "hook": script.get("hook", ""),
                                     "ideas": draft.get("ideas", []), "grade": doctored.get("grade"),
-                                    "issues": doctored.get("issues", []), "products": products}
+                                    "issues": doctored.get("issues", []), "products": products,
+                                    "verbatim": bool(given), "voice": voice}
         script_json = json.dumps(script, ensure_ascii=False)
 
         _progress(self.state, self.label(2), 12, "extract_assets")
@@ -434,12 +485,34 @@ class Runner:
                          assets=json.dumps(assets, ensure_ascii=False))
         for scene in board.get("scenes", []) if isinstance(board, dict) else []:
             scene["photo_index"] = 1 if scene.get("product") and images else None
-        scenes = normalize_scenes(board, len(images), total, self.recipes.get("negative_prompt_default", ""),
-                                  keep=("voiceover", "product", "shot", "camera"))
+        negative = self.recipes.get("negative_prompt_default", "")
+        if given:
+            scenes = verbatim_scenes(given, board, phrase, negative)
+            self.pick_keywords(scenes)
+        else:
+            scenes = normalize_scenes(board, len(images), total, negative,
+                                      keep=("voiceover", "product", "shot", "camera", "keyword"))
         language = "ru" if re.search("[а-яё]", phrase.lower()) else str(script.get("language") or "en")[:2]
-        return self.produce(scenes, images, language)
+        return self.produce(scenes, images, language, voice)
 
-    def produce(self, scenes: list[dict], images: list[Path], language: str) -> Path:
+    def pick_keywords(self, scenes: list[dict]) -> None:
+        """One word per voiceover line to paint red in the subtitles (cheap text call; heuristic if it fails)."""
+        lines = [s.get("voiceover", "") for s in scenes]
+        if not any(lines):
+            return
+        ask = ("Для каждой строки озвучки выбери ОДНО ключевое слово — самое страшное или важное, ровно как оно "
+               "написано в строке. Его выделим красным в субтитрах. Верни только JSON: {\"keywords\": [\"...\"]} — "
+               "по одному слову на строку, в том же порядке.\n"
+               + "\n".join(f"{i}. {line}" for i, line in enumerate(lines, 1)))
+        try:
+            words = parse_json(self.deps.llm([{"role": "user", "content": ask}])).get("keywords") or []
+        except Exception:  # keywords are a nicety: never fail the film over them
+            words = []
+        for scene, word in zip(scenes, words):
+            if isinstance(word, str) and word.strip() and not scene.get("keyword"):
+                scene["keyword"] = word.strip()
+
+    def produce(self, scenes: list[dict], images: list[Path], language: str, voice: dict | None = None) -> Path:
         n = len(scenes)
         size = (FINAL if self.options.get("quality") == "final" else DRAFT)[self.aspect]
         keyframes = {}
@@ -459,14 +532,34 @@ class Runner:
         for i, scene in enumerate(scenes, 1):
             self.check()
             if scene.get("voiceover", "").strip():
-                voices[i] = self.deps.tts(scene["voiceover"].strip(), language, self.work_dir / f"voice_{i:02d}",
-                                          self.cancelled)
+                path = self.work_dir / f"voice_{i:02d}"
+                voices[i] = (self.deps.tts(scene["voiceover"].strip(), language, path, self.cancelled, voice=voice)
+                             if voice else self.deps.tts(scene["voiceover"].strip(), language, path, self.cancelled))
+        self.fit_voices(scenes, voices)
         project = {"scenes": scenes, "images": [str(p) for p in images], "language": language, "size": list(size),
                    "keyframes": {str(k): str(v) for k, v in keyframes.items()}, "clips": [str(c) for c in clips],
                    "voices": {str(k): str(v) for k, v in voices.items()}, "version": 0}
         with _LOCK:
             self.state.update(_project=project, scenes=n, scenes_detail=_scene_details(scenes))
         return self.assemble(project)
+
+    def fit_voices(self, scenes: list[dict], voices: dict) -> None:
+        """Written timing wins: a line longer than its written scene is sped up (at most ×1.3) to fit it."""
+        for i, scene in enumerate(scenes, 1):
+            target = float(scene.get("target_seconds") or 0)
+            if i not in voices or target <= 0:
+                continue
+            length = self.deps.duration(voices[i])
+            room = max(1.0, target - 0.3)
+            if length <= room * 1.03:
+                continue
+            tempo = min(1.3, length / room)
+            fitted = Path(voices[i]).with_name(Path(voices[i]).stem + "_fit.mp3")
+            result = subprocess.run([self.deps.ffmpeg(), "-y", "-hide_banner", "-loglevel", "error", "-i",
+                                     str(voices[i]), "-af", f"atempo={tempo:.3f}", str(fitted)],
+                                    capture_output=True, text=True)
+            if result.returncode == 0 and fitted.is_file() and fitted.stat().st_size:
+                voices[i] = fitted
 
     def regenerate(self, index: int) -> Path:
         """Re-shoot one scene (new keyframe if the prompt changed) and re-assemble; other scenes are reused."""
@@ -494,25 +587,32 @@ class Runner:
 
     def assemble(self, project: dict) -> Path:
         clips = [Path(c) for c in project["clips"]]
-        durations = [self.deps.duration(c) for c in clips]
+        raw = [self.deps.duration(c) for c in clips]
+        voices = {int(k): Path(v) for k, v in project["voices"].items()}
+        voice_len = {i: self.deps.duration(v) for i, v in voices.items()}
+        # A clip shorter than its line holds its last frame so the voice never runs into the next scene.
+        durations = [max(d, voice_len.get(k + 1, 0) + 0.4) for k, d in enumerate(raw)]
+        pads = [max(0.0, d - r) for d, r in zip(durations, raw)]
         fade = min(self.XFADE, min(durations) / 3)
         starts = [sum(durations[:k]) - k * fade for k in range(len(clips))]
         total = sum(durations) - (len(clips) - 1) * fade
         _progress(self.state, self.label(7), 85, "music")
         music = self.deps.music(total, self.work_dir / "music.wav")
         _progress(self.state, self.label(8), 89, "subtitles")
-        voices = {int(k): Path(v) for k, v in project["voices"].items()}
-        cues = []
+        cues, lines = [], []
         for i, scene in enumerate(project["scenes"], 1):
             if i in voices:
-                cues += subtitle_cues(scene["voiceover"], starts[i - 1], self.deps.duration(voices[i]))
-        (self.work_dir / "subs.srt").write_text(to_srt(cues), encoding="utf-8")
+                cues += subtitle_cues(scene["voiceover"], starts[i - 1], voice_len[i])
+                lines.append((scene["voiceover"], starts[i - 1], voice_len[i], scene_keyword(scene)))
+        (self.work_dir / "subs.srt").write_text(to_srt(cues), encoding="utf-8")  # plain copy for players
+        w, h = FRAME[self.aspect]
+        (self.work_dir / "subs.ass").write_text(karaoke_ass(lines, w, h), encoding="utf-8")
         _progress(self.state, self.label(9), 93, "concat_clips")
         suffix = f"_v{project['version']}" if project["version"] else ""
         name = f"{time.strftime('%Y-%m-%d-%Hh%Mm%Ss')}_autopilot_one_prompt_film_{self.state['id']}{suffix}.mp4"
-        return self.mix(clips, starts, fade, total, voices, music, self.out_dir / name)
+        return self.mix(clips, starts, fade, total, voices, music, self.out_dir / name, pads)
 
-    def mix(self, clips, starts, fade, total, voices, music, out: Path) -> Path:
+    def mix(self, clips, starts, fade, total, voices, music, out: Path, pads=None) -> Path:
         """Scenes with xfade, burned-in subtitles, voice per scene, music −18 dB under it -> H.264 + AAC."""
         w, h = FRAME[self.aspect]
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -530,14 +630,15 @@ class Runner:
             cmd += ["-i", str(voice)]
         cmd += ["-stream_loop", "-1", "-i", str(music)]
         graph = [f"[{k}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=black,"
-                 f"setsar=1,fps=30,format=yuv420p,settb=AVTB[v{k}]" for k in range(len(clips))]
+                 f"setsar=1,fps=30,format=yuv420p,"
+                 + (f"tpad=stop_mode=clone:stop_duration={pads[k]:.3f}," if pads and pads[k] > 0 else "")
+                 + f"settb=AVTB[v{k}]" for k in range(len(clips))]
         last = "v0"
         for k in range(1, len(clips)):
             graph.append(f"[{last}][v{k}]xfade=transition=fade:duration={fade:.3f}:offset={starts[k]:.3f}[x{k}]")
             last = f"x{k}"
-        style = ("FontName=Arial,FontSize=11,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,"
-                 "BorderStyle=1,Outline=1.2,Shadow=0,Alignment=2,MarginV=36")
-        graph.append(f"[{last}]subtitles=subs.srt:fontsdir=fonts:force_style='{style}'[vout]")
+        # Karaoke subtitles (subs.ass): large, centred, current word yellow, the key word red.
+        graph.append(f"[{last}]subtitles=subs.ass:fontsdir=fonts[vout]")
         base = len(clips)
         stereo = "aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo"
         for j, (i, _) in enumerate(voice_items):
@@ -623,7 +724,7 @@ class Runner:
 # ---------------------------------------------------------------- helpers
 
 def _scene_details(scenes: list[dict]) -> list[dict]:
-    return [{k: s.get(k) for k in ("index", "seconds", "prompt", "voiceover", "product")} for s in scenes]
+    return [{k: s.get(k) for k in ("index", "seconds", "prompt", "voiceover", "product", "keyword")} for s in scenes]
 
 
 def subtitle_cues(text: str, start: float, duration: float, max_words: int = 6) -> list[tuple[float, float, str]]:
@@ -638,6 +739,154 @@ def subtitle_cues(text: str, start: float, duration: float, max_words: int = 6) 
         cues.append((t, t + length, " ".join(chunk)))
         t += length
     return cues
+
+
+_SCENE_LINE = re.compile(r"^\s*(\d+(?:[.,]\d+)?)\s*[–—-]\s*(\d+(?:[.,]\d+)?)\s*(?:с|сек|s|sec)\b\.?\s*(.+)$",
+                         re.IGNORECASE)
+_QUOTED = re.compile(r"«([^«»]+)»|“([^“”]+)”|\"([^\"]+)\"")
+
+
+def parse_user_scenes(text: str) -> list[dict]:
+    """Scenes the person already wrote: lines like «0–8 с. Что в кадре. «Текст озвучки.»».
+
+    Voiceover = quoted parts that end like a sentence (. ! ? …); short labels such as «НОЧЬ 5» or «23:48»
+    stay in the picture description. Fewer than two such lines -> [] (a normal one-phrase request)."""
+    scenes = []
+    for line in (text or "").splitlines():
+        match = _SCENE_LINE.match(line)
+        if not match:
+            continue
+        start, end = (float(x.replace(",", ".")) for x in match.group(1, 2))
+        if end <= start:
+            continue
+        body = match.group(3).strip()
+        quoted = [next(g for g in m.groups() if g is not None) for m in _QUOTED.finditer(body)]
+        spoken = [q.strip() for q in quoted if re.search(r"[.!?…]\s*$", q.strip())]
+        voiceover = " ".join(spoken)
+        description = body
+        for q in spoken:
+            description = description.replace(f"«{q}»", "").replace(f"“{q}”", "").replace(f'"{q}"', "")
+        scenes.append({"start": start, "end": end, "seconds": end - start, "voiceover": voiceover,
+                       "description": re.sub(r"\s+", " ", description).strip(" .")})
+    return scenes if len(scenes) >= 2 else []
+
+
+def _style_note(phrase: str) -> str:
+    """The look described before the scene list (first paragraph), for prompts the storyboard did not cover."""
+    head = re.split(r"\n\s*\n", (phrase or "").strip())[0]
+    return head if not _SCENE_LINE.match(head) else ""
+
+
+def verbatim_scenes(given: list[dict], board: dict, phrase: str, negative: str) -> list[dict]:
+    """One scene per written scene, in order; picture prompts from the storyboard, text and timing untouched."""
+    raw = board.get("scenes") if isinstance(board, dict) else None
+    raw = [s for s in raw if isinstance(s, dict)] if isinstance(raw, list) else []
+    by_index = {s.get("index"): s for s in raw}
+    style = _style_note(phrase)
+    scenes = []
+    for i, item in enumerate(given, 1):
+        drawn = by_index.get(i) or (raw[i - 1] if i - 1 < len(raw) else {})
+        prompt = str(drawn.get("prompt") or "").strip() or f"{item['description']}. {style}".strip()
+        scenes.append({"index": i, "seconds": max(5, min(10, int(math.ceil(item["seconds"])))), "photo_index": None,
+                       "prompt": prompt, "negative_prompt": str(drawn.get("negative_prompt") or negative),
+                       "caption": "", "voiceover": item["voiceover"], "description": item["description"],
+                       "keyword": str(drawn.get("keyword") or ""), "verbatim": True,
+                       "target_seconds": float(item["seconds"])})
+    return scenes
+
+
+def voice_profile(phrase: str) -> dict:
+    """Voice wishes from the request («Озвучка: низкий грубый мужской голос, медленно»): gender + edge shifts."""
+    text = (phrase or "").lower()
+    match = re.search(r"(озвучк\w*|голос\w*|диктор\w*|voice[- ]?over|voice|narrat\w*)\s*[:—-]?\s*([^\n]{0,200})", text)
+    if not match:
+        return {}
+    part = match.group(0)
+    profile: dict = {}
+    if re.search(r"мужск|мужчин|\bmale\b|\bman\b|бас|баритон", part):
+        profile["gender"] = "male"
+    elif re.search(r"женск|девуш|female|woman", part):
+        profile["gender"] = "female"
+    if re.search(r"низк|груб|глух|бас|deep|low", part):
+        profile["pitch"] = "-12Hz"
+    elif re.search(r"высок|звонк|high", part):
+        profile["pitch"] = "+10Hz"
+    if re.search(r"медлен|не спеша|slow", part):
+        profile["rate"] = "-15%"
+    elif re.search(r"быстр|fast", part):
+        profile["rate"] = "+15%"
+    return profile
+
+
+_STOP = {"который", "которая", "которые", "потому", "только", "теперь", "всё", "когда", "больше"}
+
+
+def scene_keyword(scene: dict) -> str:
+    """Word to paint red: the storyboard's keyword if it is in the line, else CAPS / a time / the longest word."""
+    words = [w.strip(".,!?…:;«»\"()—-") for w in (scene.get("voiceover") or "").split()]
+    words = [w for w in words if w]
+    wanted = str(scene.get("keyword") or "").strip().strip(".,!?…:;«»\"()—-").lower()
+    if wanted and any(w.lower() == wanted for w in words):
+        return wanted
+    caps = [w for w in words if len(w) > 1 and w.isupper()]
+    if caps:
+        return caps[0].lower()
+    times = [w for w in words if re.fullmatch(r"\d{1,2}[:.]\d{2}", w)]
+    if times:
+        return times[0].lower()
+    candidates = [w for w in words if w.lower() not in _STOP]
+    return max(candidates, key=len).lower() if candidates else ""
+
+
+def _ass_time(t: float) -> str:
+    cs = int(round(max(0.0, t) * 100))
+    return f"{cs // 360000}:{cs // 6000 % 60:02d}:{cs // 100 % 60:02d}.{cs % 100:02d}"
+
+
+def karaoke_ass(lines: list[tuple[str, float, float, str]], width: int = 1080, height: int = 1920,
+                max_words: int = 4) -> str:
+    """ASS subtitles: big centred words in short groups; the word being spoken is yellow, the key word red.
+
+    lines: (voiceover, start, audio_length, keyword). Word timing ∝ word length inside the real audio length."""
+    size = round(min(width, height) * 0.08)
+    head = ["[Script Info]", "ScriptType: v4.00+", f"PlayResX: {width}", f"PlayResY: {height}", "WrapStyle: 0",
+            "ScaledBorderAndShadow: yes", "", "[V4+ Styles]",
+            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, "
+            "Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, "
+            "MarginL, MarginR, MarginV, Encoding",
+            f"Style: Karaoke,Arial,{size},&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,1,0,0,0,100,100,0,0,1,"
+            f"{max(3, size // 14)},2,5,80,80,0,1", "", "[Events]",
+            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
+    events = []
+    clean = lambda w: w.replace("\\", "").replace("{", "").replace("}", "")  # noqa: E731
+    key_of = lambda w: w.strip(".,!?…:;«»\"()—-").lower()  # noqa: E731
+    for text, start, length, keyword in lines:
+        words = [clean(w) for w in (text or "").split() if clean(w)]
+        if not words or length <= 0:
+            continue
+        weights = [len(w) + 2 for w in words]
+        unit = length / sum(weights)
+        t, stamps = start, []
+        for wgt in weights:
+            stamps.append((t, t + wgt * unit))
+            t += wgt * unit
+        for g in range(0, len(words), max_words):
+            group = list(range(g, min(g + max_words, len(words))))
+            for j in group:
+                parts = []
+                for k in group:
+                    word, is_key = words[k], bool(keyword) and key_of(words[k]) == keyword
+                    if k == j and is_key:
+                        parts.append("{\\c&H0000FF&\\fscx115\\fscy115}" + word + "{\\r}")
+                    elif is_key:
+                        parts.append("{\\c&H0000FF&}" + word + "{\\r}")
+                    elif k == j:
+                        parts.append("{\\c&H00FFFF&\\fscx110\\fscy110}" + word + "{\\r}")
+                    else:
+                        parts.append(word)
+                a, b = stamps[j]
+                events.append(f"Dialogue: 0,{_ass_time(a)},{_ass_time(b)},Karaoke,,0,0,0,,{' '.join(parts)}")
+    return "\n".join(head + events) + "\n"
 
 
 def to_srt(cues: list[tuple[float, float, str]]) -> str:
