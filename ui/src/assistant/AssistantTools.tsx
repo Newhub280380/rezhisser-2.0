@@ -9,6 +9,7 @@ import {
   uploadImage,
 } from '../api/client'
 import { useStore } from '../stores/useStore'
+import type { GenerateParams } from '../types'
 import { findPreset, type AssistantCategory } from './knowledge'
 import { useFrontendTool } from './useFrontendTool'
 
@@ -145,18 +146,15 @@ export function AssistantTools({
           prompt = preset.promptTemplate.replace('{scene}', scene || 'естественная живая сцена')
         }
         const duration = asNumber(args.duration_seconds) ?? asNumber(preset?.defaultParams.duration_seconds)
-        useStore.setState(current => {
-          const nextParams = { ...current.params } as Record<string, unknown>
-          if (duration) nextParams.video_length = duration
-          if (asString(args.resolution)) nextParams.resolution = asString(args.resolution)
-          return {
-            prompt: prompt || current.prompt,
-            params: nextParams as typeof current.params,
-          }
-        })
+        // The Studio prompt lives in params.prompt; setParams keeps the store's own side effects.
+        const partial: Partial<GenerateParams> = {}
+        if (prompt) partial.prompt = prompt
+        if (duration) partial.video_length = duration
+        if (asString(args.resolution)) partial.resolution = asString(args.resolution)
+        useStore.getState().setParams(partial)
         return {
           ok: true,
-          prompt: prompt || useStore.getState().prompt,
+          prompt: useStore.getState().params.prompt,
           duration_seconds: duration ?? null,
           resolution: asString(args.resolution) || preset?.defaultParams.resolution || null,
           category: preset?.id || null,

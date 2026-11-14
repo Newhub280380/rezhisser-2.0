@@ -78,9 +78,9 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
               onSave={value => save({ [KEY_OF[p.name]]: value })}
             />
           ))}
-          <TextSetting label="Cloud LLM URL (OpenAI-compatible)" value={config.llm_base_url}
+          <TextSetting key={`url:${config.llm_base_url}`} label="Cloud LLM URL (OpenAI-compatible)" value={config.llm_base_url}
             placeholder="https://openrouter.ai/api/v1" onSave={v => save({ LLM_BASE_URL: v })} />
-          <TextSetting label="Cloud LLM model" value={config.llm_model}
+          <TextSetting key={`model:${config.llm_model}`} label="Cloud LLM model" value={config.llm_model}
             placeholder="nvidia/nemotron-3.5-lightning:free" onSave={v => save({ LLM_MODEL: v })} />
           <ApiKeyField label="Cloud LLM key" maskedValue="••••••••" isSet={config.keys.LLM_API_KEY}
             onSave={value => save({ LLM_API_KEY: value })} />
@@ -107,7 +107,6 @@ function TextSetting({ label, value, placeholder, onSave }: {
 }) {
   const id = useId()
   const [draft, setDraft] = useState(value)
-  useEffect(() => setDraft(value), [value])
   return (
     <div>
       <label htmlFor={id} className="text-[11px] text-text-muted uppercase tracking-wider mb-1.5 block">{label}</label>
