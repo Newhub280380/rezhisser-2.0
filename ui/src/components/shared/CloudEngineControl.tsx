@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ChangeEvent } from 'react'
+import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react'
 import { fetchCloudConfig, updateCloudConfig, type CloudConfig } from '../../api/client'
 import { ApiKeyField } from './ApiKeyField'
 import { useStore } from '../../stores/useStore'
@@ -36,10 +36,22 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
   // Wan 2.2 makes up to 10 s per clip; the Studio default ("Auto" 20.9 s) is set to 5 s when the fal cloud is on.
   const duration = useStore(s => s.durationSeconds)
   const setDurationSeconds = useStore(s => s.setDurationSeconds)
+  const setParam = useStore(s => s.setParam)
   const wanCloud = config?.provider === 'fal' && config?.video_engine !== 'h3'
+  // Once per loaded model: loading a model's options sets its own default length (e.g. LTX 20.9 s),
+  // so nudge after each load, but never twice for the same load — fighting the "Auto" planner
+  // in a loop crashes React (#185). The server makes Wan clips 5 s anyway.
+  const modelOptions = useStore(s => s.modelOptions)
+  const nudged = useRef<unknown>(null)
   useEffect(() => {
-    if (wanCloud && duration > 10) setDurationSeconds(5)
-  }, [wanCloud, duration, setDurationSeconds])
+    if (!wanCloud || !modelOptions || nudged.current === modelOptions || duration <= 10) return
+    nudged.current = modelOptions
+    {
+      // "Auto" length re-plans to the model's own default (20.9 s on LTX); a fixed 5 s is the Wan default.
+      setParam('_duration_planning_mode', 'duration')
+      setDurationSeconds(5)
+    }
+  }, [wanCloud, modelOptions, duration, setDurationSeconds, setParam])
 
   if (!config) return null
   const missingKey = config.provider !== 'local' && !config.providers.find(p => p.name === config.provider)?.ready
