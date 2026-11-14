@@ -151,7 +151,7 @@ export interface GenerateParams {
   video_guide_outpainting?: string
   denoising_strength?: number
   masking_strength?: number
-  /** Maestro's friendly UI state for MiniMax H3 FL2VA control-video editing. */
+  /** Режиссёр 2.0's friendly UI state for MiniMax H3 FL2VA control-video editing. */
   minimax_h3_control_visual_mode?: 'prompt' | 'whole' | 'inside' | 'outside'
   image_refs?: string[]
   /** Source-video timestamps paired with ordered H3 Remake reference frames. */
@@ -899,7 +899,7 @@ export interface EditorTimelineItem {
   legacy_text_rotation?: { transform?: number; style?: number }
   /** Items with the same link id move, trim, split, and delete together. */
   link_group_id?: string
-  /** Non-destructive source alternatives created manually or by Maestro AI. */
+  /** Non-destructive source alternatives created manually or by Режиссёр 2.0 AI. */
   take_asset_ids?: string[]
   /** Source timing belongs to each take so switching back restores the exact original trim. */
   take_states?: Record<string, EditorTakeState>
@@ -1372,7 +1372,7 @@ export interface ModelOptions {
   self_refiner_max_plans: number
   sliding_window_defaults: Record<string, number> | null
   sliding_window_auto_prompt_pacing?: boolean
-  /** Shows Maestro's explicit single-pass / long-form sequence controls. */
+  /** Shows Режиссёр 2.0's explicit single-pass / long-form sequence controls. */
   multi_window_sequence_controls?: boolean
   /** Native end image belongs to the last continuation window. */
   sliding_window_end_image_at_final?: boolean
@@ -1421,7 +1421,7 @@ export interface ModelOptions {
 }
 
 export interface SystemConfig {
-  // Maestro release version (repo-root VERSION file), shown next to the
+  // Режиссёр 2.0 release version (repo-root VERSION file), shown next to the
   // app title. Optional: older backends don't send it.
   app_version?: string
   /** Saved process-wide MMGP package choice; switching it requires restart. */
@@ -1480,13 +1480,13 @@ export interface SystemConfig {
   audio_preload_in_VRAM?: number
   /** Opt-in low-resolution preview generation; older backends omit it. */
   generation_preview?: GenerationPreviewMode
-  /** Plays once on the computer hosting Maestro, independent of browser
+  /** Plays once on the computer hosting Режиссёр 2.0, independent of browser
    * notification permissions and per-browser preferences. */
   host_notification_sound_enabled: boolean
   host_notification_sound_volume: number
-  // Linked model folders (absolute paths outside the Maestro install,
+  // Linked model folders (absolute paths outside the Режиссёр 2.0 install,
   // e.g. an existing Wan2GP install's ckpts). Searched read-only for
-  // already-downloaded checkpoints; new downloads always go to Maestro's
+  // already-downloaded checkpoints; new downloads always go to Режиссёр 2.0's
   // own ckpts folder.
   model_folders: string[]
 }

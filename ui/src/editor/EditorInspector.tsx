@@ -643,7 +643,7 @@ function EditorInspectorContent({
                       aria-expanded={aiExpanded}
                       className="flex w-full items-center justify-between px-3 py-3 text-[12px] font-medium text-accent-warm hover:bg-accent-warm/10"
                     >
-                      <span className="flex items-center gap-1.5"><WandSparkles size={14} /> Edit clip with Maestro AI</span>
+                      <span className="flex items-center gap-1.5"><WandSparkles size={14} /> Edit clip with Режиссёр 2.0 AI</span>
                       <span className="text-[11px]">{aiExpanded ? 'Hide tools' : 'Choose a tool'}</span>
                     </button>
                     {aiExpanded && (
@@ -676,7 +676,7 @@ function EditorInspectorContent({
                             </button>
                           ))}
                         </div>
-                        <p className="text-[10px] leading-relaxed text-text-muted">Maestro tracks the next queued generation and returns its output to this exact clip automatically.</p>
+                        <p className="text-[10px] leading-relaxed text-text-muted">Режиссёр 2.0 tracks the next queued generation and returns its output to this exact clip automatically.</p>
                       </div>
                     )}
                     {roundTrip?.itemId === item.id && (

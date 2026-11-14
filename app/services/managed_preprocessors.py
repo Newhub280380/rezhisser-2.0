@@ -1,6 +1,6 @@
 """On-demand assets for optional control-video preprocessors.
 
-Large preprocessor checkpoints should not make every Maestro install several
+Large preprocessor checkpoints should not make every Режиссёр 2.0 install several
 gigabytes larger.  This module downloads them only when a workflow actually
 selects the matching control type, while keeping linked checkpoint roots
 read-only and publishing only fully verified files.
@@ -27,7 +27,7 @@ ProgressCallback = Callable[[str], Any]
 #
 # The immutable revisions, byte sizes, and SHA-256 values below come from the
 # official depth-anything Hugging Face repositories.  Base and Large weights
-# are CC-BY-NC-4.0; Maestro does not redistribute them.
+# are CC-BY-NC-4.0; Режиссёр 2.0 does not redistribute them.
 VIDEO_DEPTH_CHECKPOINTS = {
     "vitb": {
         "label": "Video Depth Anything Base",
@@ -308,7 +308,7 @@ def ensure_video_depth_checkpoint(
     """Return a usable Video Depth Anything checkpoint, downloading if needed.
 
     All configured checkpoint roots are searched for reads, including linked
-    installations. New files always go to Maestro's primary checkpoint root.
+    installations. New files always go to Режиссёр 2.0's primary checkpoint root.
     """
 
     _variant, spec = _checkpoint_spec(variant)

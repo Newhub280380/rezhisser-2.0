@@ -1,5 +1,5 @@
 // Focused Frames-mode native picker regression. The app bundle and all API
-// calls are isolated; this test does not contact the running Maestro service.
+// calls are isolated; this test does not contact the running Режиссёр 2.0 service.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

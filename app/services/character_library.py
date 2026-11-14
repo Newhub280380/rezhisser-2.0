@@ -63,7 +63,7 @@ def _source_path(raw_path: str, extensions: set[str]) -> Path:
     try:
         source.relative_to(uploads)
     except ValueError as error:
-        raise ValueError("Character media must be uploaded to Maestro first.") from error
+        raise ValueError("Character media must be uploaded to Режиссёр 2.0 first.") from error
     if not source.is_file():
         raise ValueError(f"Character media was not found: {source}")
     if source.suffix.lower() not in extensions:
@@ -240,8 +240,8 @@ def recover_character_images(character_id: str, *, decode_views, update=lambda _
     refmod = record.get("refmod") or {}
     visual = get_character_media(character_id, "visual")
     use_original = visual is not None and not refmod.get("preview_generated")
-    # Older Maestro versions lost this flag on export. External stacked refs
-    # have source=stack, whereas Maestro stores independently sampled media.
+    # Older Режиссёр 2.0 versions lost this flag on export. External stacked refs
+    # have source=stack, whereas Режиссёр 2.0 stores independently sampled media.
     reference = directory / "reference.safetensors"
     if reference.is_file():
         from .refmod import inspect_refmod

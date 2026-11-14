@@ -30,7 +30,7 @@ export function createAppStartup({loadControls, controlsReady, loadBackground, o
         }
       } catch (error) {
         if (disposed) return
-        onError(error instanceof Error ? error.message : 'Could not connect to Maestro.')
+        onError(error instanceof Error ? error.message : 'Could not connect to Режиссёр 2.0.')
         // Bounded automatic recovery; later online/pageshow/manual events can
         // start a fresh bounded attempt without reloading the document.
         if (attempts < 5) retryTimer = setTimeout(() => void run(), Math.min(8000, 1000 * 2 ** (attempts - 1)))

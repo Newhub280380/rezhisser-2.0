@@ -610,7 +610,7 @@ def _classify_file(
     if not candidates:
         return (
             "comfyui_only",
-            "Found in a ComfyUI model path; no byte-verified Maestro asset match was supplied.",
+            "Found in a ComfyUI model path; no byte-verified Режиссёр 2.0 asset match was supplied.",
             None,
         )
 

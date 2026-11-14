@@ -881,7 +881,7 @@ export function LoraBrowser() {
                         {lora.linked && (
                           <span
                             className="text-[9px] px-1.5 py-0.5 rounded bg-accent-blue/70 text-white"
-                            title="From a linked install's loras folder (read-only) — guides and metadata are stored in Maestro"
+                            title="From a linked install's loras folder (read-only) — guides and metadata are stored in Режиссёр 2.0"
                           >
                             Linked
                           </span>

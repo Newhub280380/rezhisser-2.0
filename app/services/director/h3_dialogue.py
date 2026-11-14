@@ -192,7 +192,7 @@ _H3_MOJIBAKE_REPLACEMENTS = {
     "\u00c2\u00a0": " ",
     # Some older Windows JSON round-trips decoded the leading UTF-8 byte for
     # punctuation as U+0101 instead of U+00E2 before preserving the two C1
-    # continuation bytes. Repair that observed Maestro variant as well.
+    # continuation bytes. Repair that observed Режиссёр 2.0 variant as well.
     "\u0101\u0080\u0098": "\u2018",
     "\u0101\u0080\u0099": "\u2019",
     "\u0101\u0080\u009c": "\u201c",
@@ -938,7 +938,7 @@ def compile_h3_vocal_contract(
     """Compile a final, idempotent H3 speech/silence contract.
 
     Existing dialogue is replaced by *whole top-level blocks*. Balanced nested
-    blocks from older Maestro projects are therefore repaired without ever
+    blocks from older Режиссёр 2.0 projects are therefore repaired without ever
     performing the unsafe ``prompt.replace(spoken_text, tag)`` operation that
     originally split sentences and produced gibberish.
     """
@@ -1296,7 +1296,7 @@ def _source_prompt_parts(
             music = match.group(1)
             body = f"{body[:match.start()]} {body[match.end():]}"
 
-    # Legacy Maestro added a long context anchor before the actual prompt.
+    # Legacy Режиссёр 2.0 added a long context anchor before the actual prompt.
     # The planner's native body starts at this sentence, so retain everything
     # after it and discard only the duplicated wrapper.
     marker = _H3_META_SENTENCE_RE.search(body)
@@ -3626,7 +3626,7 @@ def validate_h3_prompt_contract(
     dialogue_manifest_authoritative: bool = False,
     has_driving_audio: bool = False,
 ) -> list[str]:
-    """Validate the official field order plus Maestro's exact dialogue data."""
+    """Validate the official field order plus Режиссёр 2.0's exact dialogue data."""
 
     text = str(prompt or "")
     mode = str(mode or "t2va").strip().lower()
@@ -3699,7 +3699,7 @@ def validate_h3_prompt_contract(
         text,
         flags=re.IGNORECASE,
     ):
-        errors.append("legacy Maestro prompt wrapper remains in the H3 payload")
+        errors.append("legacy Режиссёр 2.0 prompt wrapper remains in the H3 payload")
     if any(0x80 <= ord(character) <= 0x9F for character in text):
         errors.append("prompt contains an orphaned C1 control character")
     required_anchors = list(context_anchors or [])

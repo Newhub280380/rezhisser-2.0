@@ -266,7 +266,7 @@ export function AgentAccessSettingsPanel() {
       setStatus(current => current ? { ...current, tailscale: next } : current)
       setTailscaleChecked(true)
       setMessage(isAgentAccessTailscaleReady(next)
-        ? 'Trusted Tailscale HTTPS transport is ready. Each MCP client still needs to connect and complete its OAuth approval in Maestro.'
+        ? 'Trusted Tailscale HTTPS transport is ready. Each MCP client still needs to connect and complete its OAuth approval in Режиссёр 2.0.'
         : 'Tailscale status was refreshed. TLS transport readiness is separate from client connection and OAuth approval.')
     } catch (requestError) {
       const detail = requestError instanceof Error ? requestError.message : 'Could not detect Tailscale status.'
@@ -297,7 +297,7 @@ export function AgentAccessSettingsPanel() {
         return
       }
       if (isAgentAccessTailscaleReady(latest)) {
-        setMessage('Trusted Tailscale HTTPS transport is ready. Each MCP client still needs to connect and complete its OAuth approval in Maestro.')
+        setMessage('Trusted Tailscale HTTPS transport is ready. Each MCP client still needs to connect and complete its OAuth approval in Режиссёр 2.0.')
         return
       }
 
@@ -325,7 +325,7 @@ export function AgentAccessSettingsPanel() {
       if (latest.error) {
         setError(formatTailscaleError(latest.error))
       } else if (isAgentAccessTailscaleReady(latest)) {
-        setMessage('Trusted Tailscale HTTPS transport is ready. The agent computer must be signed into the same Tailscale network; each MCP client still needs its own OAuth approval in Maestro.')
+        setMessage('Trusted Tailscale HTTPS transport is ready. The agent computer must be signed into the same Tailscale network; each MCP client still needs its own OAuth approval in Режиссёр 2.0.')
       } else if (pollFailed) {
         setMessage('Tailscale HTTPS is still provisioning. Refresh or detect status before trying again; the TLS transport is not ready yet.')
       } else {
@@ -450,7 +450,7 @@ export function AgentAccessSettingsPanel() {
           <div className="mt-0.5 rounded-lg bg-accent-blue/10 p-2 text-accent-blue"><Shield size={17} /></div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-semibold text-text-primary">Maestro Agent Access</h3>
+              <h3 className="text-sm font-semibold text-text-primary">Режиссёр 2.0 Agent Access</h3>
               <StatusPill label={status ? accessSummary : backendMissing ? 'Restart needed' : 'Checking'} good={localEnabled || remoteEnabled} />
             </div>
             <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">Choose local access for a client on this computer or remote access for another computer. Each transport can be enabled independently; client scopes and owner approval still apply.</p>
@@ -461,7 +461,7 @@ export function AgentAccessSettingsPanel() {
         </div>
         {backendMissing ? (
           <div className="mt-4 flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-relaxed text-text-secondary" role="status">
-            <CircleAlert size={15} className="mt-0.5 shrink-0 text-amber-400" /><span>This Maestro backend does not have Agent Access yet. Restart Maestro after installing the update, then refresh this panel.</span>
+            <CircleAlert size={15} className="mt-0.5 shrink-0 text-amber-400" /><span>This Режиссёр 2.0 backend does not have Agent Access yet. Restart Режиссёр 2.0 after installing the update, then refresh this panel.</span>
           </div>
         ) : status && !status.available ? (
           <div className="mt-4 flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-relaxed text-text-secondary" role="status">
@@ -490,7 +490,7 @@ export function AgentAccessSettingsPanel() {
           <JourneyStep number={1} title={localApproval || localDeviceAccess ? 'Access from this PC' : 'Sign in to manage access'} state={step1State}>
             {ownerSession ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs leading-relaxed text-text-secondary">{localDeviceAccess ? 'This PC is approved for local management. Normal Maestro use does not need a browser sign-in.' : 'This browser is signed in and can manage Agent Access.'}</p>
+                <p className="text-xs leading-relaxed text-text-secondary">{localDeviceAccess ? 'This PC is approved for local management. Normal Режиссёр 2.0 use does not need a browser sign-in.' : 'This browser is signed in and can manage Agent Access.'}</p>
                 {!localDeviceAccess && <button type="button" onClick={() => void handleLogout()} disabled={busyAction !== null} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[10px] text-text-secondary hover:bg-bg-hover disabled:opacity-50">
                   {busyAction === 'logout' ? <LoaderCircle size={13} className="animate-spin" /> : <LogOut size={13} />}Sign out
                 </button>}
@@ -510,13 +510,13 @@ export function AgentAccessSettingsPanel() {
                       {busyAction === 'local-approval' ? 'Approving…' : 'Approve on this PC'}
                     </button>
                   </div>
-                ) : status.owner_configured ? <p className="text-xs leading-relaxed text-text-secondary">Open Maestro on its PC through Pinokio to approve locally, or use a Browser sign-in code from an existing owner.</p> : null}
+                ) : status.owner_configured ? <p className="text-xs leading-relaxed text-text-secondary">Open Режиссёр 2.0 on its PC through Pinokio to approve locally, or use a Browser sign-in code from an existing owner.</p> : null}
                 <details open={!localApproval || consoleCodeRequested ? true : undefined} className={localApproval ? 'rounded-lg border border-border p-3' : ''}>
                   <summary className="mb-3 cursor-pointer text-xs text-text-secondary">Use a browser sign-in code</summary>
                 {!secureOrigin && <SecureOriginNote href={controllerUrl} />}
                 {consoleCodeRequested && secureOrigin && (
                   <div className="space-y-1.5 rounded-lg bg-bg-primary p-3 text-[11px] leading-relaxed text-text-secondary" role="status">
-                    <p>Open <strong className="font-semibold text-text-primary">Pinokio &gt; this Maestro app &gt; Agent Access Terminal</strong>.</p>
+                    <p>Open <strong className="font-semibold text-text-primary">Pinokio &gt; this Режиссёр 2.0 app &gt; Agent Access Terminal</strong>.</p>
                     <p>Copy only the newest line labeled <code className="font-mono text-text-primary">Browser code:</code>. It expires in about {consoleCodeExpiresInMinutes || 10} minutes and is single-use. If you request another, use only the newest code.</p>
                     <p>Paste it below, then select <strong className="font-semibold text-text-primary">Sign in</strong>.</p>
                   </div>
@@ -578,7 +578,7 @@ export function AgentAccessSettingsPanel() {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <h4 id="agent-access-tailscale-heading" className="text-xs font-semibold text-text-primary">Remote option: trusted Tailscale HTTPS</h4>
-                      <p className="mt-1 text-[10px] leading-relaxed text-text-secondary">Use this URL from an agent computer signed into the same Tailscale network. HTTPS readiness is only the secure transport; each MCP client still needs its own OAuth approval in Maestro.</p>
+                      <p className="mt-1 text-[10px] leading-relaxed text-text-secondary">Use this URL from an agent computer signed into the same Tailscale network. HTTPS readiness is only the secure transport; each MCP client still needs its own OAuth approval in Режиссёр 2.0.</p>
                     </div>
                     <div className="flex shrink-0 gap-2">
                       <button type="button" onClick={() => void handleRefreshTailscale()} disabled={busyAction !== null || tailscaleChecking} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[10px] text-text-secondary hover:bg-bg-hover disabled:opacity-50" aria-label="Refresh or detect Tailscale status">
@@ -596,10 +596,10 @@ export function AgentAccessSettingsPanel() {
                   {(tailscaleChecking || (!tailscaleChecked && !tailscaleDetectionError)) && <p className="rounded-lg bg-bg-primary p-2.5 text-[10px] leading-relaxed text-text-muted" role="status">Checking Tailscale on this computer…</p>}
                   {tailscaleDetectionError && <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2.5 text-[10px] leading-relaxed text-amber-100" role="alert">Could not detect Tailscale status: {tailscaleDetectionError} Select Refresh / detect to try again.</p>}
                   {tailscaleChecked && !tailscale && <p className="rounded-lg bg-bg-primary p-2.5 text-[10px] leading-relaxed text-text-muted">Tailscale status was not reported. Refresh or detect status again.</p>}
-                  {tailscaleChecked && tailscale && !tailscale.installed && <p className="rounded-lg bg-bg-primary p-2.5 text-[10px] leading-relaxed text-text-muted">Tailscale is not installed on this computer. Follow the existing Settings → Notifications → Private phone access setup directions to install Tailscale and sign in, then refresh detection here. Maestro does not install or manage your Tailscale account.</p>}
+                  {tailscaleChecked && tailscale && !tailscale.installed && <p className="rounded-lg bg-bg-primary p-2.5 text-[10px] leading-relaxed text-text-muted">Tailscale is not installed on this computer. Follow the existing Settings → Notifications → Private phone access setup directions to install Tailscale and sign in, then refresh detection here. Режиссёр 2.0 does not install or manage your Tailscale account.</p>}
                   {tailscaleChecked && tailscale?.installed && !tailscale.connected && <p className="rounded-lg bg-bg-primary p-2.5 text-[10px] leading-relaxed text-text-muted">Tailscale is installed but this computer is not connected. Open Tailscale, sign this computer into your network, then refresh detection. Sign the agent computer into the same network too.</p>}
                   {tailscaleChecked && tailscale?.installed && tailscale.connected && !tailscale.enabled && <p className="rounded-lg bg-bg-primary p-2.5 text-[10px] leading-relaxed text-text-muted">Tailscale is connected. Select Use Tailscale to provision the trusted HTTPS certificate for this MCP endpoint.</p>}
-                  {tailscaleChecked && tailscale?.enabled && !isAgentAccessTailscaleReady(tailscale) && !tailscale.error && <p className="rounded-lg bg-bg-primary p-2.5 text-[10px] leading-relaxed text-text-muted">Tailscale HTTPS is enabled and its certificate or MCP endpoint is still provisioning. The endpoint is not ready until Maestro reports its certificate and URL.</p>}
+                  {tailscaleChecked && tailscale?.enabled && !isAgentAccessTailscaleReady(tailscale) && !tailscale.error && <p className="rounded-lg bg-bg-primary p-2.5 text-[10px] leading-relaxed text-text-muted">Tailscale HTTPS is enabled and its certificate or MCP endpoint is still provisioning. The endpoint is not ready until Режиссёр 2.0 reports its certificate and URL.</p>}
                   {tailscaleChecked && tailscale?.error && <p className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-2.5 text-[10px] leading-relaxed text-amber-100" role="alert">{formatTailscaleError(tailscale.error)} Resolve any Tailscale account or HTTPS certificate approval request, then refresh detection.</p>}
                   {tailscaleChecked && tailscale && isAgentAccessTailscaleReady(tailscale) && <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2.5 text-[10px] leading-relaxed text-emerald-100" role="status">Trusted Tailscale HTTPS transport is ready. No manual certificate download, import, or fingerprint matching is needed for this URL. The agent computer must be signed into the same Tailscale network; client connection and OAuth approval remain separate.</div>}
                   {tailscaleChecked && tailscale?.hostname && <InfoLine label="Tailscale hostname" value={tailscale.hostname} mono />}
@@ -610,7 +610,7 @@ export function AgentAccessSettingsPanel() {
                   ? <div className="rounded-lg border border-border bg-bg-primary p-3 text-[11px] leading-relaxed text-text-secondary">This selected URL uses trusted Tailscale HTTPS. No manual certificate download, import, or fingerprint matching is needed. The client computer must be on the same Tailscale network; hosted cloud connectors are not automatically authorized by that network. Agent Access OAuth approval is still separate.</div>
                   : trustedPinokioMcpUrl
                     ? <div className="rounded-lg border border-border bg-bg-primary p-3 text-[11px] leading-relaxed text-text-secondary">This selected URL uses trusted Pinokio Remote HTTPS. No manual certificate download, import, or fingerprint matching is needed. The client device must be authorized for this Pinokio Remote app; hosted cloud connectors do not automatically inherit that authorization. Agent Access OAuth approval is still separate.</div>
-                    : <div className="rounded-lg border border-border bg-bg-primary p-3 text-[11px] leading-relaxed text-text-secondary">Certificate trust is a separate first-time step. Verify Maestro’s TLS certificate against the SHA-256 fingerprint in Connection details and use a trust method supported by your MCP client.</div>}
+                    : <div className="rounded-lg border border-border bg-bg-primary p-3 text-[11px] leading-relaxed text-text-secondary">Certificate trust is a separate first-time step. Verify Режиссёр 2.0’s TLS certificate against the SHA-256 fingerprint in Connection details and use a trust method supported by your MCP client.</div>}
                 {!mcpUrl && <p className="text-[10px] text-amber-300">The connection URL is not available yet. Refresh this panel after the service is ready.</p>}
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <CopySetupButton target="agent" copied={copyTarget === 'agent'} disabled={!mcpUrl || (!trustedPrivateMcpUrl && !status.certificate_sha256)} onClick={() => void handleCopy('agent')} />
@@ -619,10 +619,10 @@ export function AgentAccessSettingsPanel() {
                   <CopySetupButton target="claude" copied={copyTarget === 'claude'} disabled={!mcpUrl} onClick={() => void handleCopy('claude')} />
                   <CopySetupButton target="url" copied={copyTarget === 'url'} disabled={!mcpUrl} onClick={() => void handleCopy('url')} />
                 </div>
-                {copyTarget === 'agent' && <p className="text-[10px] text-emerald-400" role="status">Setup prompt copied. Paste it into chat with your agent for setup guidance. If it cannot manage connections, follow the manual client steps; OAuth approval still happens in Maestro.</p>}
+                {copyTarget === 'agent' && <p className="text-[10px] text-emerald-400" role="status">Setup prompt copied. Paste it into chat with your agent for setup guidance. If it cannot manage connections, follow the manual client steps; OAuth approval still happens in Режиссёр 2.0.</p>}
                 {copyTarget === 'chatgpt' && <p className="text-[10px] text-emerald-400" role="status">ChatGPT desktop steps copied. Follow them in the desktop app; this does not configure, connect, or approve the server.</p>}
-                {copyTarget === 'url' && <p className="text-[10px] text-emerald-400" role="status">Server URL copied. Add it in the client’s MCP settings. This does not connect or approve the client; complete its OAuth approval in Maestro.</p>}
-                {copyTarget && copyTarget !== 'agent' && copyTarget !== 'chatgpt' && copyTarget !== 'url' && <p className="text-[10px] text-emerald-400" role="status">Setup instructions copied. Follow them in the client. This does not connect or approve the client; complete its OAuth approval in Maestro.</p>}
+                {copyTarget === 'url' && <p className="text-[10px] text-emerald-400" role="status">Server URL copied. Add it in the client’s MCP settings. This does not connect or approve the client; complete its OAuth approval in Режиссёр 2.0.</p>}
+                {copyTarget && copyTarget !== 'agent' && copyTarget !== 'chatgpt' && copyTarget !== 'url' && <p className="text-[10px] text-emerald-400" role="status">Setup instructions copied. Follow them in the client. This does not connect or approve the client; complete its OAuth approval in Режиссёр 2.0.</p>}
                 </div>
                 ) : remoteEnabled ? <p className="text-xs leading-relaxed text-text-muted">Remote MCP is unavailable on this installation. Refresh the panel when the service is ready.</p> : <p className="rounded-lg bg-bg-primary p-3 text-[10px] leading-relaxed text-text-muted">Remote setup is hidden while Remote MCP is off. Enable it above to show network URLs, certificate details, and Tailscale status.</p>}
               </div>
@@ -658,7 +658,7 @@ export function AgentAccessSettingsPanel() {
                   <div className="space-y-1.5">
                     <label htmlFor="agent-access-label" className="text-[10px] text-text-secondary">Installation name</label>
                     <div className="flex flex-col gap-2 sm:flex-row">
-                      <input id="agent-access-label" value={labelDraft} maxLength={64} onChange={event => setLabelDraft(event.target.value)} disabled={!ownerSession || busyAction !== null} className="min-h-10 min-w-0 flex-1 rounded-lg border border-border bg-bg-primary px-3 py-2 text-xs text-text-primary outline-none focus:border-accent-blue disabled:opacity-50" placeholder="My Maestro" />
+                      <input id="agent-access-label" value={labelDraft} maxLength={64} onChange={event => setLabelDraft(event.target.value)} disabled={!ownerSession || busyAction !== null} className="min-h-10 min-w-0 flex-1 rounded-lg border border-border bg-bg-primary px-3 py-2 text-xs text-text-primary outline-none focus:border-accent-blue disabled:opacity-50" placeholder="My Режиссёр 2.0" />
                       <button type="button" onClick={() => void handleSaveLabel()} disabled={!ownerSession || busyAction !== null || labelDraft.trim() === (status.label || '')} className="min-h-10 rounded-lg border border-border px-3 text-[10px] text-text-secondary hover:bg-bg-hover disabled:opacity-40">Save</button>
                     </div>
                   </div>
@@ -691,7 +691,7 @@ export function AgentAccessSettingsPanel() {
                 <>
                   <section className="space-y-3 rounded-lg border border-border p-3">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div><h4 className="text-xs font-semibold text-text-primary">Additional browser access</h4><p className="mt-1 text-[10px] leading-relaxed text-text-muted">Create a separate Browser sign-in code for the Maestro browser pairing flow. It expires automatically.</p></div>
+                      <div><h4 className="text-xs font-semibold text-text-primary">Additional browser access</h4><p className="mt-1 text-[10px] leading-relaxed text-text-muted">Create a separate Browser sign-in code for the Режиссёр 2.0 browser pairing flow. It expires automatically.</p></div>
                       <button type="button" onClick={() => void handlePairingCode()} disabled={busyAction !== null} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border px-3 text-[10px] text-text-secondary hover:bg-bg-hover disabled:opacity-50">
                         {busyAction === 'browser-code' ? <LoaderCircle size={13} className="animate-spin" /> : <Link2 size={13} />}Create Browser sign-in code
                       </button>
@@ -1059,76 +1059,76 @@ function clientSetupText(target: Exclude<CopyTarget, null>, url: string, fingerp
     ? null
     : `Expected public TLS certificate SHA-256 fingerprint: ${fingerprint || 'NOT REPORTED — stop before connecting and ask me to verify it.'}`
   const trustInstructions = trustedPrivate
-    ? `${privateAccessDescription} Do not download or import Maestro’s LAN certificate or request fingerprint matching for this URL.`
-    : 'Before connecting, obtain the exact public TLS certificate from Maestro Settings > Agent Access > Connection details > Download public TLS certificate on the Maestro PC, transfer that public file to the client computer, and verify that its SHA-256 exactly matches the fingerprint above. Trust it only through a certificate trust mechanism supported by the client. If the client cannot verify and safely trust that certificate, stop and tell me the specific blocker. Never disable TLS verification or use an insecure bypass.'
+    ? `${privateAccessDescription} Do not download or import Режиссёр 2.0’s LAN certificate or request fingerprint matching for this URL.`
+    : 'Before connecting, obtain the exact public TLS certificate from Режиссёр 2.0 Settings > Agent Access > Connection details > Download public TLS certificate on the Режиссёр 2.0 PC, transfer that public file to the client computer, and verify that its SHA-256 exactly matches the fingerprint above. Trust it only through a certificate trust mechanism supported by the client. If the client cannot verify and safely trust that certificate, stop and tell me the specific blocker. Never disable TLS verification or use an insecure bypass.'
   if (target === 'agent') {
     return [
-      'Help me set up Maestro as an MCP server in this client.',
+      'Help me set up Режиссёр 2.0 as an MCP server in this client.',
       `MCP server URL: ${url}`,
       fingerprintPrompt,
       'First inspect which MCP setup tools and client capabilities are actually available in this session. Do not claim you can register a server or change settings unless an available tool supports that action.',
       'If you do not have a server-registration tool, do not stop at a refusal: give me concrete manual steps for the client I named. For ChatGPT desktop, use Settings > MCP servers > Add server > enter a server name > select Streamable HTTP > enter the URL above > Save > restart ChatGPT > Authenticate. If that section or a step is missing, name the exact missing UI and continue with safe manual guidance.',
       trustedPrivate
         ? `${privateAccessDescription} Confirm that the MCP client itself can reach this URL before claiming that it is connected.`
-        : 'Perform setup in the client that will connect. Do not assume a cloud agent can reach a private LAN URL because my desktop computer is on the same Wi-Fi as Maestro; first confirm the client itself can reach this URL.',
-      'Preserve the client’s existing configuration. Add only a Maestro server entry; do not remove or rewrite unrelated settings.',
-      'If another Maestro installation is already configured, keep it and add this installation under a distinct server name.',
+        : 'Perform setup in the client that will connect. Do not assume a cloud agent can reach a private LAN URL because my desktop computer is on the same Wi-Fi as Режиссёр 2.0; first confirm the client itself can reach this URL.',
+      'Preserve the client’s existing configuration. Add only a Режиссёр 2.0 server entry; do not remove or rewrite unrelated settings.',
+      'If another Режиссёр 2.0 installation is already configured, keep it and add this installation under a distinct server name.',
       trustInstructions,
-      'Use the normal OAuth approval flow. When Maestro requests approval, show me the requested scopes and wait for my approval there. Keep codes and tokens out of chat and setup instructions; let the client manage OAuth credentials in its normal protected credential store.',
+      'Use the normal OAuth approval flow. When Режиссёр 2.0 requests approval, show me the requested scopes and wait for my approval there. Keep codes and tokens out of chat and setup instructions; let the client manage OAuth credentials in its normal protected credential store.',
       'After setup, verify with a read-only server status or help request only. Do not render or create images, video, audio, or other media during setup.',
       'Do not invent deep links, commands, certificate screens, or capabilities. If this client cannot configure HTTP MCP or verify the certificate safely, explain the exact limitation and leave its configuration unchanged.',
     ].filter((line): line is string => Boolean(line)).join('\n')
   }
   if (target === 'chatgpt') {
     return [
-      'ChatGPT desktop MCP setup for Maestro (manual steps)',
+      'ChatGPT desktop MCP setup for Режиссёр 2.0 (manual steps)',
       'Official desktop setup guide: https://learn.chatgpt.com/docs/extend/mcp',
       `Server URL: ${url}`,
       chatGptFingerprintPrompt,
       'In the ChatGPT desktop app, open Settings > MCP servers > Add server. Enter a distinct server name of your choice, select Streamable HTTP, enter the URL above, and select Save. Restart ChatGPT, then select Authenticate and complete the OAuth flow.',
       trustedPrivate
         ? trustedTransport === 'tailscale'
-          ? 'This URL uses trusted Tailscale HTTPS, so do not download or import Maestro’s LAN certificate or request fingerprint matching. The computer running ChatGPT must be signed into the same Tailscale network as Maestro. Hosted cloud connectors are not automatically authorized by that network.'
-          : `${privateAccessDescription} Do not download or import Maestro’s LAN certificate or request fingerprint matching for this URL.`
-        : 'Before connecting, use Maestro Settings > Agent Access > Connection details > Download public TLS certificate on the Maestro PC. Transfer that public file to the Mac or other client computer and verify that its SHA-256 exactly matches the fingerprint above. Configure trust through a mechanism supported by the MCP client; browser trust alone does not prove the MCP client will accept it. If no supported trust method is available, explain that specific blocker. Never disable TLS verification or use an insecure bypass.',
+          ? 'This URL uses trusted Tailscale HTTPS, so do not download or import Режиссёр 2.0’s LAN certificate or request fingerprint matching. The computer running ChatGPT must be signed into the same Tailscale network as Режиссёр 2.0. Hosted cloud connectors are not automatically authorized by that network.'
+          : `${privateAccessDescription} Do not download or import Режиссёр 2.0’s LAN certificate or request fingerprint matching for this URL.`
+        : 'Before connecting, use Режиссёр 2.0 Settings > Agent Access > Connection details > Download public TLS certificate on the Режиссёр 2.0 PC. Transfer that public file to the Mac or other client computer and verify that its SHA-256 exactly matches the fingerprint above. Configure trust through a mechanism supported by the MCP client; browser trust alone does not prove the MCP client will accept it. If no supported trust method is available, explain that specific blocker. Never disable TLS verification or use an insecure bypass.',
       trustedPrivate
         ? `Complete setup on a device authorized to reach this private address. ${privateAccessDescription}`
         : 'Complete setup in ChatGPT desktop and confirm that the desktop client itself can reach this URL. Being on the same Wi-Fi does not mean a cloud-hosted agent can reach a private LAN URL.',
-      'When Maestro shows the OAuth request, review the requested scopes and approve only the access you intend. Keep OAuth codes and tokens out of chat; let ChatGPT manage credentials in its protected store.',
+      'When Режиссёр 2.0 shows the OAuth request, review the requested scopes and approve only the access you intend. Keep OAuth codes and tokens out of chat; let ChatGPT manage credentials in its protected store.',
       'After authentication, verify with a read-only server status or help request only. Do not render or create images, video, audio, or other media during setup.',
       'These are instructions only. Do not claim the server has been added, connected, authenticated, or approved until the desktop app confirms each step.',
     ].filter((line): line is string => Boolean(line)).join('\n')
   }
   if (target === 'codex') {
     return [
-      'Codex MCP setup for Maestro',
+      'Codex MCP setup for Режиссёр 2.0',
       'Add this server once to Codex, or merge it into ~/.codex/config.toml:',
       '',
       '[mcp_servers.maestro]',
       `url = ${JSON.stringify(url)}`,
       certificate,
       '',
-      'No bearer token is included. Approve the requested scopes in Maestro when prompted.',
+      'No bearer token is included. Approve the requested scopes in Режиссёр 2.0 when prompted.',
     ].filter(Boolean).join('\n')
   }
   if (target === 'claude') {
     return [
-      'Claude Code MCP setup for Maestro',
+      'Claude Code MCP setup for Режиссёр 2.0',
       trustedPrivate
         ? trustedTransport === 'tailscale'
-          ? 'Run this command in a terminal on the computer running Claude Code, signed into the same Tailscale network as Maestro:'
+          ? 'Run this command in a terminal on the computer running Claude Code, signed into the same Tailscale network as Режиссёр 2.0:'
           : 'Run this command in a terminal on a device authorized for this Pinokio Remote app:'
-        : 'Run this command in a terminal on a computer that can reach this Maestro URL, using Claude Code locally:',
+        : 'Run this command in a terminal on a computer that can reach this Режиссёр 2.0 URL, using Claude Code locally:',
       'claude mcp add --transport http maestro ' + JSON.stringify(url),
       'In Claude Code, run /mcp to complete OAuth authentication, then verify with a read-only status or help request.',
       'Claude Desktop custom connectors are cloud-hosted: Anthropic says those requests come from its cloud, so they cannot reach a private LAN or Tailscale URL through your computer’s connection. Pinokio Remote authorization on your browser device is not automatically available to a hosted connector. Do not use this private HTTP URL for Claude Desktop unless that client confirms access.',
-      'For Claude Desktop on this same computer, use the per-client Local MCP .mcpb extension from Maestro Settings → Agent Access → Local MCP. This remote HTTP setup does not provide a public relay for Claude Desktop.',
+      'For Claude Desktop on this same computer, use the per-client Local MCP .mcpb extension from Режиссёр 2.0 Settings → Agent Access → Local MCP. This remote HTTP setup does not provide a public relay for Claude Desktop.',
       trustedPrivate
         ? `${privateAccessDescription} No LAN certificate import or fingerprint matching is needed.`
         : fingerprintPrompt,
       trustedPrivate ? '' : trustInstructions,
       '',
-      'No bearer token is included. Approve the requested scopes in Maestro when prompted.',
+      'No bearer token is included. Approve the requested scopes in Режиссёр 2.0 when prompted.',
     ].filter(Boolean).join('\n')
   }
   return url

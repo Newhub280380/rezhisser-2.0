@@ -48,7 +48,7 @@ export function AuthorMusicTraining({project, sourceProject, styleProjects = [],
       {latest ? <>
         <p className="text-xs">Voice &amp; sound saved at {latest.step} steps. Continue with this version to learn song style.</p>
         <button type="button" className={primary} disabled={disabled} onClick={() => continueWith(latest)}>Continue to song style</button>
-        <p className="text-xs text-text-muted">Maestro keeps the voice and song-style parts together. Earlier versions and further voice training are in Expert settings.</p>
+        <p className="text-xs text-text-muted">Режиссёр 2.0 keeps the voice and song-style parts together. Earlier versions and further voice training are in Expert settings.</p>
       </> : !project.pair_prepared ? <>
         <p className="text-xs text-text-muted">Prepare the recordings once before training. This downloads about 1.1 GB of reference audio to help preserve general music ability, plus any missing models.</p>
         <button type="button" className={primary} disabled={disabled} onClick={() => void run(async () => {await prepareMusicPair(project.id)})}>Prepare voice training</button>

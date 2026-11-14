@@ -1,4 +1,4 @@
-// Real media playback with controlled network delays. No Maestro server or user data.
+// Real media playback with controlled network delays. No Режиссёр 2.0 server or user data.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

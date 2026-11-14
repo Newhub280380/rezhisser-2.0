@@ -199,7 +199,7 @@ def _safe_preparation(
         if is_path_value and _is_absolute_path(value) and not _approved_local_path(
             value, app_root, additional_media_roots,
         ):
-            raise HTTPException(422, "Prepared settings reference a local file outside approved Maestro storage")
+            raise HTTPException(422, "Prepared settings reference a local file outside approved Режиссёр 2.0 storage")
         return value
     if value is None or isinstance(value, (bool, int, float)):
         return value
@@ -282,7 +282,7 @@ class AgentAccessBackend:
         try:
             configured = callback()
         except Exception as error:
-            raise HTTPException(500, "Configured Maestro media roots are unavailable") from error
+            raise HTTPException(500, "Configured Режиссёр 2.0 media roots are unavailable") from error
         if configured is None:
             return ()
         if isinstance(configured, (str, os.PathLike)):
@@ -290,11 +290,11 @@ class AgentAccessBackend:
         elif isinstance(configured, (list, tuple, set, frozenset)):
             values = configured
         else:
-            raise HTTPException(500, "Configured Maestro media roots are invalid")
+            raise HTTPException(500, "Configured Режиссёр 2.0 media roots are invalid")
         roots: list[Path] = []
         for value in values:
             if not isinstance(value, (str, os.PathLike)):
-                raise HTTPException(500, "Configured Maestro media roots are invalid")
+                raise HTTPException(500, "Configured Режиссёр 2.0 media roots are invalid")
             if isinstance(value, str) and not value.strip():
                 continue
             path = Path(value)
@@ -303,7 +303,7 @@ class AgentAccessBackend:
             try:
                 roots.append(path.resolve(strict=False))
             except (OSError, RuntimeError, ValueError) as error:
-                raise HTTPException(500, "Configured Maestro media roots are invalid") from error
+                raise HTTPException(500, "Configured Режиссёр 2.0 media roots are invalid") from error
         return tuple(roots)
 
     def recover_previous_session(self) -> dict[str, Any] | None:
@@ -659,7 +659,7 @@ def create_router(
     def principal_required():
         principal = principal_context.get()
         if principal is None or not isinstance(getattr(principal, "id", None), str):
-            raise HTTPException(401, "Pair this agent before using Maestro")
+            raise HTTPException(401, "Pair this agent before using Режиссёр 2.0")
         return principal
 
     @router.get("/api/v1/agent-access/jobs/{job_id}")

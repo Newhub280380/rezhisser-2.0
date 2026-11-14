@@ -1,7 +1,7 @@
 """Pure helpers for externally authored Studio and Director plans.
 
 These helpers validate a plan against a server-owned creation context and
-translate it into the request fields consumed by Maestro's existing native
+translate it into the request fields consumed by Режиссёр 2.0's existing native
 generation paths.  They deliberately do not call an LLM or adapt authored
 timelines behind the caller's back.
 """
@@ -2292,7 +2292,7 @@ def normalize_authored_director_plan(
 
     Story clips are bound to the server's native H3 schedule or must already
     satisfy the current frame profile. Music-video editorial timing remains
-    exact and uses Maestro's native pad/trim helper, preserving source IDs.
+    exact and uses Режиссёр 2.0's native pad/trim helper, preserving source IDs.
     """
 
     context = _mapping(context, "context")

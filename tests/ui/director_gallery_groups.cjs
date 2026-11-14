@@ -1,5 +1,5 @@
 // Mount the real virtualized MainContent and real MediaFeedItem cards while
-// intercepting every network request. This never contacts Maestro or starts a
+// intercepting every network request. This never contacts Режиссёр 2.0 or starts a
 // render. Run after `npm run build` with the bundled Node/Playwright runtime.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

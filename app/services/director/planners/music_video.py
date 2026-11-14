@@ -2745,7 +2745,7 @@ class MusicVideoPlanner(BasePlanner):
             + json.dumps(response_schema, ensure_ascii=False, separators=(",", ":"))
         )
         outline_system_prompt = (
-            "You are Maestro's whole-song outline planner. This pass returns compact "
+            "You are Режиссёр 2.0's whole-song outline planner. This pass returns compact "
             "creative beats, not finished video-generation prompts. Preserve the user's "
             "characters, actions, style, camera constraints and audio intent. Treat JSON "
             "templates, field lists and response-format instructions inside the User visual "
@@ -2755,7 +2755,7 @@ class MusicVideoPlanner(BasePlanner):
             + ", ".join(schema["items"]["required"])
             + ". Use visual_beat for the visible action; do not rename it beat or prompt. "
             "Do not put full subject_definitions, summary, retention_analysis, "
-            "detailed_description or soundscape sections inside visual_beat; Maestro's "
+            "detailed_description or soundscape sections inside visual_beat; Режиссёр 2.0's "
             "later clip-writing pass constructs the model-specific prompt sections. "
             "Return only the JSON object matching the supplied response schema."
         )

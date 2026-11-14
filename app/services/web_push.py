@@ -1,7 +1,7 @@
-"""Local Web Push subscriptions for Maestro completion notifications.
+"""Local Web Push subscriptions for Режиссёр 2.0 completion notifications.
 
-The browser owns the push endpoint and encryption keys; Maestro stores those
-details only on the machine running Maestro.  There is no Maestro cloud relay.
+The browser owns the push endpoint and encryption keys; Режиссёр 2.0 stores those
+details only on the machine running Режиссёр 2.0.  There is no Режиссёр 2.0 cloud relay.
 The browser vendor's standards-based Web Push service is contacted directly by
 ``pywebpush`` when a top-level Studio or Director item reaches a terminal state.
 """
@@ -92,7 +92,7 @@ def _load_vapid_signer(private_key: str) -> Any:
     """Load a persisted VAPID key without treating PEM text as raw DER.
 
     ``pywebpush`` accepts a Vapid object, a filesystem path, or an encoded
-    raw/DER string. Passing Maestro's persisted PEM *contents* as a normal
+    raw/DER string. Passing Режиссёр 2.0's persisted PEM *contents* as a normal
     string selects the raw/DER branch and fails during ASN.1 parsing. Parse
     PEM explicitly and pass the ready signer instead. The non-PEM branch keeps
     compatibility with any older encoded key stores.
@@ -105,7 +105,7 @@ def _load_vapid_signer(private_key: str) -> Any:
         return Vapid.from_string(private_key)
     except Exception as exc:
         raise WebPushUnavailable(
-            "Maestro could not load its background-notification signing key."
+            "Режиссёр 2.0 could not load its background-notification signing key."
         ) from exc
 
 
@@ -207,7 +207,7 @@ class WebPushService:
             "public_key": self.public_key,
             "subscription_count": count,
             "reason": None if available else (
-                "The Web Push runtime is not installed. Run Maestro Update once."
+                "The Web Push runtime is not installed. Run Режиссёр 2.0 Update once."
             ),
         }
 
@@ -283,7 +283,7 @@ class WebPushService:
     ) -> PushDeliveryResult:
         if not self.dependency_available():
             raise WebPushUnavailable(
-                "Web Push dependencies are missing; run Maestro Update once."
+                "Web Push dependencies are missing; run Режиссёр 2.0 Update once."
             )
         from pywebpush import WebPushException, webpush
 
@@ -353,8 +353,8 @@ class WebPushService:
         endpoint_text = str(endpoint or "").strip() or None
         return self._send(
             category="test",
-            title="Maestro background notifications are ready",
-            body="This device can receive alerts even after Maestro is closed.",
+            title="Режиссёр 2.0 background notifications are ready",
+            body="This device can receive alerts even after Режиссёр 2.0 is closed.",
             tag="maestro-web-push-test",
             endpoint=endpoint_text,
         )

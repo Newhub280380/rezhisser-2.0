@@ -122,7 +122,7 @@ def create_app(
             yield
         await bridge.close()
 
-    app = FastAPI(title="Maestro Agent Access", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
+    app = FastAPI(title="Режиссёр 2.0 Agent Access", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     app.state.bridge, app.state.runtime, app.state.mcp = bridge, runtime, mcp
     app.state.transport_security = transport_security
     # Native mutations reserve their receipt in the backend, never twice in
@@ -162,8 +162,8 @@ def create_app(
 
     def show_code():
         code = runtime.auth.issue_owner_code()
-        console_printer(f"[Maestro Agent Access] Browser code: {code}")
-        console_printer("This code expires in 10 minutes. Enter it only in the verified secure Maestro browser.")
+        console_printer(f"[Режиссёр 2.0 Agent Access] Browser code: {code}")
+        console_printer("This code expires in 10 minutes. Enter it only in the verified secure Режиссёр 2.0 browser.")
 
     app.state.show_code = show_code
     app.include_router(management_router(
@@ -176,7 +176,7 @@ def create_app(
     def request_origin(request):
         origin = runtime.origin_for_scope(request.scope)
         if origin is None:
-            raise HTTPException(421, "Use a verified Maestro endpoint on its configured port")
+            raise HTTPException(421, "Use a verified Режиссёр 2.0 endpoint on its configured port")
         return origin
 
     def metadata(origin):
@@ -208,7 +208,7 @@ def create_app(
 
     def public_secure(request):
         if not secure_transport(request.scope):
-            raise HTTPException(426, "OAuth requires the secure Maestro address")
+            raise HTTPException(426, "OAuth requires the secure Режиссёр 2.0 address")
         request_origin(request)
         if request.headers.get("origin") and not same_origin(request.scope):
             raise HTTPException(403, "This origin is not allowed")
@@ -389,8 +389,8 @@ def create_app(
     async def proxy(path: str, request: Request):
         if not bridge.online():
             if path == "" and principal_context.get() and principal_context.get().owner:
-                return _page("Maestro Agent Access", f'<p>Maestro is stopped. The paired controller is ready.</p><p>MCP endpoint: <code>{html.escape(runtime.mcp_url)}</code></p><p>Use Pinokio to start Maestro, or the authenticated workstation lifecycle tool.</p>')
-            raise HTTPException(503, "Maestro is stopped or not ready")
+                return _page("Режиссёр 2.0 Agent Access", f'<p>Режиссёр 2.0 is stopped. The paired controller is ready.</p><p>MCP endpoint: <code>{html.escape(runtime.mcp_url)}</code></p><p>Use Pinokio to start Режиссёр 2.0, or the authenticated workstation lifecycle tool.</p>')
+            raise HTTPException(503, "Режиссёр 2.0 is stopped or not ready")
         # Tokens are forwarded only to this installation's registered loopback
         # backend. Never follow redirects or trust proxy/environment settings.
         headers = {k: v for k, v in request.headers.items() if k.lower() not in {"host", "origin", "cookie", "authorization", "connection", "transfer-encoding", "accept-encoding", "forwarded", "x-forwarded-for", "x-forwarded-host", "x-forwarded-proto"}}
@@ -456,8 +456,8 @@ async def _serve_runtime(args, runtime):
     material = ensure_tls(runtime.directory / "tls", runtime.installation_id, ip_addresses=list(lan_addresses))
     runtime.configure_certificate_ips(material.ip_addresses)
     network_metadata = runtime.lan_endpoint_metadata(lan_addresses)
-    print(f"[Maestro Agent Access] Secure setup: {runtime.local_url}", flush=True)
-    print(f"[Maestro Agent Access] Certificate SHA-256: {material.fingerprint_sha256}", flush=True)
+    print(f"[Режиссёр 2.0 Agent Access] Secure setup: {runtime.local_url}", flush=True)
+    print(f"[Режиссёр 2.0 Agent Access] Certificate SHA-256: {material.fingerprint_sha256}", flush=True)
     print("Agent Access is opt-in. Trust this exact certificate on connecting devices; never disable TLS verification.", flush=True)
     setup_pending = args.setup
     tailscale_manager = TailscaleCertificateManager(runtime.directory)
@@ -492,7 +492,7 @@ async def _serve_runtime(args, runtime):
                     if tailscale_material is None:
                         tailscale_evidence["error"] = "Tailscale certificate is unavailable; use Agent Access to prepare it again"
                     else:
-                        print("[Maestro Agent Access] Tailscale renewal deferred; the current certificate remains valid.", flush=True)
+                        print("[Режиссёр 2.0 Agent Access] Tailscale renewal deferred; the current certificate remains valid.", flush=True)
             else:
                 tailscale_evidence["error"] = "Tailscale identity changed or is offline; refresh the connection in Agent Access"
             if not detection.connected:
@@ -524,7 +524,7 @@ async def _serve_runtime(args, runtime):
             discovery_status = "advertising" if discovery.enabled else "disabled"
         except Exception:
             discovery_status = "unavailable"
-            print("[Maestro Agent Access] LAN discovery unavailable; use the verified endpoint directly.", flush=True)
+            print("[Режиссёр 2.0 Agent Access] LAN discovery unavailable; use the verified endpoint directly.", flush=True)
         atomic_json(runtime.directory / "controller.json", {"status": "starting", "pid": os.getpid(), "certificate_sha256": material.fingerprint_sha256, "discovery_status": discovery_status, **active_network_metadata, "updated_at": time.time()})
         server_config = uvicorn.Config(app, host="0.0.0.0" if enabled else "127.0.0.1", port=runtime.port, ssl_certfile=str(material.cert_path), ssl_keyfile=str(material.key_path), access_log=False, log_level="warning", timeout_graceful_shutdown=10)
         server_config.load()
@@ -575,7 +575,7 @@ async def _serve_runtime(args, runtime):
                                 server.should_exit = True
                                 return True
                         except TailscaleCertificateError:
-                            print("[Maestro Agent Access] Tailscale certificate renewal deferred; review connection status.", flush=True)
+                            print("[Режиссёр 2.0 Agent Access] Tailscale certificate renewal deferred; review connection status.", flush=True)
             return False
         watcher = asyncio.create_task(watch())
         try:
@@ -630,7 +630,7 @@ def main():
     if not args.version:
         args.version = (Path(args.app_root).resolve().parent / "VERSION").read_text(encoding="utf-8").strip()
     if not args.version or len(args.version) > 32:
-        parser.error("Invalid Maestro release version")
+        parser.error("Invalid Режиссёр 2.0 release version")
     asyncio.run(serve(args))
 
 

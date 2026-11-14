@@ -1,4 +1,4 @@
-"""Bridge the optional ComfyUI adapter into Maestro's existing owned job queue."""
+"""Bridge the optional ComfyUI adapter into Режиссёр 2.0's existing owned job queue."""
 from __future__ import annotations
 
 from copy import deepcopy
@@ -180,7 +180,7 @@ class ComfyJobAdapter:
         if cancelled() and intent.get("state") == "prepared":
             self.service.cancel_prepared(submission)
             return False
-        # The caller owns Maestro's normal generation slot. Release only its
+        # The caller owns Режиссёр 2.0's normal generation slot. Release only its
         # idle native models, never another ComfyUI user's running workflow.
         self.unload_native()
         started = time.monotonic()
@@ -214,9 +214,9 @@ class ComfyJobAdapter:
 
 
 def resolve_workflow_media(app_root, output_root, raw: str, workspace: str) -> Path:
-    """Accept only media already imported into Maestro's managed media roots."""
+    """Accept only media already imported into Режиссёр 2.0's managed media roots."""
     if not isinstance(raw, str) or not raw or "\x00" in raw:
-        raise ServiceError(422, "Upload or select a Maestro media reference first.")
+        raise ServiceError(422, "Upload or select a Режиссёр 2.0 media reference first.")
     app = Path(app_root).resolve()
     outputs = Path(output_root)
     if not outputs.is_absolute():
@@ -249,4 +249,4 @@ def resolve_workflow_media(app_root, output_root, raw: str, workspace: str) -> P
                     return resolved
             except ValueError:
                 pass
-    raise ServiceError(422, "The workflow reference is outside Maestro's approved media folders.")
+    raise ServiceError(422, "The workflow reference is outside Режиссёр 2.0's approved media folders.")

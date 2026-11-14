@@ -26,7 +26,7 @@ export function FishSpeechDuration() {
       </button>)}
     </div>
     {automatic ? <p className="text-xs leading-relaxed text-text-muted">
-      Ends naturally. Write follows the length in your brief. {longform ? 'Long scripts are generated in parts and joined into one file. ' : ''}Maestro uses a generous script-based safety limit to bound runaway silence or repetition. Pauses and delivery still come from the model.
+      Ends naturally. Write follows the length in your brief. {longform ? 'Long scripts are generated in parts and joined into one file. ' : ''}Режиссёр 2.0 uses a generous script-based safety limit to bound runaway silence or repetition. Pauses and delivery still come from the model.
     </p> : <DurationPresetControl label="Maximum speech duration" value={duration}
       onChange={value => { lastMaximum.current = value; setDuration(value) }} minSeconds={1} maxSeconds={maximum}
       showSingleWindow={false} quantizeToWindows={false} durationIsMaximum

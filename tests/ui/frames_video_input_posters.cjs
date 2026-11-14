@@ -1,6 +1,6 @@
 // Frames video input posters use the managed thumbnail endpoint after upload.
 // The browser app, upload, and image responses are mocked; this test does not
-// contact the running Maestro service or generate media.
+// contact the running Режиссёр 2.0 service or generate media.
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const root = path.resolve(__dirname, '../..');

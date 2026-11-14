@@ -57,7 +57,7 @@ def resolve_h3_source(body: dict, *, api_key="", get=None) -> dict:
     model_id = _positive_id(body.get("model_id"), "model")
     version_id = _positive_id(body.get("version_id"), "version")
     file_id = _positive_id(body.get("file_id"), "file")
-    headers = {"User-Agent": "Maestro/CheckpointImport", "Accept": "application/json"}
+    headers = {"User-Agent": "Режиссёр 2.0/CheckpointImport", "Accept": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
     response = None
@@ -98,7 +98,7 @@ def resolve_h3_source(body: dict, *, api_key="", get=None) -> dict:
         raise CivitaiCheckpointError(f"This H3 file uses unsupported {fp.upper()} storage. Choose W4A8 INT4, INT8 ConvRot, scaled FP8, BF16, FP16 or a supported GGUF file.")
     sha256 = str((file.get("hashes") or {}).get("SHA256") or "").lower()
     if not _SHA256.fullmatch(sha256):
-        raise CivitaiCheckpointError("CivitAI has not supplied a SHA-256 checksum for this file. Maestro cannot verify the import yet.")
+        raise CivitaiCheckpointError("CivitAI has not supplied a SHA-256 checksum for this file. Режиссёр 2.0 cannot verify the import yet.")
     try:
         size_bytes = round(float(file["sizeKB"]) * 1024)
     except (ValueError, KeyError, TypeError, OverflowError):

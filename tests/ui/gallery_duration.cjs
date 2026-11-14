@@ -1,5 +1,5 @@
 // Isolated measured-duration badges for real gallery cards and thumbnails.
-// Every request is intercepted; no Maestro process or user media is touched.
+// Every request is intercepted; no Режиссёр 2.0 process or user media is touched.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

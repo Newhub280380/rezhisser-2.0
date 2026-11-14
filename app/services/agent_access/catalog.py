@@ -49,7 +49,7 @@ _WORD = re.compile(r"[^a-z0-9]+")
 
 @dataclass(frozen=True)
 class Operation:
-    """One callable route copied from the running Maestro OpenAPI document."""
+    """One callable route copied from the running Режиссёр 2.0 OpenAPI document."""
 
     operation_id: str
     method: str
@@ -473,7 +473,7 @@ def _supported_request_body(operation: Mapping[str, Any]) -> bool:
 
 _NATIVE_BODY_SCHEMA = {
     "type": "object",
-    "description": "Maestro validates this JSON body; OpenAPI does not publish its field schema.",
+    "description": "Режиссёр 2.0 validates this JSON body; OpenAPI does not publish its field schema.",
     "additionalProperties": True,
 }
 
@@ -493,7 +493,7 @@ def _request_has_schema(request_body: Mapping[str, Any] | None, media_type: str 
 
 def _native_validated_request_body(raw: Any) -> dict[str, Any]:
     """Advertise an optional object body when a mutation hides Request.json()."""
-    description = "Maestro validates this JSON body; OpenAPI does not publish its field schema."
+    description = "Режиссёр 2.0 validates this JSON body; OpenAPI does not publish its field schema."
     required = False
     if isinstance(raw, Mapping):
         required = raw.get("required") is True
@@ -894,7 +894,7 @@ def validate_json_schema(
 ) -> None:
     """Validate common OpenAPI 3 JSON Schema keywords using stdlib only.
 
-    Maestro's endpoints use object, array, scalar, enum and local ``$ref``
+    Режиссёр 2.0's endpoints use object, array, scalar, enum and local ``$ref``
     schemas. This validator covers those constraints and composition keywords
     without importing a schema package into the model runtime.
     """

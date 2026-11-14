@@ -328,7 +328,7 @@ class RuntimeState:
             atomic_json(self._config_path, {
                 "schema": 1, "installation_id": self.installation_id,
                 "workstation_id": machine_id(), "port": chosen,
-                "label": ((self.app_root.parent.name if self.app_root.name == "app" else self.app_root.name) if self.app_root else "Maestro")[:64],
+                "label": ((self.app_root.parent.name if self.app_root.name == "app" else self.app_root.name) if self.app_root else "Режиссёр 2.0")[:64],
                 "discovery_enabled": True,
                 "installation_binding": binding,
             })
@@ -553,14 +553,14 @@ class RuntimeState:
     def canonical_resource(self, resource: str) -> str:
         """Map an exact approved controller/MCP alias to the canonical audience."""
         if not isinstance(resource, str) or len(resource) > 2048 or "?" in resource or "#" in resource:
-            raise ValueError("resource must be an approved Maestro MCP URL")
+            raise ValueError("resource must be an approved Режиссёр 2.0 MCP URL")
         if self.pinokio_remote_origin and resource == self.pinokio_remote_origin + "/mcp":
             return self.mcp_url
         try:
             parsed = urlsplit(resource)
             port = parsed.port
         except ValueError as error:
-            raise ValueError("resource must be an approved Maestro MCP URL") from error
+            raise ValueError("resource must be an approved Режиссёр 2.0 MCP URL") from error
         if (
             parsed.scheme.lower() != "https"
             or not parsed.hostname
@@ -571,7 +571,7 @@ class RuntimeState:
             or parsed.fragment
             or port != self.port
         ):
-            raise ValueError("resource must be an approved Maestro MCP URL")
+            raise ValueError("resource must be an approved Режиссёр 2.0 MCP URL")
         host = parsed.hostname.casefold().rstrip(".")
         allowed_hosts = {
             self.hostname.casefold(), "127.0.0.1", "localhost", "::1",
@@ -580,7 +580,7 @@ class RuntimeState:
         if self.tailscale_hostname:
             allowed_hosts.add(self.tailscale_hostname)
         if host not in allowed_hosts:
-            raise ValueError("resource must be an approved Maestro MCP URL")
+            raise ValueError("resource must be an approved Режиссёр 2.0 MCP URL")
         return self.mcp_url
 
     def lan_endpoint_metadata(self, interface_addresses) -> dict:
@@ -648,7 +648,7 @@ class RuntimeState:
         if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "::1"} or not parsed.port or parsed.username or parsed.query or parsed.fragment:
             raise ValueError("The backend must be this installation's loopback HTTP listener")
         if launcher_script not in {"start.js", "start_sol.js", "start_classic.js"}:
-            raise ValueError("Invalid Maestro launcher")
+            raise ValueError("Invalid Режиссёр 2.0 launcher")
         atomic_json(self.directory / "backend.json", {
             "schema": 1, "installation_id": self.installation_id,
             "auth_boundary_version": auth_boundary_version,

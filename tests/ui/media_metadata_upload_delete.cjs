@@ -1,5 +1,5 @@
 // Focused gallery metadata and upload-delete UI check. All API calls are
-// intercepted; the test never touches the running Maestro service or media.
+// intercepted; the test never touches the running Режиссёр 2.0 service or media.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

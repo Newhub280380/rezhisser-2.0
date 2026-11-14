@@ -214,7 +214,7 @@ def build_scail2_performance_diagnostic(
             f"{' and '.join(components)} checkpoint(s) are running on a "
             f"{capacity_label}; host offload may cause paging. Select "
             "the supported INT8 checkpoint variant(s) to reduce host-memory "
-            "use. Maestro did not change the selected settings."
+            "use. Режиссёр 2.0 did not change the selected settings."
         )
 
     if spare_ram is not None and spare_ram < 8.0:

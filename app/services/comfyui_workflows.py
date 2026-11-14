@@ -433,7 +433,7 @@ def binding_choices(graph: Any, bindings: Any, object_info: Any) -> dict[str, li
     remaining = 10000
     for binding in bindings:
         if binding["type"] in {"image", "video", "audio"}:
-            # Media must come from an authorized Maestro asset/upload, not an
+            # Media must come from an authorized Режиссёр 2.0 asset/upload, not an
             # arbitrary filename enumerated from a shared server's input folder.
             continue
         if remaining <= 0:

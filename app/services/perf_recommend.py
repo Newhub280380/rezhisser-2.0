@@ -253,7 +253,7 @@ def recommend_settings(hw: dict) -> dict:
             "audio_preload_in_VRAM": 0,
             "_recommendation_label": "Auto-tune unavailable on this hardware",
             "_recommendation_reason": (
-                "No CUDA-capable GPU detected. Maestro requires NVIDIA GPU "
+                "No CUDA-capable GPU detected. Режиссёр 2.0 requires NVIDIA GPU "
                 "with 6+ GB VRAM. Default conservative profile applied — "
                 "performance may be limited."
             ),

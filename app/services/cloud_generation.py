@@ -1,4 +1,4 @@
-"""Cloud generation engine: runs a queued Maestro job on MiniMax API, fal or MuAPI.
+"""Cloud generation engine: runs a queued Режиссёр 2.0 job on MiniMax API, fal or MuAPI.
 
 Sits beside the native (wgp) and ComfyUI engines inside ``launch._run_generation``.
 Keys and the active provider live in the repo-root ``.env``; nothing here imports

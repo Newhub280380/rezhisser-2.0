@@ -215,7 +215,7 @@ export function NotificationCoordinator() {
 
       // The first queue payload is hydration and may contain months of saved
       // terminal entries. Establish it as the baseline instead of announcing
-      // old work every time Maestro opens.
+      // old work every time Режиссёр 2.0 opens.
       if (previous.directorQueue !== null && state.directorQueue !== null) {
         const previousEntries = new Map(
           previous.directorQueue.entries.map(entry => [entry.id, entry]),

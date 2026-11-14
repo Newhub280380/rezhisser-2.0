@@ -247,21 +247,21 @@ function nullableText(record: Record<string, unknown>, key: string): string | nu
   const value = record[key]
   if (value === null) return null
   if (value === undefined) {
-    throw new AgentAccessApiError(502, `Maestro omitted the Pinokio Remote ${key} value.`)
+    throw new AgentAccessApiError(502, `Режиссёр 2.0 omitted the Pinokio Remote ${key} value.`)
   }
   if (typeof value !== 'string') {
-    throw new AgentAccessApiError(502, `Maestro returned an invalid Pinokio Remote ${key} value.`)
+    throw new AgentAccessApiError(502, `Режиссёр 2.0 returned an invalid Pinokio Remote ${key} value.`)
   }
   return value
 }
 
 function safePinokioRemoteAccessStatus(value: unknown): PinokioRemoteAccessStatus {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new AgentAccessApiError(502, 'Maestro returned an invalid Pinokio Remote status.')
+    throw new AgentAccessApiError(502, 'Режиссёр 2.0 returned an invalid Pinokio Remote status.')
   }
   const record = value as Record<string, unknown>
   if (typeof record.available !== 'boolean' || typeof record.phase !== 'string') {
-    throw new AgentAccessApiError(502, 'Maestro returned an incomplete Pinokio Remote status.')
+    throw new AgentAccessApiError(502, 'Режиссёр 2.0 returned an incomplete Pinokio Remote status.')
   }
   return {
     available: record.available,
@@ -276,17 +276,17 @@ function safePinokioRemoteAccessStatus(value: unknown): PinokioRemoteAccessStatu
 
 function safeAgentAccessPinokioRemoteStatus(value: unknown): AgentAccessPinokioRemoteStatus {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new AgentAccessApiError(502, 'Maestro returned an invalid Pinokio Remote MCP status.')
+    throw new AgentAccessApiError(502, 'Режиссёр 2.0 returned an invalid Pinokio Remote MCP status.')
   }
   const record = value as Record<string, unknown>
   const detected = safePinokioRemoteAccessStatus(record)
   if (typeof record.enabled !== 'boolean' || typeof record.ready !== 'boolean') {
-    throw new AgentAccessApiError(502, 'Maestro returned an incomplete Pinokio Remote MCP status.')
+    throw new AgentAccessApiError(502, 'Режиссёр 2.0 returned an incomplete Pinokio Remote MCP status.')
   }
   return { ...detected, enabled: record.enabled, ready: record.ready, mcp_url: nullableText(record, 'mcp_url') }
 }
 
-/** Older Maestro versions do not have this endpoint; treat only 404 as unsupported. */
+/** Older Режиссёр 2.0 versions do not have this endpoint; treat only 404 as unsupported. */
 export async function fetchPinokioRemoteAccessStatus(): Promise<PinokioRemoteAccessStatus | null> {
   try {
     const result = await requestJson<unknown>('/api/v1/remote-access/pinokio/status', { credentials: 'omit' })
@@ -336,7 +336,7 @@ export async function loginAgentAccessOwner(code: string): Promise<{ ok: boolean
 
 export async function approveAgentAccessLocal(): Promise<{ ok: boolean }> {
   if (!globalThis.crypto?.getRandomValues) {
-    throw new AgentAccessApiError(503, 'This browser cannot create a local approval proof. Open Maestro in a current browser on this PC.')
+    throw new AgentAccessApiError(503, 'This browser cannot create a local approval proof. Open Режиссёр 2.0 in a current browser on this PC.')
   }
   const randomness = globalThis.crypto.getRandomValues(new Uint8Array(32))
   const proof = Array.from(randomness, value => value.toString(16).padStart(2, '0')).join('')
@@ -355,7 +355,7 @@ export async function approveAgentAccessLocal(): Promise<{ ok: boolean }> {
   }, true)
   const session = await requestJson<AgentAccessStatus>('/api/v1/agent-access/status', {}, true)
   if (!result.ok || !session.authenticated || !session.owner) {
-    throw new AgentAccessApiError(401, 'Local approval could not be verified. Try Approve on this PC again, or refresh after Maestro has finished starting.', 'maestro_owner_session_missing')
+    throw new AgentAccessApiError(401, 'Local approval could not be verified. Try Approve on this PC again, or refresh after Режиссёр 2.0 has finished starting.', 'maestro_owner_session_missing')
   }
   return result
 }
@@ -372,11 +372,11 @@ const AGENT_ACCESS_SCOPES = new Set<AgentAccessScope>(['observe', 'generate', 'm
 
 function safeLocalClient(value: unknown): AgentAccessLocalClient {
   if (!value || typeof value !== 'object') {
-    throw new AgentAccessApiError(502, 'Maestro returned an invalid local MCP client record.')
+    throw new AgentAccessApiError(502, 'Режиссёр 2.0 returned an invalid local MCP client record.')
   }
   const record = value as Record<string, unknown>
   if (typeof record.id !== 'string' || typeof record.name !== 'string' || !Array.isArray(record.scopes)) {
-    throw new AgentAccessApiError(502, 'Maestro returned an incomplete local MCP client record.')
+    throw new AgentAccessApiError(502, 'Режиссёр 2.0 returned an incomplete local MCP client record.')
   }
   const scopes = record.scopes.filter((scope): scope is AgentAccessScope => typeof scope === 'string' && AGENT_ACCESS_SCOPES.has(scope as AgentAccessScope))
   const args = Array.isArray(record.args) && record.args.every(arg => typeof arg === 'string')
@@ -433,7 +433,7 @@ export async function fetchAgentAccessLocalClientExtension(clientId: string): Pr
   }
   const contentType = response.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase()
   if (contentType !== 'application/octet-stream') {
-    throw new AgentAccessApiError(502, 'Maestro returned an invalid Claude Desktop extension package.')
+    throw new AgentAccessApiError(502, 'Режиссёр 2.0 returned an invalid Claude Desktop extension package.')
   }
   return response.blob()
 }

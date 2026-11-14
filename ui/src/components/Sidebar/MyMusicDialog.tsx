@@ -134,7 +134,7 @@ export function MyMusicDialog({onClose, onSelect}: {onClose: () => void; onSelec
         <p className="text-[10px] text-text-muted">Remove hides a LoRA from the library and keeps its files for queued jobs and restoration.</p>
       </div>}
       {tab === 'import' && <div className="space-y-3 text-sm">
-        <p className="text-xs text-text-muted">Import a Maestro style ZIP, a combined AI-Toolkit YuE2 LoRA, or a Mothersuperior v4 AR adapter. Combined LoRAs include both parts. Separate AR files use the v4 audio adapter unless you supply one.</p>
+        <p className="text-xs text-text-muted">Import a Режиссёр 2.0 style ZIP, a combined AI-Toolkit YuE2 LoRA, or a Mothersuperior v4 AR adapter. Combined LoRAs include both parts. Separate AR files use the v4 audio adapter unless you supply one.</p>
         <label className="block">Style name<input className={field} value={name} maxLength={100} onChange={event => setName(event.target.value)}/></label>
         <label className="block">Style trigger<input className={field} value={trigger} maxLength={200} onChange={event => setTrigger(event.target.value)} placeholder="A distinctive name used when training"/></label>
         <label className="block">Style ZIP or YuE2 adapter<input className={`${field} mt-1`} type="file" accept=".zip,.pt,.safetensors" onChange={event => {setAr(event.target.files?.[0] || null); setNar(null)}}/></label>
@@ -164,7 +164,7 @@ export function MyMusicDialog({onClose, onSelect}: {onClose: () => void; onSelec
               </button>
             })}
           </div>
-          <p className="text-xs text-text-muted">{autoMode ? 'No lyrics or individual clip reviews required. Maestro uses the main detected voice in each song, prepares clips, trains both stages and saves your LoRA. You can review the choices later.' : automatic ? 'No lyrics needed to start. Review the suggested voices, lyrics and excerpts before training.' : 'Use prepared recordings with lyrics and descriptions you supply.'}</p>
+          <p className="text-xs text-text-muted">{autoMode ? 'No lyrics or individual clip reviews required. Режиссёр 2.0 uses the main detected voice in each song, prepares clips, trains both stages and saves your LoRA. You can review the choices later.' : automatic ? 'No lyrics needed to start. Review the suggested voices, lyrics and excerpts before training.' : 'Use prepared recordings with lyrics and descriptions you supply.'}</p>
           {autoMode && <AutoTrainingTargets voice={voiceSteps} style={styleSteps} onVoice={setVoiceSteps} onStyle={setStyleSteps} disabled={busy}/>}
           <details className="space-y-3 rounded-lg border border-border p-3">
             <summary className="cursor-pointer text-xs">Expert setup</summary>

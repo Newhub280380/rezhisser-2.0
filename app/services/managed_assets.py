@@ -1,4 +1,4 @@
-"""Integrity receipts for large assets that Maestro downloads on demand."""
+"""Integrity receipts for large assets that Режиссёр 2.0 downloads on demand."""
 
 from __future__ import annotations
 

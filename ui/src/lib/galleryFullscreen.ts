@@ -5,7 +5,7 @@ type WebkitDocument = Document & {
 }
 
 const HOME_SCREEN_HELP_KEY = 'maestro_gallery_home_screen_help_dismissed_v1'
-const HOME_SCREEN_HELP = 'To browse without the Safari toolbar, use Share → Add to Home Screen, then open Maestro from that icon.'
+const HOME_SCREEN_HELP = 'To browse without the Safari toolbar, use Share → Add to Home Screen, then open Режиссёр 2.0 from that icon.'
 let homeScreenHelpDismissed = false
 
 export function dismissGalleryFullscreenHelp(message: string): void {
@@ -29,7 +29,7 @@ export function galleryFullscreenHelp(): string | null {
     try { if (localStorage.getItem(HOME_SCREEN_HELP_KEY) === '1') return null } catch { /* Storage may be unavailable in a private browser. */ }
     return HOME_SCREEN_HELP
   }
-  return 'Your browser could not enter fullscreen. The gallery is still available here; open Maestro in its own browser tab to try fullscreen again.'
+  return 'Your browser could not enter fullscreen. The gallery is still available here; open Режиссёр 2.0 in its own browser tab to try fullscreen again.'
 }
 
 /** Call directly from the opening click, while browser user activation is live. */

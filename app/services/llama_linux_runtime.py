@@ -1,6 +1,6 @@
 """Build the local CUDA LLM runtime where upstream only publishes CPU archives.
 
-This does not modify Maestro's PyTorch environment or install system packages.
+This does not modify Режиссёр 2.0's PyTorch environment or install system packages.
 The CUDA toolkit is used only for this standalone llama.cpp executable.
 """
 
@@ -57,7 +57,7 @@ def probe_cuda(executable: str, environment: dict | None) -> tuple[list[str], st
             "CUDA device detection timed out after "
             f"{error.timeout:g} seconds while llama-server was starting. "
             "CUDA availability could not be verified. Retry your request; "
-            "if this repeats, run llama-server --list-devices in Maestro's Pinokio "
+            "if this repeats, run llama-server --list-devices in Режиссёр 2.0's Pinokio "
             "terminal to inspect its startup output.\n"
             f"Runtime: {executable}\n"
             f"Runtime output:\n{output or '(no output captured)'}"
@@ -76,7 +76,7 @@ def require_cuda(executable: str, environment: dict | None) -> list[str]:
         raise RuntimeError(
             "CUDA was selected for the LLM, but llama-server cannot use a CUDA device. "
             "Check the NVIDIA driver and this runtime's CUDA libraries, or select CPU "
-            "explicitly in Settings. Maestro will not silently run this GPU job on CPU.\n"
+            "explicitly in Settings. Режиссёр 2.0 will not silently run this GPU job on CPU.\n"
             f"Runtime: {executable}\n{diagnostic}"
         )
     return devices

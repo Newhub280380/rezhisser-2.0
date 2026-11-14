@@ -32,7 +32,7 @@ def editor_audio_capabilities(app_root: str) -> dict[str, Any]:
     return {
         "transcription_available": installed and cached is not None,
         "reason": "" if installed and cached else (
-            "The local Whisper transcription model is not cached. Install it through Maestro audio analysis first."
+            "The local Whisper transcription model is not cached. Install it through Режиссёр 2.0 audio analysis first."
             if installed else "The local transcription component is not installed."
         ),
         "device": "cpu",

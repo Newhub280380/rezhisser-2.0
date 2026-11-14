@@ -60,7 +60,7 @@ async function assertAnimateKeyboard(page, sidebar, output) {
           _viggle_source_info: {source: '/uploads/control.mp4', workspace: s.activeWorkspace, duration_seconds: 10},
           viggle_character: undefined}});
     });
-    await sidebar.getByRole('button', {name: 'Edit current video frame in Maestro'}).click();
+    await sidebar.getByRole('button', {name: 'Edit current video frame in Режиссёр 2.0'}).click();
     await sidebar.getByText('Editing Viggle reference frame', {exact: true}).waitFor();
     assert.equal(await page.evaluate(() => window.store.getState().params.model_type), 'flux2_klein_9b');
     assert.equal(await sidebar.getByRole('button', {name: 'Apply & return'}).isDisabled(), true);

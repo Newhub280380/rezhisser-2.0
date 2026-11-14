@@ -1,4 +1,4 @@
-"""Keep routine HTTP access logs out of Maestro's generation progress."""
+"""Keep routine HTTP access logs out of Режиссёр 2.0's generation progress."""
 
 from __future__ import annotations
 

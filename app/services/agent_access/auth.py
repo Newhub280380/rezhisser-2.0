@@ -1,4 +1,4 @@
-"""Local OAuth and owner-session primitives for Maestro Agent Access.
+"""Local OAuth and owner-session primitives for Режиссёр 2.0 Agent Access.
 
 This module deliberately keeps bearer credentials out of SQLite. Only SHA-256
 digests are stored for owner codes, authorization codes, access tokens, and

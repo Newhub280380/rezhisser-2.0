@@ -598,7 +598,7 @@ export function EditorExportDialog({ open, onClose, overlayItemIds }: { open: bo
                     onClick={() => void exportProject('queue', exportOptions)}
                     disabled={exportDisabled}
                     className="min-h-10 rounded-lg border border-border bg-bg-secondary px-4 py-2 text-sm font-medium text-text-secondary hover:border-accent-blue/40 hover:text-accent-blue disabled:cursor-not-allowed disabled:opacity-40"
-                    title="Hold this export in Maestro's universal queue"
+                    title="Hold this export in Режиссёр 2.0's universal queue"
                   >
                     Queue export
                   </button>

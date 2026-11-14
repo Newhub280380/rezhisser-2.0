@@ -239,7 +239,7 @@ export function OutpaintControls() {
         <div className="space-y-3 pl-2 border-l border-border/50">
           {!isH3 && <label
             className="flex items-start gap-2 cursor-pointer"
-            title="Uses LTX-2.3's binary-mask conditioning and a soft multiscale boundary blend. Disable only to compare with Maestro's legacy Outpaint path."
+            title="Uses LTX-2.3's binary-mask conditioning and a soft multiscale boundary blend. Disable only to compare with Режиссёр 2.0's legacy Outpaint path."
           >
             <input
               type="checkbox"

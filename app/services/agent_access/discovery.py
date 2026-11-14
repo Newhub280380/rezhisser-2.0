@@ -1,4 +1,4 @@
-"""Opt-in mDNS discovery for nearby Maestro installations.
+"""Opt-in mDNS discovery for nearby Режиссёр 2.0 installations.
 
 Advertising and browsing are intentionally started only by ``start()``. A
 discovered record is descriptive metadata only: the advertised fingerprint is
@@ -163,7 +163,7 @@ class _DiscoveryListener:
 
 
 class DiscoveryService:
-    """Opt-in advertisement and bounded cache of nearby Maestro peers."""
+    """Opt-in advertisement and bounded cache of nearby Режиссёр 2.0 peers."""
 
     def __init__(
         self,

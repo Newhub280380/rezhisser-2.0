@@ -1,4 +1,4 @@
-"""Owner onboarding and management routes shared by Maestro and its controller."""
+"""Owner onboarding and management routes shared by Режиссёр 2.0 and its controller."""
 from __future__ import annotations
 
 import asyncio
@@ -37,14 +37,14 @@ from .context import credential_context, principal_context
 def owner_required():
     principal = principal_context.get()
     if principal is None or not principal.owner:
-        raise HTTPException(403, "Only a signed-in Maestro owner can manage Agent Access")
+        raise HTTPException(403, "Only a signed-in Режиссёр 2.0 owner can manage Agent Access")
     return principal
 
 
 def scope_required(scope: str):
     principal = principal_context.get()
     if principal is None:
-        raise HTTPException(401, "Pair this agent before using Maestro")
+        raise HTTPException(401, "Pair this agent before using Режиссёр 2.0")
     if not principal.owner and scope not in principal.scopes:
         raise HTTPException(403, f"This operation requires {scope} permission")
     return principal
@@ -152,7 +152,7 @@ def _normalize_owner_code(value) -> str:
     if not isinstance(value, str) or len(value) > 512:
         return ""
     candidate = value.strip()
-    prefix = "[Maestro Agent Access] Browser code:"
+    prefix = "[Режиссёр 2.0 Agent Access] Browser code:"
     if candidate[:len(prefix)].casefold() == prefix.casefold():
         candidate = candidate[len(prefix):]
     # Owner codes use URL-safe Base64 and contain no whitespace. Removing only
@@ -167,7 +167,7 @@ def require_updated_backend(runtime, *, min_auth_boundary_version: int = 1):
     backend = runtime.backend()
     version = backend.get("auth_boundary_version")
     if type(version) is not int or version < min_auth_boundary_version:
-        raise HTTPException(409, "Start the updated Maestro once before setting up Agent Access. An older running instance must be restarted when idle.")
+        raise HTTPException(409, "Start the updated Режиссёр 2.0 once before setting up Agent Access. An older running instance must be restarted when idle.")
     return backend
 
 
@@ -276,11 +276,11 @@ def management_router(
                 raise HTTPException(409, "Enable Remote MCP first")
             backend = runtime.backend()
             if backend.get("auth_boundary_version", 0) < 3:
-                raise HTTPException(409, "Restart Maestro with the updated Pinokio Remote support first")
+                raise HTTPException(409, "Restart Режиссёр 2.0 with the updated Pinokio Remote support first")
             evidence = await asyncio.to_thread(runtime.refresh_pinokio_remote)
             from .state import _pinokio_web_origin
             if _pinokio_web_origin(evidence) is None:
-                raise HTTPException(409, "Enable Pinokio Remote and wait for Maestro's published address")
+                raise HTTPException(409, "Enable Pinokio Remote and wait for Режиссёр 2.0's published address")
         runtime.configure_pinokio_remote(body["enabled"])
         runtime.audit(owner.id, "agent_access_pinokio_remote", "enabled" if body["enabled"] else "disabled")
         return runtime.pinokio_remote_status()
@@ -484,14 +484,14 @@ def management_router(
                 return _login_failure(
                     runtime,
                     request,
-                    "Open the secure Maestro address before entering a browser code.",
+                    "Open the secure Режиссёр 2.0 address before entering a browser code.",
                     426,
                     local_device_access=local_device_access,
                 )
-            raise HTTPException(426, {"message": "Open the secure Maestro address before entering a browser code", "login_url": browser_login_origin(runtime.public_status(), request.scope)})
+            raise HTTPException(426, {"message": "Open the secure Режиссёр 2.0 address before entering a browser code", "login_url": browser_login_origin(runtime.public_status(), request.scope)})
         if not same_origin(request.scope):
             if is_form:
-                return _login_failure(runtime, request, "Sign-in must come from this same Maestro address.", 403, local_device_access=local_device_access)
+                return _login_failure(runtime, request, "Sign-in must come from this same Режиссёр 2.0 address.", 403, local_device_access=local_device_access)
             raise HTTPException(403, "A same-origin sign-in is required")
         try:
             require_updated_backend(runtime)

@@ -136,7 +136,7 @@ export function ModelDetail({ model, onBack, kind = 'lora' }: Props) {
       })
       .catch((error: unknown) => {
         if (cancelled) return
-        setCheckpointSupportReason(error instanceof Error ? error.message : 'Could not verify checkpoint compatibility. Try again after updating or restarting Maestro.')
+        setCheckpointSupportReason(error instanceof Error ? error.message : 'Could not verify checkpoint compatibility. Try again after updating or restarting Режиссёр 2.0.')
       })
       .finally(() => {
         if (!cancelled) setCheckpointArchitectureLoading(false)

@@ -1,4 +1,4 @@
-"""Serialize optional music training with Maestro's existing GPU jobs."""
+"""Serialize optional music training with Режиссёр 2.0's existing GPU jobs."""
 import threading
 import time
 import traceback

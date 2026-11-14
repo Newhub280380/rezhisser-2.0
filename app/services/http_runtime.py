@@ -62,7 +62,7 @@ async def _accept_with_retry(proactor, listener):
                 raise
             if not reported:
                 _logger.warning(
-                    "[Maestro] Incoming connection disconnected during accept "
+                    "[Режиссёр 2.0] Incoming connection disconnected during accept "
                     "(WinError 64); keeping the HTTP listener available."
                 )
                 reported = True
@@ -94,4 +94,4 @@ def install_windows_accept_retry(loop=None) -> bool:
 
 async def configure_http_runtime() -> None:
     if install_windows_accept_retry():
-        print("[Maestro] Windows HTTP connection recovery enabled.", flush=True)
+        print("[Режиссёр 2.0] Windows HTTP connection recovery enabled.", flush=True)

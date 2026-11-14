@@ -258,8 +258,8 @@ function makeProject() {
       'Director prompt editing remains reachable in the AI section');
     assert.equal(await page.getByRole('button', {name: 'Re-run Director shot'}).count(), 1,
       'Director rerun remains available');
-    await page.getByRole('button', {name: 'Edit clip with Maestro AI'}).click();
-    assert.equal(await page.getByRole('button', {name: /Retake/}).count(), 1, 'Existing Maestro AI actions remain available');
+    await page.getByRole('button', {name: 'Edit clip with Режиссёр 2.0 AI'}).click();
+    assert.equal(await page.getByRole('button', {name: /Retake/}).count(), 1, 'Existing Режиссёр 2.0 AI actions remain available');
 
     await page.evaluate(() => window.editorStore.setState({selectedItemId: 'text-item', selectedItemIds: ['text-item'], selectedTrackId: 'text-track'}));
     assert.equal(await page.getByRole('tab', {name: 'Audio'}).count(), 0, 'Text clips do not show an inapplicable Audio section');

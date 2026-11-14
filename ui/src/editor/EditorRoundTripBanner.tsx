@@ -43,7 +43,7 @@ export function EditorRoundTripBanner() {
             : roundTrip.status === 'queued'
               ? 'Queued — the result will return to Editor automatically.'
               : roundTrip.status === 'running'
-                ? 'Generating — you can continue working while Maestro tracks the result.'
+                ? 'Generating — you can continue working while Режиссёр 2.0 tracks the result.'
                 : roundTrip.status === 'completed'
                   ? roundTrip.returnMode === 'replace'
                     ? 'The result replaced the timeline clip; the original remains available as a take.'

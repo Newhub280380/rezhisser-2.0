@@ -1,4 +1,4 @@
-"""MCP server for bounded Maestro Agent Access tools and guides."""
+"""MCP server for bounded Режиссёр 2.0 Agent Access tools and guides."""
 
 from __future__ import annotations
 
@@ -103,7 +103,7 @@ class _OpenApiCatalog:
             if self._openapi is None or self._catalog is None:
                 spec = await self.backend.openapi()
                 if not isinstance(spec, Mapping):
-                    raise RuntimeError("Maestro returned an invalid OpenAPI document")
+                    raise RuntimeError("Режиссёр 2.0 returned an invalid OpenAPI document")
                 catalog = build_catalog(spec)
                 contracts = load_contract_index(self.app_root)
                 self._openapi = spec
@@ -186,7 +186,7 @@ def _resource(server: MCPServer, uri: str, title: str, text: str) -> None:
         uri,
         name=f"maestro_{topic}_guide",
         title=title,
-        description=f"Bundled Maestro user guide: {title}.",
+        description=f"Bundled Режиссёр 2.0 user guide: {title}.",
         mime_type="text/markdown",
         annotations=Annotations(audience=["assistant", "user"], priority=0.65),
     )(read_guide)
@@ -205,9 +205,9 @@ def create_mcp_server(
     """
 
     server = server_class(
-        name="Maestro Agent Access",
-        title="Maestro Agent Access",
-        description="Scoped control of a paired Maestro workstation.",
+        name="Режиссёр 2.0 Agent Access",
+        title="Режиссёр 2.0 Agent Access",
+        description="Scoped control of a paired Режиссёр 2.0 workstation.",
         instructions=SERVER_INSTRUCTIONS,
         version=str(version),
         warn_on_duplicate_resources=False,
@@ -228,9 +228,9 @@ def create_mcp_server(
 
     @server.tool(
         name="get_status",
-        title="Get Maestro status",
+        title="Get Режиссёр 2.0 status",
         description=(
-            "Read live Maestro workstation and hardware status. When the backend exposes stable installation identity, "
+            "Read live Режиссёр 2.0 workstation and hardware status. When the backend exposes stable installation identity, "
             "it is returned under agent_access. Does not start a model or job."
         ),
         annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
@@ -256,11 +256,11 @@ def create_mcp_server(
     @server.tool(
         name="list_models",
         title="List installed models",
-        description="List models registered by the live Maestro installation.",
+        description="List models registered by the live Режиссёр 2.0 installation.",
         annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
     )
     async def list_models() -> dict[str, Any]:
-        """List the available Maestro model choices."""
+        """List the available Режиссёр 2.0 model choices."""
         return await _safe_backend(backend.request("GET", "/api/v1/models"))
 
     @server.tool(
@@ -287,7 +287,7 @@ def create_mcp_server(
 
     @server.tool(
         name="help",
-        title="Read a Maestro guide",
+        title="Read a Режиссёр 2.0 guide",
         description="Return a bundled workflow guide. Use this when the client does not surface MCP resources.",
         annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
     )
@@ -297,9 +297,9 @@ def create_mcp_server(
 
     @server.tool(
         name="list_operations",
-        title="List Maestro operations",
+        title="List Режиссёр 2.0 operations",
         description=(
-            "List named operations registered by the live Maestro OpenAPI schema. "
+            "List named operations registered by the live Режиссёр 2.0 OpenAPI schema. "
             "Domains: studio, director, editor, models, assets, settings, other, or all. "
             "Use offset and limit to page through a large domain."
         ),
@@ -345,7 +345,7 @@ def create_mcp_server(
 
     @server.tool(
         name="describe_operation",
-        title="Describe a Maestro operation",
+        title="Describe a Режиссёр 2.0 operation",
         description=(
             "Show one operation's exact path, scope, parameters and live OpenAPI schema. "
             "When OpenAPI omits a native JSON body schema, include bounded, non-enforcing field hints from launch.py."
@@ -366,7 +366,7 @@ def create_mcp_server(
 
     @server.tool(
         name="execute_operation",
-        title="Execute a named Maestro operation",
+        title="Execute a named Режиссёр 2.0 operation",
         description=(
             "Call a named operation using path_params, query and body exactly as described. Multipart file fields "
             "accept only registered asset:<UUID> references. Binary responses become private transfer records "
@@ -448,7 +448,7 @@ def create_mcp_server(
         title="Review an agent-authored creation plan",
         description=(
             "Validate your own creative writing against a server context without starting a render or invoking "
-            "Maestro's local writer. Supply context_id and plan with the same context_id: prompt (plus style for "
+            "Режиссёр 2.0's local writer. Supply context_id and plan with the same context_id: prompt (plus style for "
             "songs) for single output, exact windows from the context for sliding generation, or clips for Director. "
             "Preserve reference IDs and continuity. Returns prepared_id, exact prepared settings and reasons for "
             "any rejected draft. Use submit_authored_generation separately when ready."
@@ -522,7 +522,7 @@ def create_mcp_server(
         name="prepare_generation",
         title="Prepare a Studio generation",
         description=(
-            "Prepare a Studio request through Maestro's native flow; multi-window planning may use the configured writer. "
+            "Prepare a Studio request through Режиссёр 2.0's native flow; multi-window planning may use the configured writer. "
             "Preparation does not enqueue a render. Prefer the agent-authored context/prepare/submit flow; "
             "supply a stable request_id and inspect the returned preparation before proceeding."
         ),
@@ -542,12 +542,12 @@ def create_mcp_server(
 
     @server.tool(
         name="get_job",
-        title="Get a Maestro job",
+        title="Get a Режиссёр 2.0 job",
         description="Poll the normal job status; if it is absent there, read this principal's durable Agent Access receipt.",
         annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
     )
     async def get_job(job_id: str) -> dict[str, Any]:
-        """Read a Maestro job or the durable Agent Access job snapshot."""
+        """Read a Режиссёр 2.0 job or the durable Agent Access job snapshot."""
         job = _safe_segment(job_id, "job_id")
         try:
             return await backend.request("GET", f"/api/v1/status/{job}")
@@ -562,7 +562,7 @@ def create_mcp_server(
         name="get_submission",
         title="Recover a submission receipt",
         description=(
-            "Look up the durable receipt for a request_id, even if Maestro is offline. Use the exact same request_id "
+            "Look up the durable receipt for a request_id, even if Режиссёр 2.0 is offline. Use the exact same request_id "
             "after a timeout or lost tool response; pending and uncertain receipts are never dispatched again."
         ),
         annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
@@ -573,9 +573,9 @@ def create_mcp_server(
 
     @server.tool(
         name="fetch_media",
-        title="Fetch a Maestro media file",
+        title="Fetch a Режиссёр 2.0 media file",
         description=(
-            "Fetch one visible Maestro output or media item by basename and optional workspace. The file is stored "
+            "Fetch one visible Режиссёр 2.0 output or media item by basename and optional workspace. The file is stored "
             "as a private transfer record; read it in bounded chunks or use the returned authenticated URL."
         ),
         annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
@@ -703,7 +703,7 @@ def create_mcp_server(
     @server.tool(
         name="list_workstations",
         title="List paired workstations",
-        description="Read discovered Maestro workstation peers. No job or lifecycle action is started.",
+        description="Read discovered Режиссёр 2.0 workstation peers. No job or lifecycle action is started.",
         annotations=ToolAnnotations(readOnlyHint=True, idempotentHint=True, openWorldHint=False),
     )
     async def list_workstations() -> dict[str, Any]:
@@ -712,12 +712,12 @@ def create_mcp_server(
 
     @server.tool(
         name="workstation_lifecycle",
-        title="Control Maestro lifecycle",
-        description="Request a supported Maestro lifecycle action. Confirm the action with the user first.",
+        title="Control Режиссёр 2.0 lifecycle",
+        description="Request a supported Режиссёр 2.0 lifecycle action. Confirm the action with the user first.",
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True, openWorldHint=False),
     )
     async def workstation_lifecycle(action: str, request_id: str | None = None) -> dict[str, Any]:
-        """Control the Maestro application through its supported launcher integration."""
+        """Control the Режиссёр 2.0 application through its supported launcher integration."""
         normalized = action.strip().casefold() if isinstance(action, str) else ""
         if not normalized:
             raise ToolError("action must be a non-empty string")

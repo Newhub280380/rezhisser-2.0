@@ -3,7 +3,7 @@
 Some Windows FlashAttention wheels can be present in package metadata while
 their compiled CUDA extension cannot load, or can import while containing no
 kernel for the active GPU. Diffusers checks package availability rather than
-that full runtime contract, so those states can otherwise prevent Maestro
+that full runtime contract, so those states can otherwise prevent Режиссёр 2.0
 from starting or generating even though SageAttention and SDPA are valid
 fallbacks.
 """
@@ -19,7 +19,7 @@ from types import ModuleType
 _FLASH_ATTENTION_USABLE: bool | None = None
 _FLASH_ATTENTION_DETAIL: str | None = None
 
-# The Windows wheels installed by Maestro contain architecture-specific
+# The Windows wheels installed by Режиссёр 2.0 contain architecture-specific
 # cubins rather than a portable implementation. Importing the extension only
 # proves that its Python/Torch ABI matches; CUDA does not report a missing GPU
 # target until the first real attention call. Keep this manifest aligned with
@@ -61,7 +61,7 @@ def flash_attention_wheel_compatibility(
     """Validate known architecture-specific Windows FlashAttention wheels.
 
     Linux packages and unknown/custom Windows builds retain their existing
-    behavior. Maestro's pinned Windows wheels are deterministic, so known
+    behavior. Режиссёр 2.0's pinned Windows wheels are deterministic, so known
     incompatible devices can safely use SDPA without ever launching a CUDA
     kernel that is absent from the binary.
     """

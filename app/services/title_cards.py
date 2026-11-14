@@ -372,7 +372,7 @@ def _resolve_ffmpeg(ffmpeg_path: str | os.PathLike[str] | None) -> str:
             return resolved
         raise TitleCardRenderError("The requested FFmpeg executable was not found.")
 
-    # Mirror Maestro's shared resolver without importing video_decode, which
+    # Mirror Режиссёр 2.0's shared resolver without importing video_decode, which
     # imports Torch and NumPy in a path that should remain lightweight.
     configured = os.environ.get("FFMPEG_BINARY", "")
     if configured and os.path.isfile(configured):

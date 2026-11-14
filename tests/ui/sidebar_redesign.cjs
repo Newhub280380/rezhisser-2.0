@@ -19,7 +19,7 @@ const {assertComposerScrolling} = require('./composer_scrolling.cjs');
 const {assertAdvancedPopups} = require('./advanced_popups.cjs');
 const root = path.resolve(__dirname, '../..');
 const base = process.argv[2];
-if (!base) throw new Error('Pass the running Maestro URL; browser actions never reach it.');
+if (!base) throw new Error('Pass the running Режиссёр 2.0 URL; browser actions never reach it.');
 const esbuild = require(path.join(root, 'ui/node_modules/esbuild'));
 const playwright = require(process.env.MAESTRO_PLAYWRIGHT || 'playwright');
 const output = path.join(root, '.codex-tmp/sidebar-validation');
@@ -84,7 +84,7 @@ const read = async endpoint => {
       if (endpoint === '/api/v1/llm/enhance-prompt') {
         const body = route.request().postDataJSON();
         llmRequests.push({endpoint, ...body});
-        return json({original: body.prompt, enhanced: body.tts_enhance_mode ? 'Blaine: Welcome to Maestro.'
+        return json({original: body.prompt, enhanced: body.tts_enhance_mode ? 'Blaine: Welcome to Режиссёр 2.0.'
           : Array.from({length: body.window_count || 1}, (_, i) => `Enhanced ${body.planning_style} window ${i + 1}.`).join('\n')});
       }
       if (endpoint === '/api/v1/llm/plan-h3-sequence' || endpoint === '/api/v1/llm/plan-h3-windows') {

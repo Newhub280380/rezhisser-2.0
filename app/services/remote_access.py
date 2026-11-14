@@ -1,4 +1,4 @@
-"""Optional Tailscale Serve integration for private HTTPS Maestro access."""
+"""Optional Tailscale Serve integration for private HTTPS Режиссёр 2.0 access."""
 
 from __future__ import annotations
 
@@ -136,7 +136,7 @@ class TailscaleManager:
             "windows_restore_task_name": (
                 str(
                     current.get("windows_restore_task_name")
-                    or "Maestro Tailscale Serve"
+                    or "Режиссёр 2.0 Tailscale Serve"
                 )
                 if windows_restore_task
                 else None
@@ -252,7 +252,7 @@ class TailscaleManager:
             if _has_serve_configuration(serve_text) and not already_configured:
                 raise RuntimeError(
                     "This computer already has a different Tailscale Serve route. "
-                    "Maestro left it unchanged. Remove or relocate that route before enabling Maestro private access."
+                    "Режиссёр 2.0 left it unchanged. Remove or relocate that route before enabling Режиссёр 2.0 private access."
                 )
             target = f"http://127.0.0.1:{self._server_port}"
             try:
@@ -263,7 +263,7 @@ class TailscaleManager:
                 )
             except subprocess.TimeoutExpired as exc:
                 raise RuntimeError(
-                    "Tailscale Serve did not finish configuring. Use Maestro's Secure Remote Access action in Pinokio once."
+                    "Tailscale Serve did not finish configuring. Use Режиссёр 2.0's Secure Remote Access action in Pinokio once."
                 ) from exc
             if result.returncode != 0:
                 detail = (result.stderr or result.stdout or "Unknown Tailscale error").strip()
@@ -314,18 +314,18 @@ class TailscaleManager:
         if saved_port == self._server_port:
             if os.name == "nt" and preference.get("windows_restore_task"):
                 print(
-                    "[Remote Access] Reusing the saved Maestro port; "
+                    "[Remote Access] Reusing the saved Режиссёр 2.0 port; "
                     "the Windows Tailscale restore helper was requested."
                 )
             elif os.name == "nt":
                 print(
-                    "[Remote Access] Reusing the saved Maestro port. Run "
+                    "[Remote Access] Reusing the saved Режиссёр 2.0 port. Run "
                     "Secure Remote Access once after updating to install the "
                     "restart-safe Windows helper."
                 )
             else:
                 print(
-                    "[Remote Access] Reusing the saved Maestro port; "
+                    "[Remote Access] Reusing the saved Режиссёр 2.0 port; "
                     "the persistent Tailscale route remains valid."
                 )
             return

@@ -71,7 +71,7 @@
 
 1. `CLOUD_PROVIDER` не `local`;
 2. заданы и `LLM_BASE_URL`, и `LLM_API_KEY`;
-3. в настройках Maestro провайдер LLM = `local`.
+3. в настройках Режиссёр 2.0 провайдер LLM = `local`.
 
 Хук стоит в `launch.py:9253-9258` (`_ensure_llm_loaded`). Из `LLM_BASE_URL` срезается
 хвостовой `/v1` — `llm_service` добавляет `/v1/chat/completions` сам. Модель по умолчанию

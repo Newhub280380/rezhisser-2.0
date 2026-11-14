@@ -1,4 +1,4 @@
-"""Bounded-memory finishing of existing media through Maestro's job queue."""
+"""Bounded-memory finishing of existing media through Режиссёр 2.0's job queue."""
 from __future__ import annotations
 
 import contextlib

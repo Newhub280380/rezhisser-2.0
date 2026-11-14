@@ -179,7 +179,7 @@ ATTACHMENT_KEYS = ["image_start", "image_end", "image_refs", "image_guide", "ima
 
 mmgp_version = getattr(mmgp, "__version__", "unknown")
 if mmgp_version != target_mmgp_version:
-    print(f"Incorrect version of mmgp ({mmgp_version}), bundled version {target_mmgp_version} is needed. Please update Maestro's source and requirements.")
+    print(f"Incorrect version of mmgp ({mmgp_version}), bundled version {target_mmgp_version} is needed. Please update Режиссёр 2.0's source and requirements.")
     exit()
 lock = threading.Lock()
 current_task_id = None
@@ -708,7 +708,7 @@ def resolve_window_position_token(
     source_video_overlap_frames_count,
     total_frames,
 ):
-    """Resolve a Maestro window-relative injected-frame token to an absolute frame.
+    """Resolve a Режиссёр 2.0 window-relative injected-frame token to an absolute frame.
 
     Token form: "W<k>:<pct>" — window number k (1-based) and a percent
     0..100 into that window's FRESH span (after the reused overlap prefix,
@@ -1163,7 +1163,7 @@ def validate_settings(state, model_type, single_prompt, inputs):
             positions = frames_positions.replace(","," ").split(" ")
             for pos_str in positions:
                 if not pos_str in ["L", "l"] and len(pos_str)>0:
-                    # Maestro window-relative tokens ("W<k>:<pct>") are resolved
+                    # Режиссёр 2.0 window-relative tokens ("W<k>:<pct>") are resolved
                     # against the exact window layout at generation time
                     # (resolve_window_position_token); out-of-range window
                     # numbers and percents clamp there, so the token shape is
@@ -2814,9 +2814,9 @@ if not Path(config_load_filename).is_file():
         _hw = detect_hardware()
         _auto_result = apply_auto_performance(server_config, _hw, force=True)
         _rec = _auto_result["recommended"]
-        print(f"[Maestro] Auto-tuned for {_hw.get('gpu_name', 'CPU')}: {_rec.get('_recommendation_label', 'fallback profile')}")
+        print(f"[Режиссёр 2.0] Auto-tuned for {_hw.get('gpu_name', 'CPU')}: {_rec.get('_recommendation_label', 'fallback profile')}")
     except Exception as _e:
-        print(f"[Maestro] Auto-tune failed, using conservative defaults: {_e}")
+        print(f"[Режиссёр 2.0] Auto-tune failed, using conservative defaults: {_e}")
 
     with open(server_config_filename, "w", encoding="utf-8") as writer:
         writer.write(json.dumps(server_config))
@@ -3885,7 +3885,7 @@ def get_compatible_local_model_filename(
     are used for artifacts that are semantically compatible but differ in
     filename or folder layout across linked installations.  Exact canonical
     matches always win, and aliases are read-only fallbacks; download targets
-    remain the model definition's canonical Maestro path.
+    remain the model definition's canonical Режиссёр 2.0 path.
     """
     if model_filename is None or len(str(model_filename)) == 0:
         return None
@@ -4433,7 +4433,7 @@ def _normalize_output_type(output_type):
 def get_default_profile(output_type):
     if force_profile_no >= 0:
         return force_profile_no
-    # System settings and auto-tune update server_config while Maestro runs.
+    # System settings and auto-tune update server_config while Режиссёр 2.0 runs.
     # The startup globals alone would keep using the old profile until restart.
     # An explicit launcher --profile remains authoritative as at startup.
     cli_profile = float(getattr(args, "profile", -1))
@@ -4464,7 +4464,7 @@ def auto_preload_store(model_type):
     # Dynamic preload measurements belong to this exact model definition.
     # Refreshing/replacing an imported checkpoint must invalidate them.
     definition = get_model_def(model_type)
-    # Maestro refreshes existing definition dictionaries in place, so identity
+    # Режиссёр 2.0 refreshes existing definition dictionaries in place, so identity
     # alone cannot detect an edited workflow or replacement checkpoint.
     signature = (id(definition), json.dumps(definition, sort_keys=True, default=str))
     stored = auto_preload_measures.get(model_type)
@@ -4482,7 +4482,7 @@ def _configure_runtime_preload(kwargs, model_type, profile, output_type):
     if memory_runtime_selection.backend == "wangp9905":
         if mode == "dynamic" and kwargs.get("asyncTransfers", True):
             # WanGP9905's measurements are explicitly scoped to this model
-            # definition, using Maestro's existing store and invalidation.
+            # definition, using Режиссёр 2.0's existing store and invalidation.
             kwargs["autoPreload"] = auto_preload_store(model_type)
         elif int(float(profile)) == 0 and mode == "default":
             kwargs["autoPreload"] = True
@@ -4852,7 +4852,7 @@ def load_models(model_type, override_profile = -1, output_type="video", preview_
                 local_model_file_list, model_type, base_model_type, model_def, quantizeTransformer = quantizeTransformer, text_encoder_quantization = text_encoder_quantization,
                 dtype = transformer_dtype, VAE_dtype = VAE_dtype, mixed_precision_transformer = mixed_precision_transformer, save_quantized = save_quantized, submodel_no_list   = model_submodel_no_list, text_encoder_filename = text_encoder_filename, profile=profile, lm_decoder_engine=lm_decoder_engine_obtained, **model_kwargs )
 
-    # LTX-2.5 ships against Transformers 5.x while Maestro's established
+    # LTX-2.5 ships against Transformers 5.x while Режиссёр 2.0's established
     # model families still share Transformers 4.x. Its handler therefore owns
     # an isolated official subprocess runtime instead of exposing PyTorch
     # modules to MMGP. Keep the normal model lifecycle contract through a
@@ -7145,7 +7145,7 @@ def get_outpainting_dims(video_guide_outpainting):
         or video_guide_outpainting.startswith("#")
     ):
         return None
-    # Fractional percentages let Maestro place the protected source rectangle
+    # Fractional percentages let Режиссёр 2.0 place the protected source rectangle
     # exactly after snapping the output canvas to LTX-2's 64-pixel grid.
     values = [
         float(value)
@@ -7735,7 +7735,7 @@ def _audio_waveform_sample_count(waveform):
     ``slice_audio_window`` returns ``(channels, samples)`` while generated
     native audio is normally ``(samples, channels)``. Looking only at axis 0
     therefore mistakes stereo audio for a two-sample clip. The sample axis is
-    the larger non-channel dimension for every waveform used by Maestro.
+    the larger non-channel dimension for every waveform used by Режиссёр 2.0.
     """
 
     if waveform is None:
@@ -8224,7 +8224,7 @@ def generate_video(
     # pull during outpainting without having to also activate it in the UI
     # (which would double-load it).
     outpaint_lora_strength=1.0,
-    # Maestro Outpaint's official LTX-2.3 masked workflow. The dedicated
+    # Режиссёр 2.0 Outpaint's official LTX-2.3 masked workflow. The dedicated
     # Outpaint endpoint enables it by default; generic Studio control-video
     # runs retain their existing behavior unless they opt in explicitly.
     outpaint_mask_preserve=False,
@@ -8236,7 +8236,7 @@ def generate_video(
     # Official Lightricks masked workflow. It decodes and Laplacian-blends the
     # first pass in pixel space before target-resolution refinement.
     outpaint_full_resolution_refine=False,
-    # Use Maestro's managed In/Outpaint IC-LoRA stack.
+    # Use Режиссёр 2.0's managed In/Outpaint IC-LoRA stack.
     outpaint_official_stack=False,
     # MiniMax H3 Ref2VA's ordered image/video/audio manifest and reference
     # preparation policy. Other model runtimes ignore these kwargs.
@@ -8260,7 +8260,7 @@ def generate_video(
     # diffusion decoder is model state and therefore triggers a model reload
     # when changed in Advanced settings.
     ltx25_video_vae="fast",
-    # Exact per-pass prompts from Maestro's H3 planner or manual sequence UI.
+    # Exact per-pass prompts from Режиссёр 2.0's H3 planner or manual sequence UI.
     # Kept as a real list so semantic newlines inside an automatic Context-IR
     # prompt are never mistaken for prompt boundaries.
     h3_window_prompts=None,
@@ -9816,7 +9816,7 @@ def generate_video(
                                 frames_positions_list.append(cur_end_pos)
                                 cur_end_pos -= sliding_window_discard_last_frames + reuse_frames
                             else:
-                                # Maestro "W<k>:<pct>" window-relative tokens resolve against
+                                # Режиссёр 2.0 "W<k>:<pct>" window-relative tokens resolve against
                                 # the backend's exact window layout (already absolute, source
                                 # included — no alignment_shift). Anything else is the legacy
                                 # numeric path: 1-based absolute frames, shifted to the new
@@ -10481,12 +10481,12 @@ def generate_video(
                     ):
                         new_error = (
                             "MiniMax-Music3 ran out of VRAM while planning the song. "
-                            "Restart Maestro to clear the GPU, then try a shorter Song "
+                            "Restart Режиссёр 2.0 to clear the GPU, then try a shorter Song "
                             "duration if the problem continues."
                         )
                     elif model_def.get("audio_only", False):
                         new_error = (
-                            "The audio generation ran out of VRAM. Restart Maestro to "
+                            "The audio generation ran out of VRAM. Restart Режиссёр 2.0 to "
                             "clear the GPU, then reduce duration or model workload if "
                             "the problem continues."
                         )
@@ -10509,7 +10509,7 @@ def generate_video(
                         "CUDA reported an out-of-memory error. This driver message "
                         "does not identify whether VRAM or host memory caused it. "
                         "Check the terminal and RAM/VRAM usage, then try restarting "
-                        "Maestro or reducing the model workload."
+                        "Режиссёр 2.0 or reducing the model workload."
                     )
                 else:
                     new_error =  gr.Error(f"The generation of the video has encountered an error, please check your terminal for more information. '{s}'")

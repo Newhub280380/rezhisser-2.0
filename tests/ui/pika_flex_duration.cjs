@@ -429,7 +429,7 @@ const modelDefFor = (modelType, reference = false) => ({
         modelType);
     };
 
-    // API/MCP sidecars do not carry Maestro's private planning-mode UI flag.
+    // API/MCP sidecars do not carry Режиссёр 2.0's private planning-mode UI flag.
     // A recorded single native References clip must keep its exact 243-frame
     // duration instead of being expanded from a multi-beat prompt on restore.
     const restoreWithoutPlanningMode = 'minimax_h3_ref2va_pika_flex';
@@ -625,7 +625,7 @@ const modelDefFor = (modelType, reference = false) => ({
       durationSeconds:ltxRestoreState.durationSeconds, videoLength:ltxRestoreState.videoLength,
       windowFrames:ltxRestoreState.windowFrames, sequence:ltxRestoreState.sequence},
     {planningMode:'duration', durationSeconds:4, videoLength:96, windowFrames:96, sequence:false},
-    'An LTX API sidecar without Maestro UI mode retains its recorded one-window timeline');
+    'An LTX API sidecar without Режиссёр 2.0 UI mode retains its recorded one-window timeline');
     assert.doesNotMatch(ltxRestoreState.panel, /8 windows/,
       'The LTX sidecar does not expand from the synthetic prompt during restore');
 

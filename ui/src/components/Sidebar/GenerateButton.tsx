@@ -330,7 +330,7 @@ export function GenerateButton({ stretch = false, submission }: GenerateButtonPr
       : needsOutpaintSource
         ? 'Need source'
         : 'Choose canvas'
-    blockedTitle = controlsPending ? 'Waiting for model controls. Use Retry above if Maestro has restarted.' : needsEnabledModel
+    blockedTitle = controlsPending ? 'Waiting for model controls. Use Retry above if Режиссёр 2.0 has restarted.' : needsEnabledModel
       ? 'Enable or select a model for this mode using Manage models.'
       : needsOutpaintArea
       ? 'Choose a larger output aspect or resize the source to create an area for Outpaint to generate.'

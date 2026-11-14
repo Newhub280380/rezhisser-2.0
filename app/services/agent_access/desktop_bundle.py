@@ -34,7 +34,7 @@ const CONFIG_PATH = path.join(__dirname, "launch-config.json");
 
 function writeError(message) {
   try {
-    process.stderr.write(`Maestro local MCP extension: ${message}\n`);
+    process.stderr.write(`Режиссёр 2.0 local MCP extension: ${message}\n`);
   } catch (_) {
     // The host may already have closed stderr.
   }
@@ -104,7 +104,7 @@ function start() {
     });
   } catch (error) {
     const code = error && typeof error.code === "string" ? ` (${error.code})` : "";
-    writeError(`Could not start the local Maestro MCP service${code}.`);
+    writeError(`Could not start the local Режиссёр 2.0 MCP service${code}.`);
     process.exitCode = 1;
     process.stdin.pause();
     return;
@@ -176,7 +176,7 @@ function start() {
   child.once("error", (error) => {
     failed = true;
     const code = error && typeof error.code === "string" ? ` (${error.code})` : "";
-    writeError(`Could not start the local Maestro MCP service${code}.`);
+    writeError(`Could not start the local Режиссёр 2.0 MCP service${code}.`);
     finish(1);
   });
   child.once("close", (code) => finish(code));
@@ -205,10 +205,10 @@ def build_desktop_bundle(config: Mapping[str, Any], version: str = "4.0.0") -> b
     manifest = {
         "manifest_version": "0.3",
         "name": f"maestro-local-{client_slug}",
-        "display_name": f"Maestro Local — {safe['name']}",
+        "display_name": f"Режиссёр 2.0 Local — {safe['name']}",
         "version": safe_version,
-        "description": "Connect Claude Desktop to this local Maestro installation on the same computer.",
-        "author": {"name": "Maestro"},
+        "description": "Connect Claude Desktop to this local Режиссёр 2.0 installation on the same computer.",
+        "author": {"name": "Режиссёр 2.0"},
         "server": {
             "type": "node",
             "entry_point": "server/index.js",

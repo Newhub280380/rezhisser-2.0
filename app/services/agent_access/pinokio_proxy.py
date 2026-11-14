@@ -66,7 +66,7 @@ def _unavailable(scope, origin):
             "This form was not sent again. Continue to check whether sign-in completed. If needed, request a fresh browser code.")
     return HTMLResponse(
         '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1">'
-        + refresh + '<title>Reconnecting to Maestro</title>'
+        + refresh + '<title>Reconnecting to Режиссёр 2.0</title>'
         '<style>body{font:16px system-ui;background:#171b1e;color:#eef0f2;padding:8vh 6vw}main{max-width:520px;margin:auto;padding:28px;background:#242b30;border-radius:18px}p{line-height:1.6}a{display:inline-block;background:#ff9d61;color:#171b1e;padding:12px 20px;border-radius:10px;text-decoration:none}</style>'
         '<main><h1>Reconnecting to Agent Access</h1><p>Maestro is refreshing this secure connection.</p><p>'
         + note + f'</p><a href="{target}">Continue</a></main>', status_code=503,

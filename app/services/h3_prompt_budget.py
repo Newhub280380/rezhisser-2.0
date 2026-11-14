@@ -1,6 +1,6 @@
 """MiniMax H3 prompt measurement and non-destructive cleanup.
 
-MiniMax H3 does not publish a 512-token prompt limit, and Maestro's conditioner
+MiniMax H3 does not publish a 512-token prompt limit, and Режиссёр 2.0's conditioner
 passes the complete token sequence to Qwen.  This module therefore must never
 act as a generation gate.  It gives Studio, Director, and the window planners
 one exact counter plus cleanup of application boilerplate. Semantic condensation

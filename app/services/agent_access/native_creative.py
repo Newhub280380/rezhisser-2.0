@@ -189,7 +189,7 @@ def make_native_creative_service(
                     "If the user needs an original song, first get audio.music context with the requested installed "
                     "music model (YuE when requested), read its lyric/style guide, write lyrics and style yourself, "
                     "prepare and render the song, and wait for its verified audio output. Then get director.music_video "
-                    "context with that soundtrack and the user's character/scene references. Maestro analyzes the "
+                    "context with that soundtrack and the user's character/scene references. Режиссёр 2.0 analyzes the "
                     "actual audio on CPU and returns model-safe beat/section-aware editorial windows. Read each "
                     "window's section, energy and music cues and write every clip's native video_prompt yourself, "
                     "preserving exact IDs, bounds, reference IDs and source audio. Do not run local Director planning "

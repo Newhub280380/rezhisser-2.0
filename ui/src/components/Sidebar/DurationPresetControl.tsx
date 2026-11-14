@@ -249,7 +249,7 @@ export function DurationPresetControl({
                 ? 'Choose a target runtime'
                 : mode === 'windows'
                   ? 'Choose the exact number of native generation windows'
-                  : `Let Maestro infer duration from timed media, manual prompt lines, exact dialogue, and story scope (vague concepts max ${autoMaximumInferredWindows} windows; explicit scripts may run longer)`}
+                  : `Let Режиссёр 2.0 infer duration from timed media, manual prompt lines, exact dialogue, and story scope (vague concepts max ${autoMaximumInferredWindows} windows; explicit scripts may run longer)`}
               className={`rounded-md px-2 py-1.5 text-[10px] capitalize transition-colors disabled:opacity-40 ${
                 effectivePlanningMode === mode || (compact && automatic && mode === 'duration')
                   ? 'bg-accent-blue/15 text-text-primary shadow-sm'

@@ -665,7 +665,7 @@ function LinkedModelFoldersSection() {
           <p className="text-[10px] text-text-muted leading-relaxed">
             Search other apps&apos; model folders for checkpoints you already have — e.g. an existing
             Wan2GP install — instead of re-downloading them. Linked folders are read-only:
-            new downloads always go to Maestro&apos;s own ckpts folder.
+            new downloads always go to Режиссёр 2.0&apos;s own ckpts folder.
           </p>
 
           {folders.length > 0 && (
@@ -913,7 +913,7 @@ export function AutoPerformanceCard() {
       const res = await api.applySystemDetect()
       await Promise.all([loadServicesConfig(), loadSystemConfig(), loadSystemDetect()])
       if (res.vram_allocator_restart_required) {
-        showToast('Auto-tune applied — restart Maestro to activate the memory allocator')
+        showToast('Auto-tune applied — restart Режиссёр 2.0 to activate the memory allocator')
       } else if (res.settings_reload || res.profile_changed) {
         showToast('Auto-tune applied — profile changes take effect on next model load')
       } else {
@@ -954,7 +954,7 @@ export function AutoPerformanceCard() {
       // the newly-applied recommendation.
       await Promise.all([loadSystemDetect(), loadServicesConfig(), loadSystemConfig()])
       if (res.vram_allocator_restart_required) {
-        showToast('Auto-tune applied — restart Maestro to activate the memory allocator')
+        showToast('Auto-tune applied — restart Режиссёр 2.0 to activate the memory allocator')
       } else if (res.settings_reload || res.profile_changed) {
         showToast('Re-detected — profile changes take effect on next model load')
       } else {

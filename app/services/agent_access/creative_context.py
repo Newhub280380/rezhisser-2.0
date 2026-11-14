@@ -341,7 +341,7 @@ class CreativeService:
                 raise CreativeError("Creative context is unavailable or expired; request a fresh context before preparing this plan.", 409)
             value = copy.deepcopy(entry[2])
         if value["session_revision"] != self.session():
-            raise CreativeError("Maestro restarted; refresh the creative context before preparing this plan.", 409)
+            raise CreativeError("Режиссёр 2.0 restarted; refresh the creative context before preparing this plan.", 409)
         return value
 
     def remember_prepared(self, context_id: str, principal_id: str, kind: str, payload: dict) -> str:

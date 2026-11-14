@@ -17,7 +17,7 @@ import {
 } from '../../api/agentAccess'
 
 const SCOPE_CHOICES: Array<{ id: AgentAccessScope; label: string; description: string }> = [
-  { id: 'observe', label: 'Observe', description: 'Read status and inspect Maestro data.' },
+  { id: 'observe', label: 'Observe', description: 'Read status and inspect Режиссёр 2.0 data.' },
   { id: 'generate', label: 'Generate', description: 'Start supported image, video, and audio generation.' },
   { id: 'manage', label: 'Manage', description: 'Change supported settings and manage resources.' },
   { id: 'admin', label: 'Admin', description: 'Use administrative Agent Access actions.' },
@@ -202,7 +202,7 @@ export function LocalMcpSettings({ ownerSession, enabled, available, refreshKey 
             <h4 id="agent-access-local-heading" className="text-xs font-semibold text-text-primary">Local MCP client setup</h4>
             <span className="rounded-full bg-accent-blue/10 px-2 py-0.5 text-[9px] font-semibold text-accent-blue">Recommended on this computer</span>
           </div>
-          <p className="mt-1 text-[10px] leading-relaxed text-text-secondary">Runs Maestro’s MCP server directly on this computer over STDIO. It does not need Tailscale, a network URL, or certificate setup. An owner must approve each local client and its chosen scopes.</p>
+          <p className="mt-1 text-[10px] leading-relaxed text-text-secondary">Runs Режиссёр 2.0’s MCP server directly on this computer over STDIO. It does not need Tailscale, a network URL, or certificate setup. An owner must approve each local client and its chosen scopes.</p>
         </div>
         <button type="button" onClick={() => void refresh()} disabled={loading || !ownerSession} className="rounded-lg p-2 text-text-muted hover:bg-bg-hover hover:text-text-primary disabled:opacity-40" aria-label="Refresh local MCP clients">
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -253,7 +253,7 @@ export function LocalMcpSettings({ ownerSession, enabled, available, refreshKey 
 
           <div className="space-y-2">
             <h5 className="text-[10px] font-semibold text-text-primary">Step 2 · Name the client and choose access</h5>
-            {!createTarget ? <p className="text-[9px] leading-relaxed text-text-muted">Choose an app first. Maestro will suggest a matching client name and show the scopes you can grant.</p> : (
+            {!createTarget ? <p className="text-[9px] leading-relaxed text-text-muted">Choose an app first. Режиссёр 2.0 will suggest a matching client name and show the scopes you can grant.</p> : (
               <>
                 <div className="space-y-1.5">
                   <label htmlFor="agent-access-local-client-name" className="text-[10px] font-medium text-text-secondary">Suggested local client name · editable</label>
@@ -327,16 +327,16 @@ function LocalClientSetup({ client, target, open, enabled, copied, downloading, 
         {target && (
           <>
             <h6 className="pt-1 text-[10px] font-semibold text-text-primary">Step 2 · Add this client to {localMcpTargetLabel(target)}</h6>
-            {!validCommand && <p className="text-[9px] leading-relaxed text-text-muted">Maestro has not returned a safe launch command for this client. Refresh the client list before copying setup.</p>}
+            {!validCommand && <p className="text-[9px] leading-relaxed text-text-muted">Режиссёр 2.0 has not returned a safe launch command for this client. Refresh the client list before copying setup.</p>}
 
             {target === 'chatgpt' && <>
               <ol className="list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-text-secondary">
-                <li>On the computer running Maestro, open ChatGPT desktop → Settings → Plugins (or MCP servers) → Add MCP server → STDIO. If this client is already added, edit its existing Maestro entry instead.</li>
+                <li>On the computer running Режиссёр 2.0, open ChatGPT desktop → Settings → Plugins (or MCP servers) → Add MCP server → STDIO. If this client is already added, edit its existing Режиссёр 2.0 entry instead.</li>
                 <li>Enter the Server name and Command to Launch values below. Keep Command in its own field. When repairing an existing entry, remove its old argument rows first.</li>
                 <li>In Arguments, click <strong>Add argument</strong> once for each numbered value, then copy each value into its matching row in order.</li>
-                <li>Save the server, then open a local Codex chat and use <code>/mcp</code> to confirm Maestro is listed.</li>
+                <li>Save the server, then open a local Codex chat and use <code>/mcp</code> to confirm Режиссёр 2.0 is listed.</li>
               </ol>
-              <p className="rounded-lg bg-bg-primary p-2 text-[9px] leading-relaxed text-text-muted">Each argument is copied exactly as Maestro provides it. Do not add quotes or combine the values; a path with spaces stays one argument when you paste it into its own row.</p>
+              <p className="rounded-lg bg-bg-primary p-2 text-[9px] leading-relaxed text-text-muted">Each argument is copied exactly as Режиссёр 2.0 provides it. Do not add quotes or combine the values; a path with spaces stays one argument when you paste it into its own row.</p>
               <div className="space-y-2 rounded-lg border border-border bg-bg-primary p-2.5">
                 <ChatGPTCopyField label="Server name" value={chatgptServerName} copyAction="chatgpt-server-name" clientId={client.id} copied={copied} disabled={!enabled || !validCommand} onCopy={onCopy} />
                 <ChatGPTCopyField label="Command to Launch" value={client.command || ''} copyAction="chatgpt-command" clientId={client.id} copied={copied} disabled={!enabled || !validCommand} onCopy={onCopy} />
@@ -349,9 +349,9 @@ function LocalClientSetup({ client, target, open, enabled, copied, downloading, 
               </div>
             </>}
             {target === 'codex' && <ol className="list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-text-secondary"><li>Copy the Codex section below and add it to your Codex user config: <code>~/.codex/config.toml</code> (on Windows: <code>%USERPROFILE%\.codex\config.toml</code>).</li><li>Save the file, then restart or reload Codex CLI or IDE.</li><li>Check Codex’s MCP server list before using the tools. Copying the section does not configure Codex.</li></ol>}
-            {target === 'claude-desktop' && <ol className="list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-text-secondary"><li>Download the extension package below.</li><li>On the same computer where Maestro runs, open Claude Desktop → Settings → Extensions → Install Extension and select the downloaded <code>.mcpb</code> file.</li><li>Open the installed extension in Claude Desktop and confirm its tools are available. Downloading does not install or connect it.</li></ol>}
-            {target === 'claude-code' && <ol className="list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-text-secondary"><li>On the computer running Maestro, open PowerShell on Windows or a terminal on macOS/Linux.</li><li>Copy and run the command below to register this local STDIO server in Claude Code.</li><li>In Claude Code, run <code>/mcp</code> and confirm the Maestro server is listed.</li></ol>}
-            {target === 'other' && <ol className="list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-text-secondary"><li>Copy the JSON under Advanced / manual setup.</li><li>Add it to the other app’s local STDIO MCP configuration under <code>mcpServers</code>. Use this on the computer running Maestro.</li><li>Save or restart that app, then check its MCP server list. Copying JSON does not configure or connect it.</li></ol>}
+            {target === 'claude-desktop' && <ol className="list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-text-secondary"><li>Download the extension package below.</li><li>On the same computer where Режиссёр 2.0 runs, open Claude Desktop → Settings → Extensions → Install Extension and select the downloaded <code>.mcpb</code> file.</li><li>Open the installed extension in Claude Desktop and confirm its tools are available. Downloading does not install or connect it.</li></ol>}
+            {target === 'claude-code' && <ol className="list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-text-secondary"><li>On the computer running Режиссёр 2.0, open PowerShell on Windows or a terminal on macOS/Linux.</li><li>Copy and run the command below to register this local STDIO server in Claude Code.</li><li>In Claude Code, run <code>/mcp</code> and confirm the Режиссёр 2.0 server is listed.</li></ol>}
+            {target === 'other' && <ol className="list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-text-secondary"><li>Copy the JSON under Advanced / manual setup.</li><li>Add it to the other app’s local STDIO MCP configuration under <code>mcpServers</code>. Use this on the computer running Режиссёр 2.0.</li><li>Save or restart that app, then check its MCP server list. Copying JSON does not configure or connect it.</li></ol>}
 
             {validCommand && target === 'codex' && <button type="button" onClick={() => onCopy(target)} disabled={!enabled} className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-accent-blue px-3 text-[10px] font-semibold text-bg-primary disabled:opacity-40">{copied === copyTarget ? <Check size={13} /> : <Copy size={13} />}{copied === copyTarget ? 'Codex config copied' : 'Copy Codex config section'}</button>}
             {validCommand && target === 'claude-desktop' && <button type="button" onClick={onDownload} disabled={!enabled || downloading} className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-accent-blue px-3 text-[10px] font-semibold text-bg-primary disabled:opacity-40">{downloading ? <LoaderCircle size={13} className="animate-spin" /> : <Copy size={13} />}{downloading ? 'Preparing extension…' : 'Download Claude Desktop extension'}</button>}
@@ -360,7 +360,7 @@ function LocalClientSetup({ client, target, open, enabled, copied, downloading, 
 
             <div className="space-y-1 border-t border-border pt-2">
               <h6 className="text-[10px] font-semibold text-text-primary">Step 3 · Verify in the app</h6>
-              {target === 'chatgpt' ? <p className="text-[9px] leading-relaxed text-text-muted">Start a local Codex chat in ChatGPT desktop on this computer, type <code>/mcp</code>, and confirm Maestro is enabled and its tools are listed. Hosted chats or other chat modes can show a different tool set. Copying the config does not prove the app connected. These settings work only on the computer running Maestro.</p> : <p className="text-[9px] leading-relaxed text-text-muted">Maestro confirms client creation or a file download only. The app must show the server as available before setup is complete. These local settings contain no token or credential path and work only on this computer.</p>}
+              {target === 'chatgpt' ? <p className="text-[9px] leading-relaxed text-text-muted">Start a local Codex chat in ChatGPT desktop on this computer, type <code>/mcp</code>, and confirm Режиссёр 2.0 is enabled and its tools are listed. Hosted chats or other chat modes can show a different tool set. Copying the config does not prove the app connected. These settings work only on the computer running Режиссёр 2.0.</p> : <p className="text-[9px] leading-relaxed text-text-muted">Режиссёр 2.0 confirms client creation or a file download only. The app must show the server as available before setup is complete. These local settings contain no token or credential path and work only on this computer.</p>}
             </div>
           </>
         )}
@@ -369,7 +369,7 @@ function LocalClientSetup({ client, target, open, enabled, copied, downloading, 
         <details className="rounded-lg border border-border bg-bg-secondary">
           <summary className="min-h-10 cursor-pointer list-none px-3 py-2 text-[9px] font-semibold text-text-secondary">Advanced / manual setup</summary>
           <div className="space-y-2 border-t border-border p-3">
-            {!validCommand ? <p className="text-[9px] leading-relaxed text-text-muted">Maestro has not returned a safe launch command for this client. Refresh the client list before copying setup.</p> : <>
+            {!validCommand ? <p className="text-[9px] leading-relaxed text-text-muted">Режиссёр 2.0 has not returned a safe launch command for this client. Refresh the client list before copying setup.</p> : <>
               {target === 'chatgpt' && <section className="space-y-1">
                 <h6 className="text-[9px] font-semibold text-text-secondary">ChatGPT config.toml · manual file setup</h6>
                 <p className="text-[9px] leading-relaxed text-text-muted">Optional fallback for manually editing a config file. Do not paste this block into Add MCP server; use the separate fields above for normal setup.</p>
@@ -459,7 +459,7 @@ export function AgentGenerationDefaults({ ownerSession }: { ownerSession: boolea
       const next = await updateAgentAccessCreativeDefaults(normalizeDefaults(draft))
       setData(next)
       setDraft(cloneDefaults(next.defaults))
-      setMessage('Saved. The values shown here are the defaults Maestro stored.')
+      setMessage('Saved. The values shown here are the defaults Режиссёр 2.0 stored.')
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Could not save agent generation defaults.')
     } finally {
@@ -502,7 +502,7 @@ export function AgentGenerationDefaults({ ownerSession }: { ownerSession: boolea
           <div className="space-y-2"><p className="text-[10px] leading-relaxed text-text-muted">Agent generation defaults are unavailable. Refresh to try again.</p><button type="button" onClick={() => void refresh()} disabled={loading} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[9px] text-text-secondary disabled:opacity-50"><RefreshCw size={12} />Refresh</button></div>
         ) : (
           <>
-            <p className="text-[9px] leading-relaxed text-text-muted">Blank model inherits Maestro’s compatible choice. Blank duration and resolution use Maestro’s defaults. Speech duration 0 means Auto. These preferences apply to Agent requests only; saving here does not change Studio or Director selections.</p>
+            <p className="text-[9px] leading-relaxed text-text-muted">Blank model inherits Режиссёр 2.0’s compatible choice. Blank duration and resolution use Режиссёр 2.0’s defaults. Speech duration 0 means Auto. These preferences apply to Agent requests only; saving here does not change Studio or Director selections.</p>
             <div className="space-y-2">
               {data.workflows.map(workflow => <WorkflowDefaultRow key={workflow.id} id={workflow.id} label={workflow.label} models={data.models} value={draft[workflow.id] || {}} savedValue={data.defaults[workflow.id] || {}} onChange={(field, value) => update(workflow.id, field, value)} />)}
             </div>
@@ -539,7 +539,7 @@ function WorkflowDefaultRow({ id, label, models, value, savedValue, onChange }: 
       <label className="min-w-0 space-y-1 text-[9px] text-text-secondary">
         <span>Model</span>
         <select aria-label={`${label} model`} value={value.model_type || ''} onChange={event => onChange('model_type', event.target.value)} className="min-h-9 w-full min-w-0 rounded-lg border border-border bg-bg-secondary px-2 text-[10px] text-text-primary">
-          <option value="">Inherit compatible Maestro choice</option>
+          <option value="">Inherit compatible Режиссёр 2.0 choice</option>
           {options.map(model => <option key={model.model_type} value={model.model_type} disabled={!model.is_downloaded || !model.workflows.includes(id)}>{model.name}{!model.workflows.includes(id) ? ' (not compatible)' : model.is_downloaded ? '' : ' (not downloaded)'}</option>)}
         </select>
       </label>
@@ -553,8 +553,8 @@ function WorkflowDefaultRow({ id, label, models, value, savedValue, onChange }: 
         <span>Resolution</span>
         <input aria-label={`${label} resolution`} type="text" value={value.resolution || ''} placeholder="Default" onChange={event => onChange('resolution', event.target.value)} className="min-h-9 w-full min-w-0 rounded-lg border border-border bg-bg-secondary px-2 text-[10px] text-text-primary" />
       </label>
-      <p className="min-w-0 break-all text-[9px] leading-relaxed text-text-muted sm:col-span-2">Form value: {savedModel?.name || value.model_type || 'Inherit Maestro choice'} · duration: {value.duration_seconds === undefined ? 'Default / Auto' : `${value.duration_seconds} seconds${id === 'audio.speech' && value.duration_seconds === 0 ? ' (Auto)' : ''}`} · resolution: {value.resolution || 'Default'}</p>
-      <p className="min-w-0 break-all text-[9px] leading-relaxed text-text-muted sm:col-span-2">Last saved by Maestro: model_type {savedValue.model_type || 'unset (inherit)'}{lastSavedModel ? ` (${lastSavedModel.name})` : ''} · duration_seconds {savedValue.duration_seconds === undefined ? 'unset (default / Auto)' : `${savedValue.duration_seconds}${id === 'audio.speech' && savedValue.duration_seconds === 0 ? ' (Auto)' : ''}`} · resolution {savedValue.resolution || 'unset (default)'}</p>
+      <p className="min-w-0 break-all text-[9px] leading-relaxed text-text-muted sm:col-span-2">Form value: {savedModel?.name || value.model_type || 'Inherit Режиссёр 2.0 choice'} · duration: {value.duration_seconds === undefined ? 'Default / Auto' : `${value.duration_seconds} seconds${id === 'audio.speech' && value.duration_seconds === 0 ? ' (Auto)' : ''}`} · resolution: {value.resolution || 'Default'}</p>
+      <p className="min-w-0 break-all text-[9px] leading-relaxed text-text-muted sm:col-span-2">Last saved by Режиссёр 2.0: model_type {savedValue.model_type || 'unset (inherit)'}{lastSavedModel ? ` (${lastSavedModel.name})` : ''} · duration_seconds {savedValue.duration_seconds === undefined ? 'unset (default / Auto)' : `${savedValue.duration_seconds}${id === 'audio.speech' && savedValue.duration_seconds === 0 ? ' (Auto)' : ''}`} · resolution {savedValue.resolution || 'unset (default)'}</p>
     </div>
   )
 }

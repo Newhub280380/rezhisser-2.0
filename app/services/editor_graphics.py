@@ -1,4 +1,4 @@
-"""Safe, editable graphic overlays for Maestro Editor text tracks.
+"""Safe, editable graphic overlays for Режиссёр 2.0 Editor text tracks.
 
 Graphics stay as small JSON layer descriptions in the project. This module is
 the single Pillow renderer used by preview and export, so both paths share the

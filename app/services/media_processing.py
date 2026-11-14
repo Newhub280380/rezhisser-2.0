@@ -1,4 +1,4 @@
-"""Shared Maestro finishing contracts for generation, Tools and Media Flow.
+"""Shared Режиссёр 2.0 finishing contracts for generation, Tools and Media Flow.
 
 Native DLSS implementation: Wan2GP 1e1dd2757f24923f008593d9d4ec09062234be20.
 See THIRD_PARTY_NOTICES.md and app/LICENSES/WanGP-Community-2.0.txt.
@@ -104,7 +104,7 @@ def validate_methods(spatial="", temporal="", *, image=False, options=None, chec
 
 
 def prepare_dlss(options, *, neural=False, scale=None):
-    """Reuse the same guide weights as Maestro's depth and motion controls."""
+    """Reuse the same guide weights as Режиссёр 2.0's depth and motion controls."""
     from postprocessing.dlss5 import runtime
     if neural and scale == 1 and runtime.uses_experimental_backend():
         return  # The direct backend uses driver NVOFA, without depth/RAFT models.

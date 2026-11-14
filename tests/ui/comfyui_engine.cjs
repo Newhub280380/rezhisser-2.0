@@ -232,7 +232,7 @@ async function checkConfigurationFlow(browser, harness) {
       include_audio: false,
       checkpoint: 'model-b.safetensors',
       style: 'cinematic',
-      prompt: 'Maestro route validation',
+      prompt: 'Режиссёр 2.0 route validation',
       steps: 1,
       start_image: '__maestro_pending_media__',
     },

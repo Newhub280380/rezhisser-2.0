@@ -1,4 +1,4 @@
-"""Thread-safe state transitions for Maestro's in-process generation jobs.
+"""Thread-safe state transitions for Режиссёр 2.0's in-process generation jobs.
 
 Jobs are mutable dictionaries shared by API handlers and background workers.
 This module keeps terminal-state changes and abort-state registration atomic so
@@ -480,7 +480,7 @@ def generation_slot(
 
 
 def generation_activity_reason() -> str | None:
-    """Return a locked snapshot of whether Maestro can reserve the GPU."""
+    """Return a locked snapshot of whether Режиссёр 2.0 can reserve the GPU."""
     with _lifecycle_lock:
         if _generation_probe_lock is None:
             return "the generation lock is not configured"

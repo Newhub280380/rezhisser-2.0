@@ -1,5 +1,5 @@
 // LongCat Avatar inputs run in a model-free browser fixture. Upload requests
-// are intercepted here; this test never contacts a running Maestro instance.
+// are intercepted here; this test never contacts a running Режиссёр 2.0 instance.
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const root = path.resolve(__dirname, '../..');

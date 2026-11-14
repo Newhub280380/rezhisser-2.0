@@ -1,4 +1,4 @@
-"""Read-only discovery of Pinokio Remote's published Maestro web route.
+"""Read-only discovery of Pinokio Remote's published Режиссёр 2.0 web route.
 
 This module talks only to Pinokio's local HTTP control plane. It deliberately
 does not inspect Tailscale state, invoke a Tailscale CLI, or infer a published
@@ -242,7 +242,7 @@ def _safe_remote_url(value: Any, dns_name: str) -> str | None:
     except (ValueError, TypeError):
         return None
 
-    # This is the only query field the Maestro launcher deliberately puts on
+    # This is the only query field the Режиссёр 2.0 launcher deliberately puts on
     # its published UI URL. Do not forward other query values or fragments.
     policy_values = [value for key, value in query_items if key == "maestro_ui_policy"]
     safe_query = urlencode([("maestro_ui_policy", "lan-v2")]) if policy_values == ["lan-v2"] else ""
@@ -253,7 +253,7 @@ def _safe_remote_url(value: Any, dns_name: str) -> str | None:
 
 
 class PinokioRemoteDiscovery:
-    """Discover the published HTTPS route for this exact Maestro install.
+    """Discover the published HTTPS route for this exact Режиссёр 2.0 install.
 
     ``app_root`` is the installed launcher root directly under
     ``PINOKIO_HOME/api``; its ``app`` directory is also accepted. The root
@@ -400,7 +400,7 @@ class PinokioRemoteDiscovery:
             headers={
                 "Accept": "application/json",
                 "Cache-Control": "no-cache",
-                "User-Agent": "Maestro-Pinokio-Remote-Discovery/1",
+                "User-Agent": "Режиссёр 2.0-Pinokio-Remote-Discovery/1",
             },
             method="GET",
         )

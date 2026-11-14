@@ -440,10 +440,10 @@ async function checkSettingsAndDedicatedToggle(browser) {
     'Pending uncertain receipts resume through the safe monitor endpoint');
   await page.getByRole('button', {name: 'Dismiss unsubmitted intent'}).first().click();
   assert.deepEqual(state.abandons, [{id: 'd90b76aa-9267-4cc2-961f-c97f2ce90467', body: {}}],
-    'Prepared receipts without a Maestro job can be dismissed through the abandon endpoint');
+    'Prepared receipts without a Режиссёр 2.0 job can be dismissed through the abandon endpoint');
   await page.getByRole('button', {name: 'Dismiss unsubmitted intent'}).click();
   assert.deepEqual(state.cancellations, [{job: 'prepared-maestro-job'}],
-    'Prepared receipts with an existing Maestro job use its normal cancel endpoint');
+    'Prepared receipts with an existing Режиссёр 2.0 job use its normal cancel endpoint');
   await page.close();
 }
 

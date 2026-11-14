@@ -112,7 +112,7 @@ def build_grounded_value_repair_request(
         "to establish the state at that exact opening, transition endpoint or closing. "
         "Preserve continuity with valid neighboring facts. Do not invent a takeoff, "
         "landing, movement or new event. If context cannot establish the state, return "
-        "'unresolved'; Maestro will reject it rather than guess. Do not rewrite shots, "
+        "'unresolved'; Режиссёр 2.0 will reject it rather than guess. Do not rewrite shots, "
         "dialogue, cast, timing, action allocation or any other fields."
     )
     context = {

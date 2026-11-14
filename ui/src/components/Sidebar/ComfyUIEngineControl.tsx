@@ -111,7 +111,7 @@ function validationValue(binding: api.ComfyUIBinding): api.ComfyUIScalar {
   if (binding.type === 'boolean') return false
   if (binding.type === 'integer' || binding.type === 'number') return binding.min ?? 1
   if (binding.type === 'image' || binding.type === 'video' || binding.type === 'audio') return '__maestro_pending_media__'
-  return 'Maestro route validation'
+  return 'Режиссёр 2.0 route validation'
 }
 
 function validationMessage(value: unknown): string {
@@ -427,7 +427,7 @@ export function ComfyUIEngineControl({ modelType, kind }: { modelType: string; k
           <p className="text-[9px] leading-relaxed text-text-muted">Native remains the default. Map the Native controls you want to pass through; required workflow inputs and preflight are checked before saving.</p>
           {optionsLoading && <p role="status" className="text-[9px] text-text-muted">Loading choices from the selected ComfyUI server…</p>}
           {optionsError && <p role="status" className="text-[9px] text-indicator-warning">Server choices are unavailable. You can still enter values manually. {optionsError}</p>}
-          <p className="text-[9px] leading-relaxed text-text-muted">The selected workflow controls its checkpoint, sampler, and performance. Maestro native LoRAs, finishing, and multi-window options are not translated; unsupported options are rejected, with no fallback.</p>
+          <p className="text-[9px] leading-relaxed text-text-muted">The selected workflow controls its checkpoint, sampler, and performance. Режиссёр 2.0 native LoRAs, finishing, and multi-window options are not translated; unsupported options are rejected, with no fallback.</p>
           {kind === 'video' && <p className="text-[9px] leading-relaxed text-text-muted">For driving-audio clips, map Audio guide and one Driving audio offset field. A nonzero audio offset without a workflow mapping is rejected.</p>}
 
           <fieldset className="space-y-1.5">
@@ -464,7 +464,7 @@ export function ComfyUIEngineControl({ modelType, kind }: { modelType: string; k
               const choiceOptions = staleChoice ? [value, ...liveChoiceOptions] : liveChoiceOptions
               if (isMediaBinding(binding)) return <div key={binding.name} className="grid grid-cols-[minmax(7rem,1fr)_minmax(9rem,1.4fr)] items-center gap-2">
                 <span className="text-[10px] text-text-secondary">{label}{binding.required ? <span className="ml-0.5 text-chip-red">*</span> : null}</span>
-                <p className="text-[9px] text-text-muted">Map a Native media field above. Maestro uploads media for each run.</p>
+                <p className="text-[9px] text-text-muted">Map a Native media field above. Режиссёр 2.0 uploads media for each run.</p>
               </div>
               const updateNumber = (event: ChangeEvent<HTMLInputElement>) => {
                 if (!event.target.value) return setDefault(binding, undefined)
@@ -491,7 +491,7 @@ export function ComfyUIEngineControl({ modelType, kind }: { modelType: string; k
                           {workflowOptions && value !== undefined && !(workflowOptions.choices[binding.name] ?? []).some(option => String(option) === String(value)) && <p className="text-[8px] text-indicator-warning">Saved value is not in the server list; it is kept as a custom value.</p>}
                           <p className="mt-0.5 text-[8px] text-text-muted">ComfyUI server choices · custom values are allowed</p>
                         </div>
-                        : <input id={panelId + '-default-' + safeName} aria-label={'Default for ' + label} type="text" value={defaultText(value)} onChange={event => setDefault(binding, event.target.value)} placeholder={binding.type === 'image' || binding.type === 'video' || binding.type === 'audio' ? 'Maestro media reference' : 'Fixed input value'} className="min-w-0 rounded-md border border-border bg-bg-primary px-2 py-1.5 text-[10px] text-text-primary outline-none placeholder:text-text-muted focus:border-accent-blue" />}
+                        : <input id={panelId + '-default-' + safeName} aria-label={'Default for ' + label} type="text" value={defaultText(value)} onChange={event => setDefault(binding, event.target.value)} placeholder={binding.type === 'image' || binding.type === 'video' || binding.type === 'audio' ? 'Режиссёр 2.0 media reference' : 'Fixed input value'} className="min-w-0 rounded-md border border-border bg-bg-primary px-2 py-1.5 text-[10px] text-text-primary outline-none placeholder:text-text-muted focus:border-accent-blue" />}
               </div>
             })}
           </fieldset>}

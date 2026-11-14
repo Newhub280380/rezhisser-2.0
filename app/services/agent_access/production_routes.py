@@ -68,7 +68,7 @@ class ProductionService:
             raise ValueError("Media needs an uploaded asset ID or {filename, workspace}.")
         path = Path(path).resolve(strict=True)
         if not _approved_local_path(str(path), self.backend.app_root, self.backend.additional_media_roots()):
-            raise ValueError("Media is outside approved Maestro storage.")
+            raise ValueError("Media is outside approved Режиссёр 2.0 storage.")
         if not path.is_file() or path.suffix.lower() not in {".mp4", ".mov", ".mkv", ".webm", ".wav", ".mp3", ".flac", ".ogg", ".m4a", ".png", ".jpg", ".jpeg", ".webp"}:
             raise ValueError("Select an existing supported media file.")
         return path
@@ -78,10 +78,10 @@ class ProductionService:
         root = Path(self.output_root()).resolve()
         directory = Path(workspace_directory(str(root), name or "default"))
         if not directory.resolve().is_relative_to(root):
-            raise ValueError("Workspace redirects outside Maestro output storage.")
+            raise ValueError("Workspace redirects outside Режиссёр 2.0 output storage.")
         directory.mkdir(parents=True, exist_ok=True)
         if not directory.resolve().is_relative_to(root):
-            raise ValueError("Workspace redirects outside Maestro output storage.")
+            raise ValueError("Workspace redirects outside Режиссёр 2.0 output storage.")
         return directory
 
     def create_title(self, params, principal):
@@ -239,7 +239,7 @@ class ProductionService:
         if self.idle_probe is not None:
             idle = await awaited(self.idle_probe())
             if idle.get("idle") is not True or idle.get("certain") is not True:
-                raise HTTPException(409, "Maestro has active or uncertain work; defer polishing without consuming a new attempt")
+                raise HTTPException(409, "Режиссёр 2.0 has active or uncertain work; defer polishing without consuming a new attempt")
         # Never retry a claimed request automatically. The controller also
         # journals request IDs; an uncertain receipt requires reconciliation.
         with self._lock:

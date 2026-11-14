@@ -50,7 +50,7 @@ export function SongStyleTraining({project, styles, advanced, expertTools, busy,
         <button type="button" className={primary} disabled={busy} onClick={() => selectCheckpoint(latest.file)}>Use LoRA &amp; try a song</button>
         <p className="text-xs text-text-muted">Returns to Studio with this LoRA selected. Your training trigger is added automatically; enter new lyrics and generate.</p>
       </> : !project.prepared ? <>
-        <p className="text-xs text-text-muted">Prepare the recordings for this stage once. Maestro uses the correct saved voice version automatically.</p>
+        <p className="text-xs text-text-muted">Prepare the recordings for this stage once. Режиссёр 2.0 uses the correct saved voice version automatically.</p>
         <button type="button" className={primary} disabled={disabled} onClick={() => void run(async () => {await startMusicPreparation(project.id)})}>Prepare song-style training</button>
       </> : <>
         <p className="text-xs text-text-muted">{project.resume_available ? `Continue from ${completed} to ${steps} steps.` : `Start with ${steps} steps, then listen to a new song.`} You can continue training later in Expert settings.</p>

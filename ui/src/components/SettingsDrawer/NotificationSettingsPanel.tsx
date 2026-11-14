@@ -171,7 +171,7 @@ export function NotificationSettingsPanel() {
         setMessage('System and closed-app background notifications are enabled on this device.')
       } catch (error) {
         // Keep foreground/browser notifications enabled even when an older
-        // Maestro host has not installed the optional Web Push runtime yet.
+        // Режиссёр 2.0 host has not installed the optional Web Push runtime yet.
         setMessage(
           `System notifications are enabled. ${
             error instanceof Error ? error.message : 'Background delivery could not be enrolled.'
@@ -281,7 +281,7 @@ export function NotificationSettingsPanel() {
     setMessage(null)
     try {
       await api.testHostNotificationSound(hostVolume)
-      setMessage('Test sound sent to the Maestro host computer.')
+      setMessage('Test sound sent to the Режиссёр 2.0 host computer.')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to play the host sound.')
     } finally {
@@ -294,7 +294,7 @@ export function NotificationSettingsPanel() {
       <div>
         <h3 className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">Notifications</h3>
         <p className="mt-1 text-[10px] leading-relaxed text-text-muted">
-          Maestro always shows a small in-app alert. The options below add system notifications or sound.
+          Режиссёр 2.0 always shows a small in-app alert. The options below add system notifications or sound.
         </p>
       </div>
 
@@ -329,7 +329,7 @@ export function NotificationSettingsPanel() {
             </div>
             <div className="mt-1">
               {pushState?.subscribed
-                ? 'Maestro can alert this device after the page or iPhone Home Screen app is closed.'
+                ? 'Режиссёр 2.0 can alert this device after the page or iPhone Home Screen app is closed.'
                 : (pushState?.reason || 'Background enrollment is still being prepared.')}
             </div>
           </div>
@@ -338,8 +338,8 @@ export function NotificationSettingsPanel() {
         <Toggle
           checked={preferences.onlyWhenHidden}
           onChange={checked => updateDevice({ onlyWhenHidden: checked })}
-          label="Only notify when Maestro is in the background"
-          description="In-app alerts still appear while Maestro is visible."
+          label="Only notify when Режиссёр 2.0 is in the background"
+          description="In-app alerts still appear while Режиссёр 2.0 is visible."
         />
 
         <div className="grid grid-cols-3 gap-1.5 border-y border-border/50 py-2.5">
@@ -364,7 +364,7 @@ export function NotificationSettingsPanel() {
           checked={preferences.deviceSound}
           onChange={handleDeviceSoundToggle}
           label="Chime on this device"
-          description="Works while this Maestro page is open, including mobile browsers."
+          description="Works while this Режиссёр 2.0 page is open, including mobile browsers."
         />
 
         <div className="space-y-1">
@@ -411,7 +411,7 @@ export function NotificationSettingsPanel() {
         </button>
 
         <p className="text-[9px] leading-relaxed text-text-muted">
-          iPhone/iPad: use Maestro through HTTPS, remove any older Maestro Home Screen shortcut, then add it to the Home Screen again and open that installed app. Safari and Chrome tabs cannot request notification permission on iOS.
+          iPhone/iPad: use Режиссёр 2.0 through HTTPS, remove any older Режиссёр 2.0 Home Screen shortcut, then add it to the Home Screen again and open that installed app. Safari and Chrome tabs cannot request notification permission on iOS.
         </p>
 
         {availability.ios && (
@@ -435,7 +435,7 @@ export function NotificationSettingsPanel() {
         )}
 
         <p className="text-[9px] leading-relaxed text-text-muted">
-          Closed-app delivery uses the browser vendor&apos;s standard encrypted Web Push service. Maestro&apos;s signing key and your device subscription remain on your Maestro computer; there is no Maestro cloud account or relay.
+          Closed-app delivery uses the browser vendor&apos;s standard encrypted Web Push service. Режиссёр 2.0&apos;s signing key and your device subscription remain on your Режиссёр 2.0 computer; there is no Режиссёр 2.0 cloud account or relay.
         </p>
       </section>
 
@@ -506,7 +506,7 @@ export function NotificationSettingsPanel() {
             ) : tailscale && !tailscale.installed ? (
               <div className="space-y-2">
                 <p className="text-[10px] leading-relaxed text-text-muted">
-                  Tailscale is a separate manual option. Install its Personal app on this computer and your phone, then sign both into your own account. Maestro never joins or manages your tailnet.
+                  Tailscale is a separate manual option. Install its Personal app on this computer and your phone, then sign both into your own account. Режиссёр 2.0 never joins or manages your tailnet.
                 </p>
                 <a
                   href={tailscale.install_url}
@@ -528,7 +528,7 @@ export function NotificationSettingsPanel() {
                   checked={tailscale.configured && tailscale.enabled}
                   onChange={checked => void handleRemoteToggle(checked)}
                   label="Private HTTPS access"
-                  description="Tailscale Serve securely proxies only devices in your personal tailnet to this local Maestro instance. Hosted cloud connectors are not automatically authorized by your tailnet."
+                  description="Tailscale Serve securely proxies only devices in your personal tailnet to this local Режиссёр 2.0 instance. Hosted cloud connectors are not automatically authorized by your tailnet."
                   disabled={changingRemote}
                 />
 
@@ -567,7 +567,7 @@ export function NotificationSettingsPanel() {
                 <ol className="space-y-1 text-[9px] leading-relaxed text-text-muted">
                   <li className="flex gap-1.5"><span>1.</span><span>Install Tailscale on the phone and use the same personal account.</span></li>
                   <li className="flex gap-1.5"><span>2.</span><span>Open the secure URL in Safari, then Share → Add to Home Screen.</span></li>
-                  <li className="flex gap-1.5"><span>3.</span><span>Open the installed Maestro app and enable System notifications above.</span></li>
+                  <li className="flex gap-1.5"><span>3.</span><span>Open the installed Режиссёр 2.0 app and enable System notifications above.</span></li>
                 </ol>
               </>
             ) : (
@@ -576,7 +576,7 @@ export function NotificationSettingsPanel() {
 
             <div className="flex items-start gap-1.5 rounded-md border border-border/60 bg-bg-primary/40 px-2.5 py-2 text-[9px] leading-relaxed text-text-muted">
               <Smartphone size={11} className="mt-0.5 shrink-0" />
-              <span>Tailscale&apos;s Personal plan can be used independently by each user. This feature does not use Funnel and does not expose Maestro to the public internet.</span>
+              <span>Tailscale&apos;s Personal plan can be used independently by each user. This feature does not use Funnel and does not expose Режиссёр 2.0 to the public internet.</span>
             </div>
           </div>
         </details>
@@ -586,7 +586,7 @@ export function NotificationSettingsPanel() {
         <div className="flex items-center gap-2">
           <MonitorSpeaker size={15} className="text-accent-blue" />
           <div>
-            <div className="text-xs font-medium text-text-primary">Maestro host computer</div>
+            <div className="text-xs font-medium text-text-primary">Режиссёр 2.0 host computer</div>
             <div className="text-[10px] text-text-muted">Useful when you leave the generation machine running.</div>
           </div>
         </div>
@@ -651,13 +651,13 @@ function readyPinokioBrowserUrl(status: PinokioRemoteAccessStatus | null): strin
 function pinokioStatusMessage(reason: string | null, phase: string): string {
   const code = (reason || phase).trim().toLowerCase().replace(/[\s-]+/g, '_')
   if (['app_not_installed', 'app_not_published', 'remote_disabled'].includes(code)) {
-    return 'Start Maestro and enable Remote for this app in Pinokio, then refresh.'
+    return 'Start Режиссёр 2.0 and enable Remote for this app in Pinokio, then refresh.'
   }
   if (['controller_starting', 'starting', 'restarting', 'agent_access_restarting'].includes(code)) {
-    return 'Maestro is refreshing its Agent Access controller. Refresh this status in a moment.'
+    return 'Режиссёр 2.0 is refreshing its Agent Access controller. Refresh this status in a moment.'
   }
   if (['node_unavailable', 'node_offline', 'remote_unavailable', 'unavailable', 'not_available'].includes(code)) {
-    return 'Pinokio Remote is unavailable right now. Check that Maestro is running from Pinokio and refresh.'
+    return 'Pinokio Remote is unavailable right now. Check that Режиссёр 2.0 is running from Pinokio and refresh.'
   }
   return 'Pinokio Remote is not reporting a ready browser link.'
 }

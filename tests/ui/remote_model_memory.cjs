@@ -74,7 +74,7 @@ const ok = payload => ({ ok: true, json: async () => payload });
   assert.deepEqual(JSON.parse(request.options.body), {
     instance_id: 'second', server_url: 'http://localhost:1234',
   });
-  assert.equal(request.options.headers.Authorization, undefined, 'Credentials stay in Maestro server configuration');
+  assert.equal(request.options.headers.Authorization, undefined, 'Credentials stay in Режиссёр 2.0 server configuration');
   resolveUnload({ ok: false, json: async () => ({ detail: 'The remote server changed. Refresh loaded models before unloading.' }) });
   await unloading; render();
   assert.match(textFor('alert'), /remote server changed/);

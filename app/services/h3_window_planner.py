@@ -1410,7 +1410,7 @@ def plan_h3_sliding_windows(
     retry_plan: dict[str, Any] | None = None,
     source_audio_transcript: dict | None = None,
 ) -> dict[str, Any]:
-    """Use Maestro's configured LLM to create and compile an H3 window plan."""
+    """Use Режиссёр 2.0's configured LLM to create and compile an H3 window plan."""
 
     from services.studio_audio_context import strip_window_transcript
     raw_prompt = strip_window_transcript(str(prompt or ""))
@@ -1584,7 +1584,7 @@ def plan_h3_sliding_windows(
         planned_by = "deterministic_fallback"
         planning_warnings.append(
             "The H3 window compiler could not use the AI camera plan, so "
-            "Maestro generated a source-faithful deterministic plan."
+            "Режиссёр 2.0 generated a source-faithful deterministic plan."
         )
         plan = _fallback_plan(
             prompt,

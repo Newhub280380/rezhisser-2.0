@@ -115,8 +115,8 @@ export function H3MultiWindowControls({ section = 'all', compact = false }: { se
       {!compact && !enabled && promptMode !== 'manual' && (
         <p className="text-[8px] leading-relaxed text-text-muted">
           {promptMode === 'creative'
-            ? 'Maestro treats your prompt as a creative brief and writes the scene automatically. Exact quoted lines stay locked; add “only these lines” when no extra dialogue should be written.'
-            : 'Maestro expands this prompt without inventing new story events or dialogue.'}{' '}
+            ? 'Режиссёр 2.0 treats your prompt as a creative brief and writes the scene automatically. Exact quoted lines stay locked; add “only these lines” when no extra dialogue should be written.'
+            : 'Режиссёр 2.0 expands this prompt without inventing new story events or dialogue.'}{' '}
           Queued prompts wait for their own turn so the LLM never competes with an active generation. Use the sparkle button first only when you want to review the result.
         </p>
       )}

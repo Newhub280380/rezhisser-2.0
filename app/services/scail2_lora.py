@@ -1,7 +1,7 @@
 """Utilities for converting official SCAIL-2 SAT LoRAs to Wan format.
 
 The key mapping follows zai-org/SCAIL-2's Apache-2.0 licensed
-``convert_lora.py`` from the ``wan-scail2`` branch. Maestro verifies the
+``convert_lora.py`` from the ``wan-scail2`` branch. Режиссёр 2.0 verifies the
 official checkpoint's pinned SHA-256 before this module is called, and this
 module verifies it again before allowing PyTorch to deserialize the SAT file.
 """

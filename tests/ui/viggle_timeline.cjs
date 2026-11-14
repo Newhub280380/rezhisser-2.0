@@ -163,12 +163,12 @@ const playwright = require(process.env.MAESTRO_PLAYWRIGHT ||
     assert.equal(jobs.at(-1)._viggle_trim_end, 6); assert.equal(jobs.at(-1)._viggle_frame_seconds, 4);
     assert.equal(jobs.at(-1).video_guide, '/uploads/source.mp4');
     const saved = jobs.at(-1);
-    await page.getByRole('button', {name: 'Edit current video frame in Maestro', exact: true}).click();
+    await page.getByRole('button', {name: 'Edit current video frame in Режиссёр 2.0', exact: true}).click();
     await page.getByText('Image editor', {exact: true}).waitFor();
     assert.deepEqual(extracts.at(-1), {video_path: '/uploads/source.mp4', start_time: 4}, 'Original timestamp, not trim-relative');
     await page.evaluate(() => window.store.getState().skipAnchorPhase());
     await timeline.waitFor(); assert.deepEqual(await selection(), [2, 6, 4, 4], 'Return preserves selection');
-    await page.getByRole('button', {name: 'Edit current video frame in Maestro', exact: true}).click();
+    await page.getByRole('button', {name: 'Edit current video frame in Режиссёр 2.0', exact: true}).click();
     await page.getByText('Image editor', {exact: true}).waitFor();
     await page.evaluate(async () => {window.store.setState({outputs: [{name: 'new-edit.png', type: 'image', url: '/new-edit.png'}]}); await window.store.getState().applyOutputAsAnchor();});
     await timeline.waitFor(); assert.deepEqual(await selection(), [2, 6, 4, 4], 'Apply edited image preserves selection');
@@ -210,7 +210,7 @@ const playwright = require(process.env.MAESTRO_PLAYWRIGHT ||
     failSourceCheck = true;
     await page.evaluate(() => window.store.getState().setParam('video_guide', '/uploads/retry.mp4'));
     await page.getByRole('alert').filter({hasText: 'Could not read the control video.'}).waitFor();
-    assert.equal(await page.getByRole('button', {name: 'Edit current video frame in Maestro', exact: true}).isDisabled(), true);
+    assert.equal(await page.getByRole('button', {name: 'Edit current video frame in Режиссёр 2.0', exact: true}).isDisabled(), true);
     const beforeRetry = jobs.length;
     await page.evaluate(() => {
       window.store.getState().setParam('_viggle_edited_frame', '/uploads/edited.png');

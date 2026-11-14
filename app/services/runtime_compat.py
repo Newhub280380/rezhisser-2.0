@@ -1,4 +1,4 @@
-"""Pure compatibility checks for Maestro's hardware acceleration runtime."""
+"""Pure compatibility checks for Режиссёр 2.0's hardware acceleration runtime."""
 from __future__ import annotations
 
 import re

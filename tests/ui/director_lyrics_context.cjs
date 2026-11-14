@@ -1,6 +1,6 @@
 // Exercise the real Director UI, store actions, planner requests and project
 // restore path. Every network request is intercepted; no settings or jobs are
-// written to the running Maestro app.
+// written to the running Режиссёр 2.0 app.
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const root = path.resolve(__dirname, '../..');

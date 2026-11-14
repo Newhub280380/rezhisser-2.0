@@ -8,8 +8,8 @@ scene) -> ffmpeg concat to mp4 1080x1920 H.264.
 viral_remake (frame): yt-dlp download -> ffmpeg scene stills -> multimodal LLM turns stills into
 scene prompts (optionally replacing the subject with the person's photo) -> scenes -> concat.
 
-Reuses Maestro's cloud backend (cloud_generation.Fal), the assistant's LLM settings
-(assistant_chat.complete) and Maestro's ffmpeg resolver. Keys come only from .env settings.
+Reuses Режиссёр 2.0's cloud backend (cloud_generation.Fal), the assistant's LLM settings
+(assistant_chat.complete) and Режиссёр 2.0's ffmpeg resolver. Keys come only from .env settings.
 """
 
 from __future__ import annotations
@@ -138,7 +138,7 @@ class Deps:
         return cg.download(url, out)
 
     def ffmpeg(self) -> str:
-        from services.title_cards import _resolve_ffmpeg  # Maestro's bundled-first ffmpeg lookup
+        from services.title_cards import _resolve_ffmpeg  # Режиссёр 2.0's bundled-first ffmpeg lookup
         return _resolve_ffmpeg(None)
 
     def fetch_video(self, url: str, work_dir: Path) -> Path:

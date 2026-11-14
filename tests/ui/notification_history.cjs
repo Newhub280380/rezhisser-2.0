@@ -77,7 +77,7 @@ const playwright = require(process.env.MAESTRO_PLAYWRIGHT ||
     await open();
     await page.evaluate(() => window.store.getState().reconnectJobs());
     assert.equal(await page.evaluate(() => window.store.getState().jobs.length), 6, 'History remains in the queue');
-    assert.deepEqual(await alerts(), [], 'Opening Maestro must not replay historical completions, failures or cancellations');
+    assert.deepEqual(await alerts(), [], 'Opening Режиссёр 2.0 must not replay historical completions, failures or cancellations');
     assert.equal(await page.getByRole('status').count(), 0, 'No stale completion toast covers the UI');
     await page.waitForTimeout(2200);
     assert.deepEqual(statusRequests, [], 'Terminal history does not start unnecessary status polling');

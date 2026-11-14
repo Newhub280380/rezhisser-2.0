@@ -65,7 +65,7 @@ function App() {
         if (cancelled()) return
         if (!useStore.getState().servicesConfig) {
           useStore.setState({modelsLoading: false})
-          throw new Error('Maestro is not ready yet. Reconnecting…')
+          throw new Error('Режиссёр 2.0 is not ready yet. Reconnecting…')
         }
         await loadModels({recoverOnly: true})
       },

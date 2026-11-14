@@ -2487,7 +2487,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   beginAIRoundTrip: async (tool, returnMode) => {
     const existingRoundTrip = get().roundTrip
     if (existingRoundTrip && !['completed', 'failed'].includes(existingRoundTrip.status)) {
-      set({ error: 'Finish or cancel the current Maestro AI round trip before starting another.' })
+      set({ error: 'Finish or cancel the current Режиссёр 2.0 AI round trip before starting another.' })
       return
     }
     const project = get().project
@@ -2495,7 +2495,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const located = project && itemId ? itemLocation(project, itemId) : null
     const asset = located?.item.asset_id ? project?.assets[located.item.asset_id] : null
     if (!project || !itemId || !located || located.track.type !== 'video' || asset?.type !== 'video') {
-      set({ error: 'Select a video clip before sending it to Maestro AI.' })
+      set({ error: 'Select a video clip before sending it to Режиссёр 2.0 AI.' })
       return
     }
     const saved = await get().saveProject()
@@ -2787,7 +2787,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       await get().refreshProjects()
       void useStore.getState().loadOutputs()
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Maestro AI result could not return to Editor.'
+      const message = error instanceof Error ? error.message : 'Режиссёр 2.0 AI result could not return to Editor.'
       const failed: EditorAIRoundTrip = {
         ...pending,
         status: 'failed',
@@ -3082,7 +3082,7 @@ async function reconcileRoundTrip(): Promise<void> {
         status: 'failed',
         error: operation.error || (operation.status === 'cancelled'
           ? 'The linked job was cancelled.'
-          : 'The linked Maestro AI job failed.'),
+          : 'The linked Режиссёр 2.0 AI job failed.'),
       }
       persistRoundTrip(failed)
       useEditorStore.setState({ roundTrip: failed, error: failed.error || null })

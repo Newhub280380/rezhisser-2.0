@@ -92,7 +92,7 @@ def encode_character_visual(path: Path, kind: str):
             moments = vae._encode_clip((pixels - pixel_mean) / pixel_std)
             raw = DiagonalGaussianDistribution(moments).sample(
                 generator=torch.Generator().manual_seed(MINIMAX_H3_KEYFRAME_ENCODE_SEED))
-            # Match Maestro's reference encoding before per-generation noise augmentation.
+            # Match Режиссёр 2.0's reference encoding before per-generation noise augmentation.
             raw = raw.to(torch.float16).float().cpu()
             latents.append(((raw - mean) / std).to(torch.float16))
     return torch.cat(latents, dim=2).contiguous()

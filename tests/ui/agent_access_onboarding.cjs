@@ -296,7 +296,7 @@ async function main() {
     await flush();
     tree = render();
     assert.equal(calls.consoleCode, 1);
-    assert.match(visibleText(tree), /Pinokio > this Maestro app > Agent Access Terminal/);
+    assert.match(visibleText(tree), /Pinokio > this Режиссёр 2.0 app > Agent Access Terminal/);
     assert.match(visibleText(tree), /Browser code:/);
     assert.match(visibleText(tree), /newest code/);
     assert.match(visibleText(tree), /single-use/);
@@ -406,7 +406,7 @@ async function main() {
     await flush();
     tree = render();
     assert.equal(calls.copied.length, 2);
-    assert.ok(calls.copied[1].includes('ChatGPT desktop MCP setup for Maestro (manual steps)'));
+    assert.ok(calls.copied[1].includes('ChatGPT desktop MCP setup for Режиссёр 2.0 (manual steps)'));
     assert.ok(calls.copied[1].includes('Server URL: https://maestro.test/mcp'));
     assert.ok(calls.copied[1].includes('Expected public TLS certificate SHA-256 fingerprint: ab12cd34'));
     assert.ok(calls.copied[1].includes('Settings > MCP servers > Add server'));
@@ -553,8 +553,8 @@ async function main() {
     await flush();
     tree = render();
     const tailscaleClaudeCopy = calls.copied[tailscaleCopyStart + 3];
-    assert.ok(tailscaleClaudeCopy.includes('Claude Code MCP setup for Maestro'));
-    assert.ok(tailscaleClaudeCopy.includes('computer running Claude Code, signed into the same Tailscale network as Maestro'));
+    assert.ok(tailscaleClaudeCopy.includes('Claude Code MCP setup for Режиссёр 2.0'));
+    assert.ok(tailscaleClaudeCopy.includes('computer running Claude Code, signed into the same Tailscale network as Режиссёр 2.0'));
     assert.ok(tailscaleClaudeCopy.includes('claude mcp add --transport http maestro "https://desktop-abc.tailnet.ts.net:8765/mcp"'));
     assert.ok(tailscaleClaudeCopy.includes('In Claude Code, run /mcp to complete OAuth authentication'));
     assert.ok(tailscaleClaudeCopy.includes('read-only status or help request'));

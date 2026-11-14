@@ -1,4 +1,4 @@
-"""Maestro's persisted MMGP v4 controls and migration from one preload value."""
+"""Режиссёр 2.0's persisted MMGP v4 controls and migration from one preload value."""
 from __future__ import annotations
 
 OUTPUT_TYPES = ("video", "image", "audio")
@@ -56,7 +56,7 @@ def preload_for_output(config, args, output_type="video"):
 
 
 def dynamic_preload_supported(profile):
-    """Maestro's 3/3.5 have budgeted towers; 4.5 disables async transfers."""
+    """Режиссёр 2.0's 3/3.5 have budgeted towers; 4.5 disables async transfers."""
     return profile in (2, 3, 3.5, 4, 5)
 
 

@@ -188,7 +188,7 @@ export function RecastControls() {
         <InfoTooltip
           placement="bottom"
           label="About Recast"
-          text={"Add one card for each person you want to replace. Maestro isolates references, adds a face-detail view when useful, and preserves detected bystanders automatically.\n\nFast is recommended (8 steps). HQ uses the full 40-step schedule."}
+          text={"Add one card for each person you want to replace. Режиссёр 2.0 isolates references, adds a face-detail view when useful, and preserves detected bystanders automatically.\n\nFast is recommended (8 steps). HQ uses the full 40-step schedule."}
         />
       </div>
 
@@ -471,7 +471,7 @@ export function RecastControls() {
             <p className="text-[9px] text-text-muted">Source selection</p>
             <InfoTooltip
               label="About source selection"
-              text="Maestro scans the selected timeline. Each tile shows one character card at its strongest detected anchor; the same color remains assigned across shots."
+              text="Режиссёр 2.0 scans the selected timeline. Each tile shows one character card at its strongest detected anchor; the same color remains assigned across shots."
             />
           </div>
           <img src={previewImg} alt="Target mapping preview" className="w-full rounded border border-border" />

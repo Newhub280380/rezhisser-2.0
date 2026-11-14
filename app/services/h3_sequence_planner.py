@@ -3,7 +3,7 @@
 Ref2VA can run either as native continuation windows or as independent
 editorial clips. Native continuation carries recent motion and synchronized
 audio while repeating the same canonical references; hard-cut mode retains
-Maestro's independent-clip path.
+Режиссёр 2.0's independent-clip path.
 """
 
 from __future__ import annotations
@@ -629,7 +629,7 @@ def _reference_context(references: list[dict[str, Any]]) -> tuple[str, str, str]
                         "H3_PERFORMANCE_AUDIO_CLOCK "
                         f"duration_seconds={repr(duration_seconds)}"
                     )
-                # This is Maestro's target conditioning track, not an Omni
+                # This is Режиссёр 2.0's target conditioning track, not an Omni
                 # reference tensor, so it intentionally has no <Audio N>
                 # label in the full-reference media manifest.
                 retention.append("Exact target soundtrack: fully_preserved")
@@ -1948,7 +1948,7 @@ def plan_h3_reference_sequence(
         planned_by = "deterministic_fallback"
         planning_warnings.append(
             "The H3 reference-sequence compiler could not use the AI camera "
-            "plan, so Maestro generated a source-faithful deterministic plan."
+            "plan, so Режиссёр 2.0 generated a source-faithful deterministic plan."
         )
         plan = _fallback_sequence_plan(
             prompt,

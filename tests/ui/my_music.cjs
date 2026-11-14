@@ -1,4 +1,4 @@
-// Isolated browser fixture: uploads, training and preferences never reach Maestro.
+// Isolated browser fixture: uploads, training and preferences never reach Режиссёр 2.0.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

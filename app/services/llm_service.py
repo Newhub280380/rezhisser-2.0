@@ -246,7 +246,7 @@ def _estimate_kv_gb(arch_key: str, extra_flags: list) -> float:
 # knows it fits, vs. seeing "9.96 GB" and having to do mental math about
 # headroom.
 #
-# Headroom note: the bucket is the recommended *minimum*. Maestro's
+# Headroom note: the bucket is the recommended *minimum*. Режиссёр 2.0's
 # generation pipelines also need VRAM concurrently if you're running an
 # LLM during video gen — in that case, pick a card with the LLM's bucket
 # size PLUS your video model's footprint, or run the LLM on a remote
@@ -347,7 +347,7 @@ MODEL_REGISTRY = {
         "enable_thinking_for_prompt_enhancement": True,
         "prompt_enhancement_thinking_budget": 8192,
         # Official Qwen3.8 thinking-mode sampling. For non-thinking structured
-        # work we retain Maestro's pass-specific frequency/presence penalties,
+        # work we retain Режиссёр 2.0's pass-specific frequency/presence penalties,
         # but use Qwen's temperature/nucleus/top-k recommendations.
         "sampling_defaults_thinking": {
             "temperature": 1.0, "top_p": 0.95, "top_k": 20,
@@ -604,7 +604,7 @@ MODEL_REGISTRY = {
         # builds cannot load gemma4_unified at all and will fail at load time.
         "weights_gb": 7.5, "mmproj_gb": 0.0, "arch": "gemma4-12b",
         # Template (verified from the GGUF) honors enable_thinking and activates
-        # with <|think|>; Maestro already sends the kwarg + launches with --jinja,
+        # with <|think|>; Режиссёр 2.0 already sends the kwarg + launches with --jinja,
         # so "gemma" (kwarg) activation is correct here — do NOT switch to
         # gemma_prefix (this template emits an empty <|channel>thought<channel|>
         # when thinking is off, which would fight a manually-injected token).
@@ -803,7 +803,7 @@ def _openai_structured_response_format(json_schema: Optional[dict]) -> Optional[
 
 
 def _finalize_payload(payload: dict) -> dict:
-    """Translate Maestro's llama.cpp request into OpenAI-compatible form.
+    """Translate Режиссёр 2.0's llama.cpp request into OpenAI-compatible form.
 
     Local llama-server accepts additional sampler controls and serves only one
     model, so its native payload remains untouched. Hosted and third-party
@@ -1098,7 +1098,7 @@ def _apply_reasoning_controls(
 
     ``reasoning_effort`` selects how thoroughly Qwen3.8 reasons. The
     separate ``thinking_budget_tokens`` llama.cpp extension is a hard
-    per-request ceiling; Maestro's existing ``max_tokens`` allowance remains
+    per-request ceiling; Режиссёр 2.0's existing ``max_tokens`` allowance remains
     large enough to hold both the reasoning and the requested answer.
 
     Structured-output callers force ``enable_thinking=False`` before reaching
@@ -1128,7 +1128,7 @@ def _apply_reasoning_controls(
             payload["reasoning_effort"] = resolved_effort
             template_kwargs["reasoning_effort"] = resolved_effort
         if _provider == "local" and thinking_budget > 0:
-            # Supported by current Maestro llama.cpp builds when no global
+            # Supported by current Режиссёр 2.0 llama.cpp builds when no global
             # --reasoning-budget override is supplied.
             payload["thinking_budget_tokens"] = int(thinking_budget)
 
@@ -1290,7 +1290,7 @@ def _resolve_mmproj(repo_id: str, registry_entry: dict, cache_dir: str) -> tuple
     return os.path.normpath(mmproj_path), mmproj_repo
 
 
-# Minimum llama.cpp build Maestro requires. Builds below this lack correct
+# Minimum llama.cpp build Режиссёр 2.0 requires. Builds below this lack correct
 # support for newer model architectures we ship. Qwen3.5's hybrid qwen35
 # architecture first required b9632; Qwen3.8-27B additionally needs the
 # corrected DeltaNet CUDA path in b10450 or newer. Older builds can appear to
@@ -1345,7 +1345,7 @@ def _llama_release_has_assets(release_info: dict, asset_specs) -> bool:
 
     llama.cpp's stable releases are now lightweight version pointers (for
     example ``v0.2.0``) whose only asset is ``nightly-tag.txt``.  Treating
-    that version tag as a binary release makes Maestro invent archive names
+    that version tag as a binary release makes Режиссёр 2.0 invent archive names
     that do not exist.  The actual platform archives remain attached to the
     referenced ``bNNNN`` nightly release.
     """
@@ -1525,10 +1525,10 @@ def _ensure_llama_server(bin_dir: str, device: str = "cpu") -> None:
     """Auto-download llama-server from llama.cpp GitHub releases if missing.
 
     Picks the appropriate prebuilt binary for the current platform:
-      - Windows + CUDA (default for Maestro on NVIDIA): bin-win-cuda-12.4-x64.zip
+      - Windows + CUDA (default for Режиссёр 2.0 on NVIDIA): bin-win-cuda-12.4-x64.zip
       - Linux CPU: bin-ubuntu-x64.tar.gz (CPU-only)
       - Linux CUDA: build/cache the matching upstream release with GGML_CUDA
-      - macOS / AMD: not supported by Maestro itself (Pinokio install gates these),
+      - macOS / AMD: not supported by Режиссёр 2.0 itself (Pinokio install gates these),
         but if someone gets here, raise with a clear message.
 
     Uses urllib + zipfile/tarfile from the stdlib so no extra deps needed.
@@ -1672,7 +1672,7 @@ def _ensure_llama_server(bin_dir: str, device: str = "cpu") -> None:
             url,
             headers={
                 "Accept": "application/vnd.github+json",
-                "User-Agent": "Maestro-llama-runtime",
+                "User-Agent": "Режиссёр 2.0-llama-runtime",
             },
         )
         with urlopen(req, timeout=15) as response:
@@ -1694,7 +1694,7 @@ def _ensure_llama_server(bin_dir: str, device: str = "cpu") -> None:
                 )
             pointer_request = Request(
                 pointer_url,
-                headers={"User-Agent": "Maestro-llama-runtime"},
+                headers={"User-Agent": "Режиссёр 2.0-llama-runtime"},
             )
             with urlopen(pointer_request, timeout=15) as response:
                 nightly_tag = response.read(64).decode("utf-8", errors="replace").strip()
@@ -1910,7 +1910,7 @@ def _check_mtp_runtime_capability(server_exe: str) -> None:
         raise RuntimeError(
             "Native MTP acceleration was requested, but this llama-server "
             "does not expose the required --spec-type and --spec-draft-n-max "
-            "options. Update Maestro's llama.cpp runtime or disable MTP "
+            "options. Update Режиссёр 2.0's llama.cpp runtime or disable MTP "
             f"acceleration, then retry.{detail}"
         )
 
@@ -2497,7 +2497,7 @@ def _user_message(prompt: str, image_paths: Optional[list]) -> dict:
 
 
 def _anthropic_messages(messages: list) -> tuple[str, list]:
-    """Convert Maestro's OpenAI-style image blocks to Anthropic Messages blocks."""
+    """Convert Режиссёр 2.0's OpenAI-style image blocks to Anthropic Messages blocks."""
 
     system_text = []
     api_messages = []
@@ -2526,7 +2526,7 @@ def _anthropic_messages(messages: list) -> tuple[str, list]:
 
 
 def _anthropic_content(content):
-    """Translate content parts; Maestro's images arrive as data URLs."""
+    """Translate content parts; Режиссёр 2.0's images arrive as data URLs."""
 
     if isinstance(content, str):
         return content
@@ -2542,7 +2542,7 @@ def _anthropic_content(content):
             converted.append({"type": "text", "text": part.get("text", "")})
             continue
         if kind != "image_url":
-            raise ValueError(f"Anthropic does not support Maestro content block type {kind!r}.")
+            raise ValueError(f"Anthropic does not support Режиссёр 2.0 content block type {kind!r}.")
 
         image_url = part.get("image_url")
         url = image_url.get("url") if isinstance(image_url, dict) else None
@@ -2966,7 +2966,7 @@ def generate_streaming(
             print(f"[LLM] json_schema requested but provider={_provider} is not opted into remote structured output")
 
     # Diagnostic — log every payload field except `messages` so we can
-    # compare what Maestro sends to llama-server vs what LM Studio sends
+    # compare what Режиссёр 2.0 sends to llama-server vs what LM Studio sends
     # for the same model. The messages array gets summarized (length per
     # role) instead of dumped, since system prompts can be multi-KB and
     # multimodal content includes base64-encoded images.
@@ -4062,7 +4062,7 @@ def enhance_prompt(
             "ACTIVE FLUX 3 MODEL: Klein is the distilled checkpoint with no separate "
             "negative-prompt conditioning. "
         )
-        system += "\n\n" + variant + "Maestro owns sampling and guidance settings; do not add them to the caption."
+        system += "\n\n" + variant + "Режиссёр 2.0 owns sampling and guidance settings; do not add them to the caption."
         system += (
             "\n\nFLUX 3 OUTPUT CONTRACT: Return only the final still-image caption or editing "
             "instruction. Native <ref_image_N> tokens identify attached inputs in order and are "
@@ -4086,7 +4086,7 @@ def enhance_prompt(
     elif is_moss_image:
         system += (
             "\n\nMOSS IMAGE OUTPUT CONTRACT: A caption stays a caption. A NEW layout uses width, "
-            "height, summary, items, bbox_coord_space=abs and bbox_format=xyxy. Maestro compiles "
+            "height, summary, items, bbox_coord_space=abs and bbox_format=xyxy. Режиссёр 2.0 compiles "
             "top-left pixel boxes; do not manually center them. An EXISTING compiled layout keeps "
             "abs_centralized/yxyx, all items, extra fields, exact lettering, comments and valid "
             "centered-pixel boxes. JSON keys and exact text fields are required model syntax. "

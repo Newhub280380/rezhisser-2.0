@@ -20,7 +20,7 @@ def enhancement_canvas_context(resolution=None):
         "For a NEW layout, return a draft with this exact width and height, "
         'bbox_coord_space="abs" and bbox_format="xyxy". Draft boxes are '
         "[x_min,y_min,x_max,y_max] from the top left, "
-        f"with X in 0..{width} and Y in 0..{height}. Maestro performs the coordinate conversion. "
+        f"with X in 0..{width} and Y in 0..{height}. Режиссёр 2.0 performs the coordinate conversion. "
         "Do not manually center or reorder draft coordinates. "
         "An EXISTING compiled layout keeps bbox_format=\"yxyx\" "
         "and bbox_coord_space=\"abs_centralized\", with [y_min,x_min,y_max,x_max] "

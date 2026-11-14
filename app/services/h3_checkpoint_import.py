@@ -1753,7 +1753,7 @@ def _settings_for_profile(profile, source, metadata, pinned, *, explicit_selecti
         for key, fallback in defaults.items():
             if settings[key] is None:
                 settings[key] = fallback
-        evidence["fallback"] = "Maestro stock H3 standard defaults"
+        evidence["fallback"] = "Режиссёр 2.0 stock H3 standard defaults"
     elif explicit_selection and profile == "turbo":
         defaults = {
             "sampler": "euler",
@@ -1766,7 +1766,7 @@ def _settings_for_profile(profile, source, metadata, pinned, *, explicit_selecti
         for key, fallback in defaults.items():
             if settings[key] is None:
                 settings[key] = fallback
-        evidence["fallback"] = "explicit user selection of the Maestro H3 Turbo default recipe"
+        evidence["fallback"] = "explicit user selection of the Режиссёр 2.0 H3 Turbo default recipe"
     elif explicit_selection and profile == "fused":
         defaults = {
             "sampler": "res_multistep",
@@ -1779,7 +1779,7 @@ def _settings_for_profile(profile, source, metadata, pinned, *, explicit_selecti
         for key, fallback in defaults.items():
             if settings[key] is None:
                 settings[key] = fallback
-        evidence["fallback"] = "explicit user selection of the Maestro H3 fused-Turbo default recipe"
+        evidence["fallback"] = "explicit user selection of the Режиссёр 2.0 H3 fused-Turbo default recipe"
     return settings, evidence
 
 
@@ -1930,7 +1930,7 @@ def inspect_h3_header(
         selection_options["sampling_recipe"] = {
             "profile": chosen_sampling,
             "missing_fields": incomplete_recipe,
-            "action": "Confirm this profile to use its explicit Maestro default recipe, or provide a complete creator-published schedule.",
+            "action": "Confirm this profile to use its explicit Режиссёр 2.0 default recipe, or provide a complete creator-published schedule.",
         }
     if source_pin and source_pin.get("require_dasiwa_header"):
         # A pinned known release must agree with the observed H3 body too.

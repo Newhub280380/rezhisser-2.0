@@ -2181,7 +2181,7 @@ def _canonicalize_h3_dialogue_speakers(
 
 
 def _reference_h3_cast_names(value: Any) -> list[str]:
-    """Read human role names from Maestro-owned Subject bindings."""
+    """Read human role names from Режиссёр 2.0-owned Subject bindings."""
 
     names: list[str] = []
     for match in re.finditer(
@@ -4401,7 +4401,7 @@ def _ledger_schema(
 ) -> dict[str, Any]:
     """Schema for the semantic story schedule authored by the planning LLM.
 
-    Maestro owns immutable event/dialogue catalogs and validates the result,
+    Режиссёр 2.0 owns immutable event/dialogue catalogs and validates the result,
     but the planner owns the meaningful grouping and window allocation.  Beat
     IDs and exact prose are added locally after parsing so the model spends its
     capacity on directing the story rather than bookkeeping.
@@ -4544,12 +4544,12 @@ def _faithful_treatment_schema(
 ) -> dict[str, Any]:
     """Schema for the creative work that remains in faithful planning.
 
-    A faithful request already gives Maestro an ordered source-event catalog
+    A faithful request already gives Режиссёр 2.0 an ordered source-event catalog
     and, when present, an exact dialogue catalog.  Asking a small local model
     to copy those internal IDs while also making directorial choices turns a
     straightforward writing task into brittle database transcription.  The
     model therefore supplies only the global cinematic treatment here;
-    Maestro schedules the immutable story locally.
+    Режиссёр 2.0 schedules the immutable story locally.
     """
 
     appearance = (
@@ -8421,7 +8421,7 @@ def _canonicalize_story_ledger(
     """Compile an LLM-authored semantic schedule against immutable catalogs.
 
     The model chooses which chronological events form a beat and which window
-    owns that beat. Maestro assigns sequential beat/dialogue IDs, restores the
+    owns that beat. Режиссёр 2.0 assigns sequential beat/dialogue IDs, restores the
     user's exact event prose, and then validates coverage, order, timing, and
     speaker ownership. Nothing here silently replaces a rejected schedule with
     the deterministic one; that happens only after the focused repair fails.
@@ -8586,7 +8586,7 @@ def _canonicalize_story_ledger(
             for dialogue_id in (item.get("dialogue_ids") or [])
         ]
         # Dialogue ownership is not a creative decision. The small planning
-        # model may choose beat grouping and segment placement, but Maestro
+        # model may choose beat grouping and segment placement, but Режиссёр 2.0
         # already knows which immutable source event owns every quoted D-id.
         # Rebuild that binding from the locked catalog instead of accepting a
         # duplicated, omitted, or reordered model-authored dialogue_ids array.
@@ -8715,7 +8715,7 @@ def _spread_generated_dialogue_across_segments(
 ) -> None:
     """Distribute an authored conversation without rewriting its words.
 
-    The semantic LLM owns the dialogue itself. Maestro only rebalances the
+    The semantic LLM owns the dialogue itself. Режиссёр 2.0 only rebalances the
     ordered lines onto the available native H3 windows, ensuring a discussion
     does not spend its first 14 seconds silent and then cram two turns into a
     later pass. This is intentionally used only for unquoted, conversation-
@@ -8793,7 +8793,7 @@ def _salvage_creative_fallback(
     miss an immutable event ID, duplicate a beat, or place the final source
     event in the wrong window.  The old all-or-nothing fallback discarded the
     entire response in that case.  For Creative mode, rebuild event ownership
-    from Maestro's deterministic ledger while transplanting only the
+    from Режиссёр 2.0's deterministic ledger while transplanting only the
     canonicalized, non-placeholder dialogue and context that still pass the
     complete fidelity validator.
     """
@@ -8873,7 +8873,7 @@ def _salvage_creative_fallback(
 
     # First preserve the safe high-level direction. If any such field caused
     # the rejection (for example an invented visual effect), retry with only
-    # the authored dialogue on Maestro's canonical context.
+    # the authored dialogue on Режиссёр 2.0's canonical context.
     enriched = deepcopy(fallback)
     for field in (
         "subject_continuity",
@@ -11338,7 +11338,7 @@ def segment_violations(
                     )
 
     lowered_source = str(prompt or "").casefold()
-    # Titles/indices describe the plan in Maestro's UI, not the generated scene.
+    # Titles/indices describe the plan in Режиссёр 2.0's UI, not the generated scene.
     scene_content = json.dumps({
         key: segment.get(key)
         for key in ("opening_state", "coverage", "pacing", "shots", "closing_state")
@@ -12369,7 +12369,7 @@ def _plan_long_form_ledger(
     The ordinary H3 planner intentionally gives every window its own camera
     planning call.  That is excellent for a handful of windows, but an hour
     can contain hundreds.  Long projects instead receive one compact chapter
-    outline and one bounded expansion call per chapter.  Maestro still owns
+    outline and one bounded expansion call per chapter.  Режиссёр 2.0 still owns
     source-event order, exact dialogue IDs, and state handoffs; the LLM only
     supplies new visible progression between those immutable anchors.
     """
@@ -12536,7 +12536,7 @@ def _plan_long_form_ledger(
         print(f"[MiniMax H3] Long-form chapter-outline fallback: {error}")
         warnings.append(
             "The long-form chapter outline could not be expanded creatively, "
-            "so Maestro retained its ordered duration-aware chapter scaffold."
+            "so Режиссёр 2.0 retained its ordered duration-aware chapter scaffold."
         )
         chapters = [
             {
@@ -12701,7 +12701,7 @@ def _plan_long_form_ledger(
                     "segment must create new visible action and a concrete ending "
                     "state. Never recap, preview a later beat, replay an action, "
                     "or put dialogue words in supporting_progression. Required "
-                    "events and dialogue IDs are immutable anchors that Maestro "
+                    "events and dialogue IDs are immutable anchors that Режиссёр 2.0 "
                     "will insert separately; write only staging/progression around "
                     "them. Make the last resulting_state flow directly into the "
                     "next chapter.\n\n"
@@ -12739,7 +12739,7 @@ def _plan_long_form_ledger(
             )
             warnings.append(
                 f"Long-form chapter {chapter_index}'s creative expansion failed; "
-                "Maestro used its deterministic window progression for that chapter."
+                "Режиссёр 2.0 used its deterministic window progression for that chapter."
             )
             local_segments = [
                 {
@@ -13533,7 +13533,7 @@ def _prepare_h3_story_context(
         "overview_of only when every action, actor, prop, route endpoint and "
         "result it requires is fully represented by the listed later detail "
         "events in source order. Use source_relationships with "
-        "coverage_status=complete only when that is unambiguous. Maestro "
+        "coverage_status=complete only when that is unambiguous. Режиссёр 2.0 "
         "checks the immutable source text independently. If any detail is "
         "missing, ambiguous, a failed attempt, a separate occurrence, "
         "dialogue-anchored, or explicitly recurring, omit the relationship "
@@ -13578,7 +13578,7 @@ def _prepare_h3_story_context(
         if _dialogue_word_count(item.get("text")) > maximum_window_words
     ]
     continuation_instruction = (
-        "\nLONG EXACT DIALOGUE CONTINUATION: Maestro will mechanically divide "
+        "\nLONG EXACT DIALOGUE CONTINUATION: Режиссёр 2.0 will mechanically divide "
         + ", ".join(mechanically_continued_dialogue)
         + " across adjacent native segments after semantic validation. Keep each "
         "listed D-id atomic on its anchored source event in this JSON; do not "
@@ -13670,7 +13670,7 @@ def _prepare_h3_story_context(
             f"Mode: {mode}. Camera coverage preference: {camera_coverage}.\n"
             f"Total native segments: {segment_count}.\n\n"
             f"Canonical reference context:\n{reference_context or 'No external reference map.'}\n\n"
-            "Maestro has already parsed, ordered, assigned, and timed every "
+            "Режиссёр 2.0 has already parsed, ordered, assigned, and timed every "
             "source event and exact dialogue line. Do not return a story "
             "schedule, beat assignments, dialogue, or shot timings. Supply a "
             "concise global cinematic treatment for the immutable story. "
@@ -13802,7 +13802,7 @@ def _prepare_h3_story_context(
             planned_by = "deterministic_fallback"
             planning_warnings.append(
                 "The hierarchical long-form schedule did not preserve every "
-                "locked event, so Maestro used its deterministic duration-aware "
+                "locked event, so Режиссёр 2.0 used its deterministic duration-aware "
                 "schedule instead."
             )
             ledger = deepcopy(canonical_ledger)
@@ -13886,7 +13886,7 @@ def _prepare_h3_story_context(
                 planning_warnings.append(
                     "The AI's shared cinematic treatment needs review for "
                     + ", ".join(field.replace("_", " ") for field in treatment_review_fields)
-                    + ". Maestro omitted those invalid fields instead of restoring "
+                    + ". Режиссёр 2.0 omitted those invalid fields instead of restoring "
                     "potentially conflicting descriptions from the copied source."
                 )
             if spread_generated_dialogue:
@@ -13974,7 +13974,7 @@ def _prepare_h3_story_context(
                     + "; ".join(violations)
                 )
                 planning_notes.append(
-                    "Maestro redistributed intact dialogue turns across adjacent "
+                    "Режиссёр 2.0 redistributed intact dialogue turns across adjacent "
                     "H3 windows after semantic planning so natural speech timing "
                     "stays within each native clip."
                 )
@@ -14013,38 +14013,38 @@ def _prepare_h3_story_context(
             if salvaged_dialogue:
                 planned_by = "hybrid_repair"
                 planning_warnings.append(
-                    "The AI story structure missed Maestro's fidelity checks, so Maestro repaired event timing while preserving "
+                    "The AI story structure missed Режиссёр 2.0's fidelity checks, so Режиссёр 2.0 repaired event timing while preserving "
                     f"{salvaged_dialogue} valid AI-authored dialogue line"
                     f"{'s' if salvaged_dialogue != 1 else ''} and safe creative direction."
                 )
             else:
                 if faithful_locked_schedule:
                     # The LLM supplies optional cinematic flavor only in
-                    # faithful mode. Its failure cannot invalidate Maestro's
+                    # faithful mode. Its failure cannot invalidate Режиссёр 2.0's
                     # locally owned event/dialogue schedule and should not be
                     # presented as a repaired story.
                     planned_by = "llm"
                     planning_notes.append(
-                        "Maestro kept the exact locally scheduled story and "
+                        "Режиссёр 2.0 kept the exact locally scheduled story and "
                         "continued with per-window camera direction after the "
                         "optional shared cinematic treatment was unavailable."
                     )
                 elif allow_generated_dialogue:
                     planned_by = "deterministic_fallback"
                     planning_warnings.append(
-                        "The AI story schedule did not satisfy Maestro's fidelity checks "
+                        "The AI story schedule did not satisfy Режиссёр 2.0's fidelity checks "
                         f"after {schedule_repair_attempts} focused repair attempt"
                         f"{'s' if schedule_repair_attempts != 1 else ''}. "
-                        "Maestro restored the ordered source story and exact user-written dialogue using its "
+                        "Режиссёр 2.0 restored the ordered source story and exact user-written dialogue using its "
                         "duration-aware emergency schedule."
                     )
                 else:
                     planned_by = "deterministic_fallback"
                     planning_warnings.append(
-                        "The AI story schedule did not preserve Maestro's locked event and dialogue map "
+                        "The AI story schedule did not preserve Режиссёр 2.0's locked event and dialogue map "
                         f"after {schedule_repair_attempts} focused repair attempt"
                         f"{'s' if schedule_repair_attempts != 1 else ''}, "
-                        "so Maestro used its deterministic duration-aware timing schedule. Every supplied event and exact "
+                        "so Режиссёр 2.0 used its deterministic duration-aware timing schedule. Every supplied event and exact "
                         "user-written line remains intact."
                     )
 
@@ -14242,7 +14242,7 @@ def _prepare_h3_story_context(
         )
     if dialogue_fragments:
         planning_notes.append(
-            "Maestro continued long exact dialogue across adjacent H3 windows "
+            "Режиссёр 2.0 continued long exact dialogue across adjacent H3 windows "
             "to preserve every user-written word without rushing, repetition, "
             "or paraphrasing."
         )
@@ -15083,7 +15083,7 @@ def _render_h3_story_segments(
                 + f"User production directions and constraints:\n{production_directions}"
             )
             note = (
-                f"Window {segment_number}: Maestro preserved the locked physical source "
+                f"Window {segment_number}: Режиссёр 2.0 preserved the locked physical source "
                 "phases; the writer supplied camera coverage and nonverbal sound."
             )
             if note not in planning_notes:
@@ -15158,7 +15158,7 @@ def _render_h3_story_segments(
         camera_guide = segment_guide
         if source_camera is not None:
             camera_guide = (
-                "You are a cinematographer filling a camera-only JSON schema. Maestro "
+                "You are a cinematographer filling a camera-only JSON schema. Режиссёр 2.0 "
                 "already owns and inserts the complete source choreography. Follow the "
                 "fixed event and phase keys. Describe optical coverage, edit transitions "
                 "and nonverbal sound only. Never write action or recovery fields, "
@@ -15362,7 +15362,7 @@ def _render_h3_story_segments(
                                 + rejected
                                 + "\n\nREPAIR ONLY THIS SEGMENT. Correct these violations:\n- "
                                 + "\n- ".join(feedback)
-                                + "\nReturn the complete event_cards object required by the schema. Maestro supplies the clock and ownership. "
+                                + "\nReturn the complete event_cards object required by the schema. Режиссёр 2.0 supplies the clock and ownership. "
                                 "Correct the named cards and preserve the other cards. "
                                 "Do not add, repeat, recap, or preview any event."
                             ),
@@ -15458,8 +15458,8 @@ def _render_h3_story_segments(
                     event_numbers = ", ".join(key.removeprefix("event_") for key in recovered_keys)
                     planning_warnings.append(
                         f"Window {segment_number}'s camera coverage for event(s) {event_numbers} "
-                        f"did not satisfy Maestro's fidelity checks after {camera_repair_attempts} "
-                        "focused repair attempts. Maestro compiled only those event camera cards "
+                        f"did not satisfy Режиссёр 2.0's fidelity checks after {camera_repair_attempts} "
+                        "focused repair attempts. Режиссёр 2.0 compiled only those event camera cards "
                         "from the locked source and preserved the other camera cards."
                     )
                     review_windows.add(segment_number)
@@ -15493,9 +15493,9 @@ def _render_h3_story_segments(
                 if item
             )
             planning_warnings.append(
-                f"Window {segment_number}'s camera plan did not satisfy Maestro's "
+                f"Window {segment_number}'s camera plan did not satisfy Режиссёр 2.0's "
                 f"fidelity checks after {camera_repair_attempts} focused repair attempt"
-                f"{'s' if camera_repair_attempts != 1 else ''}, so Maestro compiled that window directly from "
+                f"{'s' if camera_repair_attempts != 1 else ''}, so Режиссёр 2.0 compiled that window directly from "
                 "the locked source events."
             )
             source_fallback = None
@@ -15565,7 +15565,7 @@ def _render_h3_story_segments(
             )
             planning_warnings.append(
                 f"Window {segment_number}'s final camera staging conflicted with "
-                "its locked speaker map, so Maestro corrected only that staging "
+                "its locked speaker map, so Режиссёр 2.0 corrected only that staging "
                 "while preserving its story action and exact dialogue."
             )
             review_windows.add(segment_number)

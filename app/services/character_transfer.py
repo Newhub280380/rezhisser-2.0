@@ -18,7 +18,7 @@ _lock = threading.Lock()
 
 
 def _headers() -> dict:
-    headers = {"User-Agent": "Maestro-Character-Import"}
+    headers = {"User-Agent": "Режиссёр 2.0-Character-Import"}
     try:
         from huggingface_hub import get_token
         token = get_token()

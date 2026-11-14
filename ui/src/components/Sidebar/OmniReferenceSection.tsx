@@ -918,7 +918,7 @@ export function OmniReferenceSection({
 
       {references.filter(reference => reference.type === 'video').reduce((sum, reference) => sum + (Number(reference.duration_seconds) || 0), 0) > 15 && (
         <p className="text-[8px] leading-relaxed text-text-muted">
-          H3 accepts 15 seconds of video references per window, shared across videos. Timeline references advance with each window; Maestro balances the reference budget and keeps your originals.
+          H3 accepts 15 seconds of video references per window, shared across videos. Timeline references advance with each window; Режиссёр 2.0 balances the reference budget and keeps your originals.
         </p>
       )}
 

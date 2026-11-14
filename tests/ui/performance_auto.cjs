@@ -69,7 +69,7 @@ const playwright = require(process.env.MAESTRO_PLAYWRIGHT || 'playwright');
     await page.getByText(/Last generation: Profile 4.5/).click();
     assert.ok(await page.getByText(/allowance covers transformer weights/).isVisible());
     await page.getByRole('button',{name:'Re-detect',exact:true}).click();
-    await page.getByText('Auto-tune applied — restart Maestro to activate the memory allocator',{exact:true}).waitFor();
+    await page.getByText('Auto-tune applied — restart Режиссёр 2.0 to activate the memory allocator',{exact:true}).waitFor();
     assert.equal(applies,1);
     await page.getByLabel('Video VRAM Preload',{exact:true}).selectOption('manual');
     await page.getByText('Auto-tune off',{exact:true}).waitFor();

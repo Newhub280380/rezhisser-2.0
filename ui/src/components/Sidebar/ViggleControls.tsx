@@ -289,7 +289,7 @@ export function ViggleControls() {
           } catch (e) { setError(e instanceof Error ? e.message : 'Could not open the frame editor') }
           finally { setBusy(false) }
         }} className="flex w-full min-h-10 items-center justify-center gap-2 rounded-xl border border-border bg-bg-tertiary px-3 py-2 text-xs text-text-secondary disabled:opacity-40 hover:border-accent-blue">
-          <WandSparkles size={15} />Edit current video frame in Maestro
+          <WandSparkles size={15} />Edit current video frame in Режиссёр 2.0
         </button>
         <p className="text-[10px] leading-relaxed text-text-muted">Select a clear frame with the white playhead. Change the subject, keeping its pose, background, framing and image dimensions.</p>
         </>}

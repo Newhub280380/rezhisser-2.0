@@ -36,7 +36,7 @@ _PROFILE_CHOICES = frozenset((0.0, 1.0, 2.0, 3.0, 3.5, 4.0, 4.5, 5.0))
 _PROFILE_UPDATE_KEYS = ("video_profile", "image_profile", "audio_profile")
 _VRAM_ALLOCATOR_CHOICES = frozenset(("default", "vmm", "vmm_spill"))
 FISH_RUNTIME_LIMITATION = (
-    "The WanGP9905 expert-bank API is incompatible with Maestro's current Fish "
+    "The WanGP9905 expert-bank API is incompatible with Режиссёр 2.0's current Fish "
     "Audio adapter. Use the default MMGP 4.0 runtime for Fish until its formats, "
     "residency hooks, CPU execution, and graph paths are ported and validated."
 )
@@ -63,7 +63,7 @@ class RuntimeSelection:
     def label(self) -> str:
         if self.backend == EXPERIMENTAL_PROFILE0_RUNTIME:
             return EXPERIMENTAL_PROFILE0_LABEL
-        return "Maestro MMGP 4.0 (default)"
+        return "Режиссёр 2.0 MMGP 4.0 (default)"
 
     @property
     def pinned_commit(self) -> str | None:
@@ -348,7 +348,7 @@ def runtime_snapshot(
             "selected_label": (
                 EXPERIMENTAL_PROFILE0_LABEL
                 if saved == EXPERIMENTAL_PROFILE0_RUNTIME
-                else "Maestro MMGP 4.0 (default)"
+                else "Режиссёр 2.0 MMGP 4.0 (default)"
             ),
             "active_label": "MMGP source not verified",
             "experimental_runtime_selectable": False,
@@ -411,7 +411,7 @@ def runtime_snapshot(
         "selected_label": (
             EXPERIMENTAL_PROFILE0_LABEL
             if saved == EXPERIMENTAL_PROFILE0_RUNTIME
-            else "Maestro MMGP 4.0 (default)"
+            else "Режиссёр 2.0 MMGP 4.0 (default)"
         ),
         "active_label": selection.label,
         "experimental_runtime_selectable": native.present,
@@ -548,7 +548,7 @@ def validate_system_memory_updates(
     """Validate System API memory fields before any config mutation.
 
     Returns ``(memory_updates, runtime_updates)``. This combines the existing
-    Maestro memory-setting validator with runtime-specific compatibility
+    Режиссёр 2.0 memory-setting validator with runtime-specific compatibility
     checks, while leaving persistence and server mutation to the API layer.
     """
     from services.memory_settings import validate_memory_updates
@@ -626,7 +626,7 @@ def profile_options(
     supplied = dict(manual_options or {})
     if selection.backend == EXPERIMENTAL_PROFILE0_RUNTIME:
         require_profile(selection, profile)
-        # Maestro's init_pipe always adds readAhead=False as a legacy default.
+        # Режиссёр 2.0's init_pipe always adds readAhead=False as a legacy default.
         # MMGP 4.4 removed that API, so pass no kwarg for the disabled case and
         # fail closed when a user explicitly relies on its old behavior.
         read_ahead = supplied.pop("readAhead", None)
@@ -654,7 +654,7 @@ def profile_options(
     ):
         raise MemoryRuntimeError(
             "WanGP9905 CUDA graph capture is disabled in this staging because "
-            "Maestro graph and Fish expert parity has not been validated."
+            "Режиссёр 2.0 graph and Fish expert parity has not been validated."
         )
     return options
 
@@ -730,12 +730,12 @@ def graph_policy(
             raise MemoryRuntimeError(
                 "CUDA graphs are not enabled with the staged WanGP9905 backend; "
                 "the upstream graph implementation has not been validated against "
-                "Maestro's model, Fish, cleanup, or restart paths."
+                "Режиссёр 2.0's model, Fish, cleanup, or restart paths."
             )
         return False
-    # Preserve Maestro's existing Fish whole-frame graph allowance exactly.
+    # Preserve Режиссёр 2.0's existing Fish whole-frame graph allowance exactly.
     if wants_graphs and value not in (1.0, 3.0):
         raise MemoryRuntimeError(
-            "Maestro Fish whole-frame graphs are supported only for profiles 1 and 3."
+            "Режиссёр 2.0 Fish whole-frame graphs are supported only for profiles 1 and 3."
         )
     return wants_graphs

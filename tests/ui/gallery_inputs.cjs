@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '../..');
 const esbuild = require(path.join(root, 'ui/node_modules/esbuild'));
 const {chromium} = require(process.env.MAESTRO_PLAYWRIGHT || 'playwright');
 const base = process.argv[2];
-if (!base) throw new Error('Pass the running Maestro URL (read-only model catalogue).');
+if (!base) throw new Error('Pass the running Режиссёр 2.0 URL (read-only model catalogue).');
 const read = async endpoint => {
   const response = await fetch(base + endpoint);
   assert.ok(response.ok, endpoint);

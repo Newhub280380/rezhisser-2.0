@@ -1,6 +1,6 @@
 // Run after UI dependencies are installed: node tests/ui/editor_director_import.cjs
 // This mounts the real Editor Zustand store and intercepts every request. It
-// never contacts the running Maestro app or reads/writes a saved Editor project.
+// never contacts the running Режиссёр 2.0 app or reads/writes a saved Editor project.
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const root = path.resolve(__dirname, '../..');

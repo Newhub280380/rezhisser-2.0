@@ -2330,7 +2330,7 @@ def _normalize_interrupted_repair(state: dict, pid: str) -> bool:
     """Mark a persisted active repair interrupted when its worker is gone.
 
     Browser reloads leave the non-daemon worker registered, so they continue
-    normally.  A Maestro process restart removes the registry; changing the
+    normally.  A Режиссёр 2.0 process restart removes the registry; changing the
     saved status makes that distinction visible and leaves Repair available as
     an idempotent resume-from-disk operation.
     """
@@ -2354,8 +2354,8 @@ def _normalize_interrupted_repair(state: dict, pid: str) -> bool:
         "status": "interrupted",
         "phase": "interrupted",
         "clip_index": None,
-        "message": "Repair was interrupted when Maestro stopped. Start Repair again to continue.",
-        "error": "Maestro stopped before the repair finished.",
+        "message": "Repair was interrupted when Режиссёр 2.0 stopped. Start Repair again to continue.",
+        "error": "Режиссёр 2.0 stopped before the repair finished.",
         "updated_at": now,
         "completed_at": now,
     })
@@ -4477,7 +4477,7 @@ def _load_director_queue_locked(base_out_dir: str) -> dict:
     for entry in entries:
         if isinstance(entry, dict) and entry.get("status") == "running":
             entry["status"] = "held"
-            entry["message"] = "Interrupted when Maestro stopped; ready to resume"
+            entry["message"] = "Interrupted when Режиссёр 2.0 stopped; ready to resume"
             entry["pipeline_id"] = None
             interrupted = True
     state["entries"] = entries
@@ -6377,7 +6377,7 @@ def get_pipeline_drafts(pid: str, out_dir: str) -> Optional[list]:
 def get_pipeline_status(pid: str, out_dir: str) -> Optional[dict]:
     """Return live status or a terminal disk snapshot after a UI reconnect.
 
-    Browser tabs can survive a Maestro restart while the in-memory registry
+    Browser tabs can survive a Режиссёр 2.0 restart while the in-memory registry
     cannot. Returning the saved terminal/crashed state lets the frontend stop
     polling instead of issuing a 404 every two seconds forever.
     """
@@ -6411,7 +6411,7 @@ def get_pipeline_status(pid: str, out_dir: str) -> Optional[dict]:
         "completed": "Director generation completed",
         "cancelled": "Director generation cancelled",
         "failed": "Director generation failed",
-        "crashed": "Director generation was interrupted when Maestro stopped",
+        "crashed": "Director generation was interrupted when Режиссёр 2.0 stopped",
     }.get(saved_status, "Saved Director generation")
     saved_progress = saved.get("progress")
     if not isinstance(saved_progress, dict):
@@ -6487,7 +6487,7 @@ def get_pipeline_status(pid: str, out_dir: str) -> Optional[dict]:
             if clip.get("selected_take_id")
         },
         "error": saved.get("error") or (
-            "Maestro no longer has a live worker for this Director run."
+            "Режиссёр 2.0 no longer has a live worker for this Director run."
             if saved_status == "crashed" else None
         ),
         "pause_reason": None,
@@ -9296,7 +9296,7 @@ def _run_video_generation(pid: str, params: dict, clip_plans: list[dict],
             "shot manifest(s) with explicitly mapped visual and audio roles."
         )
         if has_exact_target_audio:
-            # ``D`` is Maestro's internal exact-drive marker. ``A`` keeps
+            # ``D`` is Режиссёр 2.0's internal exact-drive marker. ``A`` keeps
             # WGP's source-audio slicing active; ``D`` tells Ref2VA to place
             # that slice on the target audio timeline (and mux the pristine
             # source) instead of treating it as a creative audio reference.

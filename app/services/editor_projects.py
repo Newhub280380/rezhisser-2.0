@@ -1,4 +1,4 @@
-"""Project persistence and FFmpeg rendering for Maestro Editor.
+"""Project persistence and FFmpeg rendering for Режиссёр 2.0 Editor.
 
 The Editor is deliberately non-destructive: project JSON contains references
 to source media plus timeline instructions, while export always writes a new

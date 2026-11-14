@@ -1,4 +1,4 @@
-/* Maestro notification worker. Application assets are intentionally not
+/* Режиссёр 2.0 notification worker. Application assets are intentionally not
  * cached: Pinokio updates must always load the current UI bundle. */
 self.addEventListener('install', () => self.skipWaiting())
 
@@ -13,7 +13,7 @@ self.addEventListener('push', event => {
   } catch {
     payload = { body: event.data ? event.data.text() : '' }
   }
-  const title = payload.title || 'Maestro'
+  const title = payload.title || 'Режиссёр 2.0'
   event.waitUntil((async () => {
     if (payload.onlyWhenHidden) {
       const windows = await self.clients.matchAll({
@@ -23,7 +23,7 @@ self.addEventListener('push', event => {
       if (windows.some(client => client.visibilityState === 'visible')) return
     }
     await self.registration.showNotification(title, {
-      body: payload.body || 'Your Maestro generation has finished.',
+      body: payload.body || 'Your Режиссёр 2.0 generation has finished.',
       icon: '/maestro-icon.png',
       badge: '/maestro-icon.png',
       tag: payload.tag || 'maestro-generation',

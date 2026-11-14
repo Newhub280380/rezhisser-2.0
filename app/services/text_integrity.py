@@ -1,6 +1,6 @@
 """Conservative text-integrity helpers for user and LLM authored content.
 
-Maestro is UTF-8 end to end, but older saved projects and a few Windows HTTP
+Режиссёр 2.0 is UTF-8 end to end, but older saved projects and a few Windows HTTP
 boundaries have historically decoded UTF-8 bytes as Windows-1252/Latin-1.
 That turns text such as ``Wörter`` into ``WÃ¶rter`` and curly punctuation into
 ``â€™``.  The repair here is deliberately evidence-based: a re-decoded candidate
@@ -30,7 +30,7 @@ _KNOWN_REPLACEMENTS = {
     "\u00e2\u20ac\u201d": "\u2014",
     "\u00e2\u20ac\u00a6": "\u2026",
     "\u00c2\u00a0": " ",
-    # Observed in older Maestro Windows JSON: the leading UTF-8 byte for
+    # Observed in older Режиссёр 2.0 Windows JSON: the leading UTF-8 byte for
     # punctuation became U+0101 before the continuation bytes survived.
     "\u0101\u0080\u0098": "\u2018",
     "\u0101\u0080\u0099": "\u2019",

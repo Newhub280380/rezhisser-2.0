@@ -1,14 +1,14 @@
-"""Concise, public guidance for using ComfyUI through Maestro and Agent Access."""
+"""Concise, public guidance for using ComfyUI through Режиссёр 2.0 and Agent Access."""
 from __future__ import annotations
 
 
 def get_comfyui_guide() -> dict[str, object]:
     """Return the MCP-facing ComfyUI workflow and safety guide."""
     return {
-        "title": "ComfyUI workflows in Maestro",
+        "title": "ComfyUI workflows in Режиссёр 2.0",
         "overview": (
-            "ComfyUI is optional and disabled by default. Maestro connects to an "
-            "existing ComfyUI server. Maestro serializes its own generation jobs "
+            "ComfyUI is optional and disabled by default. Режиссёр 2.0 connects to an "
+            "existing ComfyUI server. Режиссёр 2.0 serializes its own generation jobs "
             "and unloads native models before a ComfyUI job. The optional dedicated "
             "memory setting asks ComfyUI to free its idle models; it does not create "
             "a separate process or reserve GPU memory. ComfyUI may share GPU memory "
@@ -20,7 +20,7 @@ def get_comfyui_guide() -> dict[str, object]:
                 "Register a trusted ComfyUI API-format prompt graph (the graph "
                 "accepted by ComfyUI's prompt endpoint), not a canvas/UI export. "
                 "Provide its image, video, or audio kind and typed bindings. "
-                "Registration stores the graph; Maestro does not execute it and "
+                "Registration stores the graph; Режиссёр 2.0 does not execute it and "
                 "does not install custom nodes automatically. It does not expose "
                 "arbitrary raw server dispatch."
             ),
@@ -28,7 +28,7 @@ def get_comfyui_guide() -> dict[str, object]:
         "bindings_and_preflight": {
             "endpoint": "POST /api/v1/comfyui/workflows/{id}/validate",
             "instructions": (
-                "Bind Maestro inputs to explicit graph node IDs and input names. "
+                "Bind Режиссёр 2.0 inputs to explicit graph node IDs and input names. "
                 "Validate with {\"inputs\": {...}} using the current selected "
                 "values, including the checkpoint, before running. Read "
                 "GET /api/v1/comfyui/workflows/{id}/options with Manage access "
@@ -52,11 +52,11 @@ def get_comfyui_guide() -> dict[str, object]:
             "VAE filenames selected from that ComfyUI server. Its templates use "
             "16 Euler/simple steps, CFG 1, and independently selected output "
             "dimensions. Do not apply these distilled defaults to Klein Base "
-            "or assume every Maestro quantized export is ComfyUI-compatible."
+            "or assume every Режиссёр 2.0 quantized export is ComfyUI-compatible."
         ),
         "native_routes": (
-            "Maestro keeps its native engine as the default. A ComfyUI route is "
-            "opt-in per model type and runs through Maestro's shared generation "
+            "Режиссёр 2.0 keeps its native engine as the default. A ComfyUI route is "
+            "opt-in per model type and runs through Режиссёр 2.0's shared generation "
             "boundary. For image and video routes, map prompt, seed, width, height, "
             "num_inference_steps, and guidance_scale; video routes also map "
             "video_length and fps. Other values such as references, audio, LoRAs, "
@@ -69,7 +69,7 @@ def get_comfyui_guide() -> dict[str, object]:
             "Model discovery and scanning read configured model folders without "
             "loading tensor payloads or using the GPU. Linking records existing "
             "paths; it does not copy, move, rename, or delete model files. A "
-            "filename match alone does not prove native compatibility. Maestro "
+            "filename match alone does not prove native compatibility. Режиссёр 2.0 "
             "does not download models or install custom nodes automatically."
         ),
         "submission_and_recovery": {
@@ -78,7 +78,7 @@ def get_comfyui_guide() -> dict[str, object]:
             "resume_endpoint": "POST /api/v1/comfyui/jobs/by-submission/{uuid}/resume",
             "abandon_endpoint": "POST /api/v1/comfyui/jobs/by-submission/{uuid}/abandon",
             "instructions": (
-                "Run only a registered workflow ID, with authorized Maestro asset "
+                "Run only a registered workflow ID, with authorized Режиссёр 2.0 asset "
                 "references for media and a fresh client_submission_id UUID for "
                 "each logical run. If the POST outcome is unclear, GET the receipt "
                 "for that exact UUID before taking action. The resume endpoint "

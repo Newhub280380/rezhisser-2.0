@@ -1,4 +1,4 @@
-"""Queued face refinement for new generations and existing Maestro videos."""
+"""Queued face refinement for new generations and existing Режиссёр 2.0 videos."""
 from __future__ import annotations
 
 import atexit

@@ -74,14 +74,14 @@ const EDIT_CLIP: StudioWorkflowOption<DisplayVideoWorkflow> = {
 const LEGACY_MULTISHOT: StudioWorkflowOption<DisplayVideoWorkflow> = {
   value: 'legacy_multishot',
   label: 'Multi-Shot (Legacy)',
-  description: 'Loaded from an older Maestro project',
+  description: 'Loaded from an older Режиссёр 2.0 project',
   icon: PanelsTopLeft,
 }
 
 const LEGACY_INPAINT: StudioWorkflowOption<DisplayVideoWorkflow> = {
   value: 'legacy_inpaint',
   label: 'Inpaint (Legacy)',
-  description: 'Loaded from an experimental Maestro project',
+  description: 'Loaded from an experimental Режиссёр 2.0 project',
   icon: FlaskConical,
 }
 

@@ -352,7 +352,7 @@ async function main() {
       openDetailsWithText(tree, 'Saved local client');
       assert.ok(buttonByText(tree, 'Download Claude Desktop extension'));
       assert.match(visibleText(tree), /Claude Desktop → Settings → Extensions → Install Extension/);
-      assert.match(visibleText(tree), /same computer where Maestro runs/);
+      assert.match(visibleText(tree), /same computer where Режиссёр 2.0 runs/);
       await buttonByText(tree, 'Download Claude Desktop extension').props.onClick();
       await settle();
       tree = renderer.render(component.LocalMcpSettings, componentProps);
@@ -431,7 +431,7 @@ async function main() {
     assert.match(source, /type <code>\/mcp<\/code>/);
     assert.match(source, /Download Claude Desktop extension/);
     assert.match(source, /Claude Desktop → Settings → Extensions → Install Extension/);
-    assert.match(source, /same computer where Maestro runs/);
+    assert.match(source, /same computer where Режиссёр 2.0 runs/);
     assert.doesNotMatch(source, /Copy launch command/);
     assert.match(source, /setOpenClientId\(client\.id\)/, 'new clients open directly to their app setup');
     assert.doesNotMatch(source, /Add custom connector/);
@@ -446,7 +446,7 @@ async function main() {
     assert.match(source, /\[invalidateSetup, refresh, refreshKey\]/, 'a local grant refresh invalidates and reloads the child setup');
     assert.match(source, /if \(generation !== setupGeneration\.current\) return/, 'a download completing after revocation does not publish stale setup');
     assert.match(source, /className="min-w-0 break-all[^\"]*">Form value:/, 'long current default IDs wrap in narrow layouts');
-    assert.match(source, /className="min-w-0 break-all[^\"]*">Last saved by Maestro:/, 'long saved default IDs wrap in narrow layouts');
+    assert.match(source, /className="min-w-0 break-all[^\"]*">Last saved by Режиссёр 2.0:/, 'long saved default IDs wrap in narrow layouts');
     const remotePanel = fs.readFileSync(path.join(root, 'ui/src/components/SettingsDrawer/AgentAccessSettingsPanel.tsx'), 'utf8');
     assert.match(remotePanel, /grant\.transport === 'local'\) setLocalClientRefreshKey/);
     assert.match(remotePanel, /<LocalMcpSettings[^>]*refreshKey=\{localClientRefreshKey\}/);

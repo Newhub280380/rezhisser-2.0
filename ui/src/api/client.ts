@@ -1742,7 +1742,7 @@ export async function submitRecast(params: {
   isolate_reference?: boolean;
   /** Derive a tighter same-character identity view when none is supplied. */
   auto_face_detail?: boolean;
-  /** Rewrite and append Maestro's identity/scene continuity guidance. */
+  /** Rewrite and append Режиссёр 2.0's identity/scene continuity guidance. */
   enhance_prompt?: boolean;
   /** Strict post-composite fallback; may create visible lighting/color seams. */
   protect_bystanders?: boolean;
@@ -2836,7 +2836,7 @@ export async function inspectH3Checkpoint(params: {
   const res = await fetch(`${BASE}/api/v1/civitai/checkpoint-inspect`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params),
   })
-  if (!res.ok) throw new Error('Could not inspect this H3 checkpoint. Restart Maestro after updating and try again.')
+  if (!res.ok) throw new Error('Could not inspect this H3 checkpoint. Restart Режиссёр 2.0 after updating and try again.')
   return res.json()
 }
 
@@ -3044,7 +3044,7 @@ export interface InstalledLora {
   suggested_name?: string
   version_label?: string | null
   /** File lives in a linked install's loras folder (read-only), not
-   *  Maestro's own. Sidecars/guides for it live in Maestro's mirror. */
+   *  Режиссёр 2.0's own. Sidecars/guides for it live in Режиссёр 2.0's mirror. */
   linked?: boolean
   trained_words: string[]
   preview_url: string | null

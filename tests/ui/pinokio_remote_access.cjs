@@ -243,7 +243,7 @@ async function testComponent() {
     assert.equal(currentManaged.ready, true, 'the owner status refresh, not the POST enabled flag, confirms readiness');
     tree = renderer.render(component.PinokioRemoteAccess, { ...props, managedStatus: currentManaged });
     assert.match(visibleText(tree), /MCP URL:\s+https:\/\/pinokio\.tail78df8a\.ts\.net:43000\/mcp/);
-    assert.match(visibleText(tree), /leave Maestro and Agent Access running/i);
+    assert.match(visibleText(tree), /leave Режиссёр 2.0 and Agent Access running/i);
 
     publicStatus = notReady;
     const noReadyRenderer = createRenderer(jsx);

@@ -174,7 +174,7 @@ class SearchIndex:
                 for lora in active_loras:
                     self._append_searchable(searchable_parts, lora)
 
-            # Acceleration labels are deliberately conditional. Maestro stores
+            # Acceleration labels are deliberately conditional. Режиссёр 2.0 stores
             # the default H3 Turbo preset even while Turbo is disabled, so
             # indexing that field unconditionally would make a search for
             # "turbo" return ordinary full-step generations.
@@ -252,7 +252,7 @@ class SearchIndex:
 
     @staticmethod
     def _append_resolution_aliases(parts: list[str], resolution: str) -> None:
-        """Index exact dimensions plus Maestro's familiar preset labels."""
+        """Index exact dimensions plus Режиссёр 2.0's familiar preset labels."""
         import re
 
         match = re.fullmatch(r"\s*(\d+)\s*[xX×]\s*(\d+)\s*", resolution)

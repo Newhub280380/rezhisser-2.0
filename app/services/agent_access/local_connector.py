@@ -271,7 +271,7 @@ def local_server_class(auth, client_id: str, credential: str):
 
 
 def create_local_mcp_server(backend, app_root, version, auth, client_id, credential):
-    """Create Maestro's shared toolset with a per-call local authorization hook."""
+    """Create Режиссёр 2.0's shared toolset with a per-call local authorization hook."""
     from .mcp_server import create_mcp_server
 
     return create_mcp_server(
@@ -290,7 +290,7 @@ def run_local_stdio(runtime, client_id: str, *, backend=None, version: str | Non
         version_file = runtime.app_root.parent / "VERSION"
         version = version_file.read_text(encoding="utf-8").strip()
     if not version or len(version) > 32:
-        raise ValueError("Invalid Maestro release version")
+        raise ValueError("Invalid Режиссёр 2.0 release version")
     created_backend = backend is None
     if created_backend:
         from .bridge import BackendClient

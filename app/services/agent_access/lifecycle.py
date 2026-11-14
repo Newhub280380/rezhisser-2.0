@@ -1,4 +1,4 @@
-"""Safe, durable Pinokio lifecycle requests for the local Maestro install.
+"""Safe, durable Pinokio lifecycle requests for the local Режиссёр 2.0 install.
 
 Lifecycle calls are delegated to Pinokio's own WebSocket API. The manager
 never starts Python model code directly and never accepts a caller-provided
@@ -362,18 +362,18 @@ def _installation_paths(app_root: Path | str, pinokio_home: Path) -> tuple[Path,
         project_root = supplied
         app_directory = (supplied / "app").resolve(strict=True)
     else:
-        raise LifecycleError(403, "Lifecycle control requires the Maestro app directory")
+        raise LifecycleError(403, "Lifecycle control requires the Режиссёр 2.0 app directory")
     has_maestro_source = (app_directory / "services" / "agent_access" / "__init__.py").is_file() and (app_directory / "launch.py").is_file() and (project_root / "VERSION").is_file()
     if project_root.name.casefold() not in _ALLOWED_APP_NAMES and not has_maestro_source:
-        raise LifecycleError(403, "Lifecycle control is only enabled for the installed Maestro or Maestro-dev app")
+        raise LifecycleError(403, "Lifecycle control is only enabled for the installed Режиссёр 2.0 or Maestro-dev app")
     api_root = (pinokio_home / "api").resolve(strict=True)
     if not _same_path(project_root.parent, api_root):
         raise LifecycleError(403, "Lifecycle control is disabled outside the installed PINOKIO_HOME/api app root")
     if not _same_path(app_directory, project_root / "app"):
-        raise LifecycleError(403, "The Maestro app directory is not a direct child of its launcher root")
+        raise LifecycleError(403, "The Режиссёр 2.0 app directory is not a direct child of its launcher root")
     for name in ("pinokio.js", "start.js", "update.js"):
         if not (project_root / name).is_file():
-            raise LifecycleError(503, "The installed Maestro Pinokio launcher is incomplete")
+            raise LifecycleError(503, "The installed Режиссёр 2.0 Pinokio launcher is incomplete")
     return project_root.resolve(strict=True), app_directory
 
 
@@ -423,7 +423,7 @@ def _acknowledgement(reply: Mapping[str, Any]) -> tuple[str, str]:
 
 
 class LifecycleManager:
-    """Coordinate owner-authorized Maestro actions through Pinokio only."""
+    """Coordinate owner-authorized Режиссёр 2.0 actions through Pinokio only."""
 
     def __init__(
         self,
@@ -455,14 +455,14 @@ class LifecycleManager:
         home = _resolve_pinokio_home(self.pinokio_home)
         app_root = getattr(self.runtime, "app_root", None)
         if app_root is None:
-            raise LifecycleError(503, "This controller has no verified Maestro app root")
+            raise LifecycleError(503, "This controller has no verified Режиссёр 2.0 app root")
         project_root, _app_directory = _installation_paths(app_root, home)
 
         if action == "status":
             status = await self._status(home, project_root)
             scripts = _running_scripts(status, project_root)
             if "__foreign__" in scripts:
-                raise LifecycleError(409, "Pinokio reported a script outside the installed Maestro root")
+                raise LifecycleError(409, "Pinokio reported a script outside the installed Режиссёр 2.0 root")
             backend = self._backend_record()
             return {
                 "action": "status",
@@ -490,7 +490,7 @@ class LifecycleManager:
             if maintenance:
                 if action == "update" and maintenance == ["update.js"]:
                     if engine_scripts:
-                        raise LifecycleError(409, "Pinokio reports an update and Maestro engine running together; inspect status")
+                        raise LifecycleError(409, "Pinokio reports an update and Режиссёр 2.0 engine running together; inspect status")
                     result = await self.receipts.reserve(
                         principal_id, request_id, action, {"target": "update.js", "already_running": True}
                     )
@@ -498,13 +498,13 @@ class LifecycleManager:
                         return result
                     result = self._accepted_result(action, request_id, "update.js", already_running=True)
                     return await self.receipts.finish(principal_id, request_id, "accepted", result)
-                raise LifecycleError(409, "Another Maestro maintenance script is running; inspect Pinokio before continuing")
+                raise LifecycleError(409, "Another Режиссёр 2.0 maintenance script is running; inspect Pinokio before continuing")
             unknown = sorted(script for script in scripts if script not in _ENGINE_SCRIPTS and script not in _KNOWN_AUXILIARY_SCRIPTS)
             if unknown:
-                raise LifecycleError(409, "Another Maestro script is running; inspect Pinokio before continuing")
+                raise LifecycleError(409, "Another Режиссёр 2.0 script is running; inspect Pinokio before continuing")
 
             if len(engine_scripts) > 1:
-                raise LifecycleError(409, "More than one Maestro launcher script is running; inspect Pinokio before continuing")
+                raise LifecycleError(409, "More than one Режиссёр 2.0 launcher script is running; inspect Pinokio before continuing")
             if action == "start" and engine_scripts:
                 result = await self.receipts.reserve(
                     principal_id, request_id, action, {"target": engine_scripts[0], "already_running": True}
@@ -514,9 +514,9 @@ class LifecycleManager:
                 result = self._accepted_result(action, request_id, engine_scripts[0], already_running=True)
                 return await self.receipts.finish(principal_id, request_id, "accepted", result)
             if action == "restart" and len(engine_scripts) != 1:
-                raise LifecycleError(409, "Maestro is not running in one verified Pinokio script; use Start or inspect status")
+                raise LifecycleError(409, "Режиссёр 2.0 is not running in one verified Pinokio script; use Start or inspect status")
             if action == "update" and not self.git_clean(project_root):
-                raise LifecycleError(409, "Update is blocked because the installed Maestro checkout has local changes")
+                raise LifecycleError(409, "Update is blocked because the installed Режиссёр 2.0 checkout has local changes")
 
             saved_profile = backend.get("launcher_script")
             if action == "start" and saved_profile not in _ENGINE_SCRIPTS:
@@ -596,7 +596,7 @@ class LifecycleManager:
             raise LifecycleError(503, "Pinokio returned an invalid status document")
         registered_path = status.get("path", status.get("app_path"))
         if not isinstance(registered_path, str) or not _same_path(Path(registered_path), project_root):
-            raise LifecycleError(409, "Pinokio could not verify this exact installed Maestro app; lifecycle action refused")
+            raise LifecycleError(409, "Pinokio could not verify this exact installed Режиссёр 2.0 app; lifecycle action refused")
         return status
 
     async def _dispatch(
@@ -660,13 +660,13 @@ class LifecycleManager:
         if len(engine_scripts) > 1:
             return  # The caller reports the more specific multiple-launcher error.
         if engine_scripts and not alive:
-            raise LifecycleError(409, "A Maestro launcher is still active without a verified ready backend; inspect Pinokio first")
+            raise LifecycleError(409, "A Режиссёр 2.0 launcher is still active without a verified ready backend; inspect Pinokio first")
         if engine_scripts and backend.get("launcher_script") != engine_scripts[0]:
             raise LifecycleError(409, "The running backend does not match the active Pinokio launcher; lifecycle action refused")
         if not engine_scripts and alive:
-            raise LifecycleError(409, "A Maestro backend process is not owned by a running Pinokio launcher; lifecycle action refused")
+            raise LifecycleError(409, "A Режиссёр 2.0 backend process is not owned by a running Pinokio launcher; lifecycle action refused")
         if "__foreign__" in running_scripts:
-            raise LifecycleError(409, "Pinokio reported a script outside the installed Maestro root")
+            raise LifecycleError(409, "Pinokio reported a script outside the installed Режиссёр 2.0 root")
 
     async def _wait_until_stopped(self, home: Path, project_root: Path, script: str) -> bool:
         deadline = asyncio.get_running_loop().time() + self.reconcile_timeout
@@ -710,7 +710,7 @@ class LifecycleManager:
             result["message"] = "The Pinokio script is already running; check status for readiness."
         if already_stopped:
             result["already_stopped"] = True
-            result["message"] = "The Maestro backend is already stopped."
+            result["message"] = "The Режиссёр 2.0 backend is already stopped."
         if dispatches is not None:
             result["dispatches"] = dispatches
         return result

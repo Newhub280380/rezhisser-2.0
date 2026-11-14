@@ -1,4 +1,4 @@
-"""Resumable song analysis using Maestro's existing local audio models."""
+"""Resumable song analysis using Режиссёр 2.0's existing local audio models."""
 import gc
 import json
 from pathlib import Path

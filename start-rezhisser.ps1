@@ -1,4 +1,4 @@
-# Rezhisser 2.0 (Maestro + cloud backend): start with one command, open the browser.
+# Rezhisser 2.0 (Режиссёр 2.0 + cloud backend): start with one command, open the browser.
 # No autostart, no scheduler: runs only when this script is started.
 #   start-rezhisser.cmd            start (or just open the browser if already running)
 #   start-rezhisser.cmd -Stop      stop the server started from this folder
@@ -42,7 +42,7 @@ if (Test-Up) {
 
 if (-not (Test-Path $Python)) {
     Write-Host "Python environment not found: $Python"
-    Write-Host "Install Maestro first (Pinokio Install), then run this script again."
+    Write-Host "Install Режиссёр 2.0 first (Pinokio Install), then run this script again."
     exit 1
 }
 

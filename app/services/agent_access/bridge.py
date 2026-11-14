@@ -59,7 +59,7 @@ class BackendClient:
     def target(self) -> str:
         record = self.runtime.backend()
         if not record.get("ready") or not process_alive(record.get("pid")):
-            raise BridgeError(503, "Maestro is stopped or not ready. Inspect workstation status before starting it.")
+            raise BridgeError(503, "Режиссёр 2.0 is stopped or not ready. Inspect workstation status before starting it.")
         return record["url"]
 
     def catalog_revision(self):
@@ -331,7 +331,7 @@ class BackendClient:
         parsed = urlsplit(path)
         decoded = unquote(path)
         if parsed.scheme or parsed.netloc or parsed.query or parsed.fragment or not path.startswith("/api/v1/") or "\\" in decoded or any(p in {".", ".."} for p in decoded.split("/")):
-            raise BridgeError(400, "Use a registered Maestro API operation")
+            raise BridgeError(400, "Use a registered Режиссёр 2.0 API operation")
         principal = scope_required(required_scope(method, path))
         if path.startswith("/api/v1/agent-access/jobs/"):
             return self._durable_job(principal, path.rsplit("/", 1)[-1])
@@ -400,7 +400,7 @@ class BackendClient:
                     if reserved_binary:
                         self.transfers.mark_uncertain(principal.id, idempotency_key, fingerprint)
                         reserved_binary = False
-                    raise BridgeError(response.status_code, message or f"Maestro returned HTTP {response.status_code}")
+                    raise BridgeError(response.status_code, message or f"Режиссёр 2.0 returned HTTP {response.status_code}")
 
                 if response_kind == "binary":
                     content_type = response.headers.get("content-type", "application/octet-stream")
@@ -451,9 +451,9 @@ class BackendClient:
         try:
             response = await self.client.get(self.target() + "/openapi.json", headers=headers)
         except httpx.HTTPError as error:
-            raise BridgeError(503, "Start Maestro to discover its installed capabilities") from error
+            raise BridgeError(503, "Start Режиссёр 2.0 to discover its installed capabilities") from error
         if response.status_code != 200 or len(response.content) > 8 * 1024 * 1024:
-            raise BridgeError(503, "Maestro's operation catalogue is not ready")
+            raise BridgeError(503, "Режиссёр 2.0's operation catalogue is not ready")
         return response.json()
 
     async def get_submission(self, request_id):
@@ -478,7 +478,7 @@ class BackendClient:
         return result if principal.owner else redact(result)
 
     async def fetch_media(self, filename, workspace=None):
-        """Fetch one visible Maestro file by basename into a private transfer artifact."""
+        """Fetch one visible Режиссёр 2.0 file by basename into a private transfer artifact."""
         if not isinstance(filename, str) or not filename.strip():
             raise BridgeError(400, "filename must be a non-empty basename")
         name = filename.strip()

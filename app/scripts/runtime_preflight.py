@@ -1,7 +1,7 @@
 """Print a concise startup audit of the active acceleration environment.
 
 This intentionally exits successfully even when an optional kernel is broken;
-the message tells Pinokio users to run Update while preserving Maestro's
+the message tells Pinokio users to run Update while preserving Режиссёр 2.0's
 existing fallback behavior for manually managed environments.
 """
 from __future__ import annotations
@@ -43,7 +43,7 @@ def main() -> int:
         import torch
     except Exception as exc:
         print(f"[Runtime][ACTION REQUIRED] PyTorch could not load: {exc}")
-        print("[Runtime][ACTION REQUIRED] Run Update in Pinokio to repair the Maestro runtime.")
+        print("[Runtime][ACTION REQUIRED] Run Update in Pinokio to repair the Режиссёр 2.0 runtime.")
         return 0
 
     cuda_available = bool(torch.cuda.is_available())
@@ -106,12 +106,12 @@ def main() -> int:
     if warnings:
         print(f"[Runtime][ACTION REQUIRED] {format_runtime_warnings(warnings)}.")
         print(
-            "[Runtime][ACTION REQUIRED] Run Update in Pinokio. Maestro will create "
+            "[Runtime][ACTION REQUIRED] Run Update in Pinokio. Режиссёр 2.0 will create "
             "the dedicated RTX 50 Python 3.11 / CUDA 13 environment automatically."
         )
         print(
             "[Runtime][ACTION REQUIRED] If Update already completed, use "
-            "Advanced > Repair RTX 50 Runtime in Maestro's Pinokio menu."
+            "Advanced > Repair RTX 50 Runtime in Режиссёр 2.0's Pinokio menu."
         )
     return 0
 

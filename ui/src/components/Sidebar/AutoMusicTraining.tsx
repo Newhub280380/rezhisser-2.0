@@ -67,7 +67,7 @@ export function AutoMusicTraining({project, styles, busy, run, onManual, onSelec
       {complete && saved && !saved.archived && <button type="button" className={primary} disabled={busy} onClick={() => onSelect(saved)}>Use LoRA &amp; try a song</button>}
       {complete && <p className="text-xs text-text-muted">Your LoRA is in Saved LoRAs. Try a song with new lyrics, or open either training stage below to continue it or compare earlier versions.</p>}
     </>}
-    <p className="text-xs text-text-muted">Runs in Maestro’s GPU queue and continues if you close this panel or browser. Keep Maestro running. After an app restart, use Resume Auto training.</p>
+    <p className="text-xs text-text-muted">Runs in Режиссёр 2.0’s GPU queue and continues if you close this panel or browser. Keep Режиссёр 2.0 running. After an app restart, use Resume Auto training.</p>
     {summary && <details className="space-y-2 border-t border-border pt-3 text-xs text-text-muted">
       <summary className="cursor-pointer">Dataset: {summary.training_clips} training clips · {summary.check_clips} check-only clips</summary>
       <p>{summary.unreviewed_clips} clips were selected without human review. Check-only recordings never teach the model.</p>

@@ -1,9 +1,9 @@
 """Compatibility gates for user-imported CivitAI checkpoints.
 
-Maestro can reuse a downloaded checkpoint only when its transformer matches a
-pipeline architecture that Maestro already implements.  CivitAI's generic
+Режиссёр 2.0 can reuse a downloaded checkpoint only when its transformer matches a
+pipeline architecture that Режиссёр 2.0 already implements.  CivitAI's generic
 ``Checkpoint`` type also contains SDXL and many other model families that
-Maestro cannot load through the WanGP finetune mechanism.  This module keeps
+Режиссёр 2.0 cannot load through the WanGP finetune mechanism.  This module keeps
 that distinction explicit and validates SafeTensor shapes without loading any
 weights into RAM or VRAM.
 
@@ -41,9 +41,9 @@ class CheckpointTarget:
 
 
 # This is intentionally an allowlist.  A CivitAI base that is absent here is
-# not silently treated as the first model in Maestro's architecture list.
+# not silently treated as the first model in Режиссёр 2.0's architecture list.
 # Additional families can be enabled once their checkpoint layout is verified
-# against Maestro's loader.
+# against Режиссёр 2.0's loader.
 _CHECKPOINT_TARGETS: dict[str, tuple[CheckpointTarget, ...]] = {
     "minimax h3": (
         CheckpointTarget("minimax_h3", "minimax_h3", "H3 Frames — Pruned"),
@@ -89,7 +89,7 @@ _CHECKPOINT_TARGETS: dict[str, tuple[CheckpointTarget, ...]] = {
         ),
     ),
     # CivitAI calls LTX-2.0 ``LTXV2`` and LTX-2.3 ``LTXV 2.3``.  They are
-    # different Maestro architectures despite the nearly identical labels.
+    # different Режиссёр 2.0 architectures despite the nearly identical labels.
     "ltxv2": (
         CheckpointTarget("ltx2_19B", "ltx2_19B", "LTX-2.0 19B"),
     ),
@@ -121,7 +121,7 @@ def _base_key(base_model: str) -> str:
 
 
 def checkpoint_targets_for_base(base_model: str) -> tuple[CheckpointTarget, ...]:
-    """Return only the verified Maestro targets for a CivitAI base label."""
+    """Return only the verified Режиссёр 2.0 targets for a CivitAI base label."""
 
     return _CHECKPOINT_TARGETS.get(_base_key(base_model), ())
 
@@ -150,17 +150,17 @@ def unsupported_checkpoint_reason(base_model: str) -> str:
     label = str(base_model or "").strip()
     if not label:
         return (
-            "CivitAI did not identify this checkpoint's base model, so Maestro "
+            "CivitAI did not identify this checkpoint's base model, so Режиссёр 2.0 "
             "cannot safely choose a compatible pipeline."
         )
     if label.casefold().startswith("sdxl") or "stable diffusion xl" in label.casefold():
         return (
-            f"{label} checkpoints are not supported by Maestro's current image "
+            f"{label} checkpoints are not supported by Режиссёр 2.0's current image "
             "pipelines. Use a verified Flux, Krea 2, Qwen Image, or Z-Image "
             "checkpoint instead."
         )
     return (
-        f"Maestro does not yet have a verified checkpoint-import pipeline for "
+        f"Режиссёр 2.0 does not yet have a verified checkpoint-import pipeline for "
         f"CivitAI base '{label}'. The file was not assigned to another model "
         "family because that would fail during generation."
     )
@@ -448,7 +448,7 @@ def validate_checkpoint_file(
     is_h3 = _base_key(base_model) == "minimax h3"
     if extension not in ({".safetensors", ".sft", ".gguf"} if is_h3 else {".safetensors", ".sft"}):
         raise CheckpointCompatibilityError(
-            "Maestro checkpoint import currently supports SafeTensor files only."
+            "Режиссёр 2.0 checkpoint import currently supports SafeTensor files only."
         )
 
     if is_h3:
@@ -479,7 +479,7 @@ def validate_checkpoint_file(
                 f"{target_architecture} pipeline. It cannot be registered."
             )
         raise CheckpointCompatibilityError(
-            f"Checkpoint tensors do not match Maestro's verified "
+            f"Checkpoint tensors do not match Режиссёр 2.0's verified "
             f"{target_architecture} layout. It may be a full Diffusers bundle, "
             "an unsupported architecture, or a mislabeled upload. It cannot be registered."
         )
@@ -530,7 +530,7 @@ def quarantine_incompatible_checkpoint_definitions(app_dir: str) -> list[dict]:
     """Hide unsafe legacy CivitAI imports before WanGP builds its model list.
 
     The checkpoint itself is never deleted.  A marker records the prior
-    visibility so a future Maestro update that adds verified support can safely
+    visibility so a future Режиссёр 2.0 update that adds verified support can safely
     restore it.  Valid definitions are left untouched.
     """
 

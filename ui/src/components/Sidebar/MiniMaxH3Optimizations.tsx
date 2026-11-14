@@ -55,7 +55,7 @@ export function MiniMaxH3Optimizations() {
   const configuredTurboPreset = turboPresets.find(
     preset => preset.id === params.minimax_h3_turbo_preset,
   )
-  // A disabled recipe starts from Maestro's current recommendation when it
+  // A disabled recipe starts from Режиссёр 2.0's current recommendation when it
   // is enabled again. Preserve a user's alternate checkpoint while Turbo is
   // actively selected, but do not let the former six-step default remain a
   // hidden default forever in persisted pre-PDD state.
@@ -171,7 +171,7 @@ export function MiniMaxH3Optimizations() {
 
   const solHelp = solSupported
     ? 'Uses H3-aware sparse attention with exact reference and audio conditioning. Its compiled kernels are cached across restarts, and unsupported calls fall back automatically.'
-    : `${modelOptions?.sol_attention_status?.reason || 'Sol Engine is unavailable in this runtime.'} On supported hardware, run Maestro's normal Pinokio Update to install or repair the H3 performance runtime.`
+    : `${modelOptions?.sol_attention_status?.reason || 'Sol Engine is unavailable in this runtime.'} On supported hardware, run Режиссёр 2.0's normal Pinokio Update to install or repair the H3 performance runtime.`
 
   return (
     <div className="space-y-2">
@@ -388,7 +388,7 @@ export function MiniMaxH3Optimizations() {
                     ? slaExperimental
                       ? pikaFlex ? 'Default on supported GPUs. Uses 90% block-sparse attention and safely falls back to dense attention when unavailable. Compare motion and audio; the first use compiles Triton kernels.' : 'Uses 90% block-sparse attention on this Full or Pruned checkpoint. Off by default; speed, motion, reference fidelity and audio quality need comparison. The first use compiles Triton kernels. Reference and audio prefix rows stay protected.'
                       : 'Uses the checkpoint author\'s 90% block-sparse SLA recipe. The first use compiles and caches Triton kernels; reference and audio prefix rows stay protected.'
-                    : `${modelOptions?.sla_attention_status?.reason || 'SLA is unavailable in this runtime.'} Maestro will automatically use dense attention.`}
+                    : `${modelOptions?.sla_attention_status?.reason || 'SLA is unavailable in this runtime.'} Режиссёр 2.0 will automatically use dense attention.`}
                 />
               </div>
             )}

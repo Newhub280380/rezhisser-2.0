@@ -387,7 +387,7 @@ def _download_asset(
         raise RuntimeInstallError(f"Invalid pinned audio.cpp asset filename: {asset.name!r}")
     request = urllib.request.Request(
         asset.url,
-        headers={"User-Agent": "Maestro-FishSmall-runtime"},
+        headers={"User-Agent": "Режиссёр 2.0-FishSmall-runtime"},
     )
     digest = hashlib.sha256()
     downloaded = 0

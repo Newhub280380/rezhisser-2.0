@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Maestro AI Studio",
-  "short_name": "Maestro",
+  "name": "Режиссёр 2.0 AI Studio",
+  "short_name": "Режиссёр 2.0",
   "description": "Local AI video, image, and music studio",
   "start_url": "/",
   "scope": "/",

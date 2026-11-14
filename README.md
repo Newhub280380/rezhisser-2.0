@@ -1,8 +1,8 @@
-# Maestro
+# Режиссёр 2.0
 
-A one-click local AI **creative studio, director, and video editor** for creators. Maestro combines a modern interface with powerful image, video, and audio generation, an LLM-directed production workflow, and a non-destructive multi-track editor. Optimized for LTX-2.5, MiniMax H3, and the latest local creative models and LoRAs.
+A one-click local AI **creative studio, director, and video editor** for creators. Режиссёр 2.0 combines a modern interface with powerful image, video, and audio generation, an LLM-directed production workflow, and a non-destructive multi-track editor. Optimized for LTX-2.5, MiniMax H3, and the latest local creative models and LoRAs.
 
-![Maestro v4 Studio in Graphite Dark with an experimental Pika H3 Flex video](docs/images/maestro-ui-october-2026.png)
+![Режиссёр 2.0 v4 Studio in Graphite Dark with an experimental Pika H3 Flex video](docs/images/maestro-ui-october-2026.png)
 
 [Features](#what-it-does) · [Install](#install) · [Updates](#updates) · [Guides](docs/README.md) · [Full update history](docs/UPDATE_HISTORY.md)
 
@@ -20,8 +20,8 @@ Create with **Studio**, plan a production with **Director**, and finish it in th
 
 - **Reusable characters and references.** Save and share characters with appearance references and optional voices. Combine image, video and audio references in supported workflows to guide identity, action and sound. [Characters and RefMods](docs/Maestro-Characters.md).
 - **Built-in AI writing.** Local language and vision models help develop prompts and plan productions, with models downloaded on first use. Optional external providers include OpenAI, Anthropic and compatible local endpoints such as LM Studio. [Local AI guide](docs/LLM-runtime.md).
-- **Connect your AI agent.** Built-in MCP lets compatible agents discover capabilities, write model-aware prompts, use saved references, submit Studio and Director work, and manage projects. Use Local MCP on the Maestro computer or optional authenticated Tailscale access from another computer. [Agent Access setup](docs/Agent-Access.md).
-- **Bring your ComfyUI setup.** Reuse configured model folders, import and validate API workflows, or map supported Maestro requests to an existing ComfyUI server. The integration is optional and off by default; ComfyUI and its custom nodes remain separately managed. [ComfyUI guide](docs/ComfyUI.md).
+- **Connect your AI agent.** Built-in MCP lets compatible agents discover capabilities, write model-aware prompts, use saved references, submit Studio and Director work, and manage projects. Use Local MCP on the Режиссёр 2.0 computer or optional authenticated Tailscale access from another computer. [Agent Access setup](docs/Agent-Access.md).
+- **Bring your ComfyUI setup.** Reuse configured model folders, import and validate API workflows, or map supported Режиссёр 2.0 requests to an existing ComfyUI server. The integration is optional and off by default; ComfyUI and its custom nodes remain separately managed. [ComfyUI guide](docs/ComfyUI.md).
 - **Models and LoRAs in one place.** Browse compatible CivitAI LoRAs and community checkpoints, manage downloads and updates, and use prompting guides and recommended strengths. [H3 checkpoint imports](docs/H3-checkpoint-import.md).
 - **Performance matched to your PC.** Auto-Tune uses your GPU, VRAM and RAM to choose starting settings. Quantization, memory offloading and duration recommendations help smaller GPUs, while advanced controls remain available. [Performance guide](docs/Performance-auto-tune.md).
 - **An organized library, wherever you work.** Separate projects into workspaces, search across folders, save favorites and reload generation settings. Use the responsive interface on a phone or tablet, with optional completion alerts and private Tailscale access to your running PC. [Remote access and notifications](docs/TAILSCALE_REMOTE_ACCESS.md).
@@ -32,7 +32,7 @@ Available inputs, editing tools and acceleration depend on the selected model an
 
 [View the complete update history](docs/UPDATE_HISTORY.md) · [Detailed changelog](CHANGELOG.md)
 
-The version you are running is shown next to the Maestro title in the UI. To update, use the launcher's Update button in Pinokio.
+The version you are running is shown next to the Режиссёр 2.0 title in the UI. To update, use the launcher's Update button in Pinokio.
 Runtime upgrades are explicit menu actions. A missing performance-runtime marker
 does not automatically run Update when you open the launcher. If offered,
 **Start with Compatibility Runtime** keeps the existing runtime available.
@@ -45,11 +45,11 @@ does not automatically run Update when you open the launcher. If offered,
 - **Video workflows and finishing:** H3 Remake, Regenerate 2K, new H3 accelerators, Director final takes and RelayVSR 2× upscaling.
 - **Reliability and experiments:** PDD BF16 compatibility, Director action validation, H3 reference handoff diagnostics, restored MCP clip durations and experimental Pika 4–12 step controls.
 
-Maestro v4.1.1 is available on **Main and Dev**. See the [v4.1 release notes](docs/RELEASE_NOTES_V4.1.0.md) and [agent filmmaking guide](docs/Agent-Filmmaking.md) for usage and limits.
+Режиссёр 2.0 v4.1.1 is available on **Main and Dev**. See the [v4.1 release notes](docs/RELEASE_NOTES_V4.1.0.md) and [agent filmmaking guide](docs/Agent-Filmmaking.md) for usage and limits.
 
 ### v4.0.0 (2026-11-04)
 
-Maestro v4.0.0 is available on **Main and Dev**.
+Режиссёр 2.0 v4.0.0 is available on **Main and Dev**.
 
 - **An upgraded Editor and animated titles:** a fuller editing workspace,
   reviewable Auto-edit plans with undo, chroma key and transparent ProRes 4444
@@ -92,7 +92,7 @@ The existing Dev updates are included. See the
   1.0.29 installers, with hash-pinned downloads and existing fallbacks.
 
 Available on **Dev for testing**; Main remains v3.2.5. Update the idle Dev
-installation in Pinokio, restart Maestro and refresh the browser. CPU tests
+installation in Pinokio, restart Режиссёр 2.0 and refresh the browser. CPU tests
 and the UI build passed. Functional GPU checks now cover the RTX 4090, 12GB
 RTX 3080 Ti and 8GB RTX 5070 Laptop. Follow-up fixes restore v1.1 sparse
 attention and load the official Plus checkpoint names correctly; all 12 latest
@@ -118,7 +118,7 @@ speed or general quality benchmark. See the
   concurrent Windows soundtrack-cache publication.
 
 Available on **Main and Dev**. Update the idle installation in Pinokio,
-restart Maestro and refresh the browser. Short Fish tests completed on 24GB,
+restart Режиссёр 2.0 and refresh the browser. Short Fish tests completed on 24GB,
 12GB and 8GB GPUs; speed and delivery depend on hardware and the script. The
 reported RTX 5080 regression still needs a matched hardware comparison.
 See the [v3.2.5 release notes](docs/RELEASE_NOTES_V3.2.5.md).
@@ -148,7 +148,7 @@ See the [v3.2.5 release notes](docs/RELEASE_NOTES_V3.2.5.md).
   lower-memory decode modes. [Qwen guide](docs/Qwen-Image-2.1.md).
 
 Available on **Main and Dev**. Update the idle installation in Pinokio,
-restart Maestro and refresh the browser. New FastH3 variants remain experimental;
+restart Режиссёр 2.0 and refresh the browser. New FastH3 variants remain experimental;
 consumer real-time speed and complete renders with the new BF16/FP8/NVFP4 formats
 are not yet verified. See the [v3.2.0 notes](docs/RELEASE_NOTES_V3.2.0.md).
 
@@ -175,7 +175,7 @@ are not yet verified. See the [v3.2.0 notes](docs/RELEASE_NOTES_V3.2.0.md).
   useful workload and memory diagnostics. The reported RTX 4080 runtime remains
   unverified without its original settings/logs.
 
-Update your **Main or Dev** installation in Pinokio while idle, restart Maestro and
+Update your **Main or Dev** installation in Pinokio while idle, restart Режиссёр 2.0 and
 refresh the browser. See the
 [v3.1.0 release notes](docs/RELEASE_NOTES_V3.1.0.md) and
 [workflow troubleshooting](docs/V3-Workflow-Fixes.md).
@@ -206,7 +206,7 @@ refresh the browser. See the
 
 This release supersedes the unreleased v2.7.0 candidate. Use **Update**
 in Pinokio on Main or Dev while idle,
-restart Maestro and refresh the browser. Existing installations with Auto-tune
+restart Режиссёр 2.0 and refresh the browser. Existing installations with Auto-tune
 enabled receive the revised recommendations once at startup; saved manual choices
 are preserved. **Settings → Performance → Re-detect** can explicitly reapply
 recommendations. Check the active allocator and restart if an allocator change
@@ -234,7 +234,7 @@ the workload and hardware. The 8-GB laptop results cover selected workflows with
 - **Gallery reliability:** thumbnail clicks stay with the intended asset while metadata loads, the thumbnail strip follows selection, action menus fit the viewport and video inputs display posters.
 - **Runtime fixes:** explicit LM Studio model-memory controls, NVIDIA compute utilization, clearer Windows startup failures, correct failure status for skipped generation tasks and guarded INT8 kernel retries. MMGP is pinned to 3.8.2.
 
-Use **Update** in Pinokio, restart Maestro and refresh the browser. See the
+Use **Update** in Pinokio, restart Режиссёр 2.0 and refresh the browser. See the
 [complete release notes](docs/RELEASE_NOTES_V2.6.0.md) and
 [validation scope](docs/VALIDATION_V2.6.0.md).
 
@@ -261,7 +261,7 @@ Includes the v2.4.1 and v2.4.2 updates below.
 - **Media Info:** timestamps, measured resolution and file details, plus finishing method, scale, before/after resolution and frame rate, source and processing time when available.
 - **Upload cleanup:** delete uploaded media from the gallery with confirmation and protection for inputs used by active jobs.
 
-Use **Update** in Pinokio, restart Maestro and refresh the browser. Your existing projects, settings and media stay in place. Optional model assets download when first used; the Windows 10 DLSS backend requires explicit installation.
+Use **Update** in Pinokio, restart Режиссёр 2.0 and refresh the browser. Your existing projects, settings and media stay in place. Optional model assets download when first used; the Windows 10 DLSS backend requires explicit installation.
 
 [Full v2.5.0 release notes](docs/RELEASE_NOTES_V2.5.0.md) · [Validation and remaining limits](docs/VALIDATION_V2.5.0.md) · [Changelog](CHANGELOG.md)
 
@@ -281,7 +281,7 @@ Included update details: [v2.4.2 release notes](docs/RELEASE_NOTES_V2.4.2.md) an
 - **Director music fixes:** performance instructions apply to the visible cast, avoiding unwanted musicians in narrative shots. Dialogue markup, speaker/language ownership and supplied-audio handling are improved.
 - **Reliability fixes:** Windows Face Refiner cleanup, Recast mask memory, API-key saving, remote LLM reference images, and bundled DramaBox guides.
 
-Use **Update** in Pinokio, restart Maestro and refresh the browser. Existing projects, models, LoRAs and outputs stay in place. Singularity downloads its optional assets when first used.
+Use **Update** in Pinokio, restart Режиссёр 2.0 and refresh the browser. Existing projects, models, LoRAs and outputs stay in place. Singularity downloads its optional assets when first used.
 
 [Full v2.4.0 release notes and issue coverage](docs/RELEASE_NOTES_V2.4.0.md) · [Validation and remaining limits](docs/VALIDATION_V2.4.0.md) · [Changelog](CHANGELOG.md)
 
@@ -303,7 +303,7 @@ Use **Update** in Pinokio, restart Maestro and refresh the browser. Existing pro
 | **12–16 GB** (3060 12GB / 4070 / 4080) | good — auto-tune picks an offload profile | ~4–10 min |
 | **6–8 GB** | works, but expect heavy offloading | slow; stick to short/low-res clips |
 
-The first video is always the slow one: install is ~10–20 min, then the first generation on each model downloads its weights (the default video model is ~18 GB). After that, weights are cached and only generation time applies. Maestro's auto-tune sizes the settings to your card on first launch so you don't have to.
+The first video is always the slow one: install is ~10–20 min, then the first generation on each model downloads its weights (the default video model is ~18 GB). After that, weights are cached and only generation time applies. Режиссёр 2.0's auto-tune sizes the settings to your card on first launch so you don't have to.
 
 > ⚠ **AMD GPUs and macOS are not currently supported.** The pipeline depends on CUDA and several NVIDIA-only kernels. MacOS support is in development.  
 
@@ -312,7 +312,7 @@ The first video is always the slow one: install is ~10–20 min, then the first 
 ## Install
 
 1. Install [Pinokio](https://pinokio.computer).
-2. In Pinokio, open the **Discover** tab and search for *Maestro* — or click the **Download** button on the [Maestro repo page](https://github.com/Blizaine/Maestro) and paste the URL.
+2. In Pinokio, open the **Discover** tab and search for *Maestro* — or click the **Download** button on the [Режиссёр 2.0 repo page](https://github.com/Blizaine/Maestro) and paste the URL.
 3. Click **Install**. The launcher will:
    - Create the hardware-matched Python environment: `app/env-sol/` on supported RTX 40-class GPUs, `app/env-rtx50/` on RTX 50-series GPUs, or `app/env/` on other supported NVIDIA GPUs
    - Install all Python dependencies (torch, xformers, transformers, fastapi, …)
@@ -321,11 +321,11 @@ The first video is always the slow one: install is ~10–20 min, then the first 
 
 The install (without model downloads) typically takes **10–20 minutes** depending on internet speed. SAM 3.1 (used only for the experimental Inpaint feature) is **not installed by default** — install it on demand via Pinokio menu → "Install Inpaint Support (SAM 3.1)" if you want to use Inpaint.
 
-Maestro does **not** require a Maestro account or a Hugging Face account. Its default managed models download anonymously from public sources. If you intentionally use custom gated assets or want higher Hugging Face download limits, choose **Connect Hugging Face (Optional)** in the Pinokio launcher menu.
+Режиссёр 2.0 does **not** require a Режиссёр 2.0 account or a Hugging Face account. Its default managed models download anonymously from public sources. If you intentionally use custom gated assets or want higher Hugging Face download limits, choose **Connect Hugging Face (Optional)** in the Pinokio launcher menu.
 
-Supported RTX 40- and 50-series cards use Maestro's standard Python 3.11, PyTorch 2.10, CUDA 13 H3 performance runtime. NVIDIA driver 580 or newer is required for that runtime. Existing installations migrate automatically through the normal **Update** action; RTX 40 migrations are created alongside the prior `app/env/` environment so a failed or interrupted upgrade can still launch the compatibility runtime. On Linux, Maestro installs tested prebuilt SageAttention and FlashAttention wheels rather than compiling them against the host CUDA toolkit; if either optional wheel is temporarily unavailable, the required Sol runtime still completes and uses Sol/SDPA fallback. Maestro prints a short runtime audit at startup. If it reports a missing H3 kernel after Update completes, use **Advanced → Repair H3 Performance Runtime** in the Pinokio menu.
+Supported RTX 40- and 50-series cards use Режиссёр 2.0's standard Python 3.11, PyTorch 2.10, CUDA 13 H3 performance runtime. NVIDIA driver 580 or newer is required for that runtime. Existing installations migrate automatically through the normal **Update** action; RTX 40 migrations are created alongside the prior `app/env/` environment so a failed or interrupted upgrade can still launch the compatibility runtime. On Linux, Режиссёр 2.0 installs tested prebuilt SageAttention and FlashAttention wheels rather than compiling them against the host CUDA toolkit; if either optional wheel is temporarily unavailable, the required Sol runtime still completes and uses Sol/SDPA fallback. Режиссёр 2.0 prints a short runtime audit at startup. If it reports a missing H3 kernel after Update completes, use **Advanced → Repair H3 Performance Runtime** in the Pinokio menu.
 
-MiniMax H3 offers an optional **Sol Engine (Experimental)** sparse-attention backend inside the H3 Optimizations panel. Its runtime support is installed and launched by default on compatible hardware; there is no separate Sol installer or Start mode. The optimization toggle remains per-generation so existing projects do not silently change their rendering recipe. The first Sol generation compiles Triton kernels and can start more slowly. RTX 20/30-series GPUs remain on SageAttention because the optimized Sol kernels do not support their compute architecture. If Sol cannot handle a call, Maestro reports it once and falls back to the normal dense H3 attention path.
+MiniMax H3 offers an optional **Sol Engine (Experimental)** sparse-attention backend inside the H3 Optimizations panel. Its runtime support is installed and launched by default on compatible hardware; there is no separate Sol installer or Start mode. The optimization toggle remains per-generation so existing projects do not silently change their rendering recipe. The first Sol generation compiles Triton kernels and can start more slowly. RTX 20/30-series GPUs remain on SageAttention because the optimized Sol kernels do not support their compute architecture. If Sol cannot handle a call, Режиссёр 2.0 reports it once and falls back to the normal dense H3 attention path.
 
 On one RTX 4090 test system, a 14.4-second 720p H3 generation at 30 steps measured 23m43s with neither optimization, 19m30s with Sol, 17m54s with First Block Cache, and 12m59s with both. Treat these as a directional example only: model choice, prompt/reference load, resolution, drivers, cache threshold, and hardware all affect speed and quality.
 
@@ -335,7 +335,7 @@ Click **Update** in the launcher menu. This pulls the latest launcher scripts an
 
 ### Resetting
 
-The `app/env-sol/` H3 performance environment is removed along with the other Maestro environments.
+The `app/env-sol/` H3 performance environment is removed along with the other Режиссёр 2.0 environments.
 
 Click **Reset** to wipe the install and start over. Removes `app/env/`, `app/env-sol/`, `app/env-rtx50/`, `ui/node_modules/`, `ui/dist/`, and the SAM venv if installed. Model checkpoints in `app/ckpts/` are NOT removed by default — delete them manually if you want a true fresh start.
 
@@ -351,20 +351,20 @@ After clicking **Start**, the launcher shows an **Open Web UI** button once the 
 
 ## Sharing on the local network
 
-Maestro respects Pinokio's `PINOKIO_SHARE_LOCAL` environment variable. Set it to `false` (in the per-app or global ENVIRONMENT file) to bind the server to loopback only; set to `true` for LAN access. Pinokio's own daemon proxy is a separate concern that may also need to honor the variable depending on your setup.
+Режиссёр 2.0 respects Pinokio's `PINOKIO_SHARE_LOCAL` environment variable. Set it to `false` (in the per-app or global ENVIRONMENT file) to bind the server to loopback only; set to `true` for LAN access. Pinokio's own daemon proxy is a separate concern that may also need to honor the variable depending on your setup.
 
 ## Private HTTPS and phone notifications
 
-For complete first-time setup and troubleshooting, see [Use Maestro Remotely with Tailscale](docs/TAILSCALE_REMOTE_ACCESS.md).
+For complete first-time setup and troubleshooting, see [Use Режиссёр 2.0 Remotely with Tailscale](docs/TAILSCALE_REMOTE_ACCESS.md).
 
-Tailscale is optional. Its Personal plan is suitable for an individual connecting their own devices; every Maestro user signs into their own Tailscale account rather than joining a Maestro-owned network.
+Tailscale is optional. Its Personal plan is suitable for an individual connecting their own devices; every Режиссёр 2.0 user signs into their own Tailscale account rather than joining a Режиссёр 2.0-owned network.
 
-1. Install Tailscale on the Maestro computer and phone, then sign both into the same account.
-2. Start Maestro. In the Pinokio menu choose **Secure Remote Access (Tailscale)**, or use **Settings → Notifications → Private HTTPS access** when the operating system permits non-elevated setup.
-3. Scan/copy the private `https://…ts.net` address shown in Maestro's Notifications settings.
-4. On iPhone/iPad, open that address in Safari, use **Share → Add to Home Screen**, open the installed Maestro app, and enable **System notifications**.
+1. Install Tailscale on the Режиссёр 2.0 computer and phone, then sign both into the same account.
+2. Start Режиссёр 2.0. In the Pinokio menu choose **Secure Remote Access (Tailscale)**, or use **Settings → Notifications → Private HTTPS access** when the operating system permits non-elevated setup.
+3. Scan/copy the private `https://…ts.net` address shown in Режиссёр 2.0's Notifications settings.
+4. On iPhone/iPad, open that address in Safari, use **Share → Add to Home Screen**, open the installed Режиссёр 2.0 app, and enable **System notifications**.
 
-The one-time Secure Remote Access action remembers Maestro's actual backend port and reuses it on future starts. On Windows it also registers a fixed, on-demand restore helper for that loopback target, so Maestro can repair the private route on later starts without another UAC prompt. Users who enabled an earlier v2 preview should run the action one final time after updating. `PINOKIO_SHARE_LOCAL_PORT` controls Pinokio's separate LAN proxy and does not need to be set for Tailscale. If the saved port is occupied and Maestro falls back to another one, run Secure Remote Access once to adopt the new port. Disable it from Notifications settings or run `tailscale serve --https=443 off`. Maestro will refuse to overwrite a different existing Serve route. Web Push signing keys and browser subscriptions live only in `app/settings/web_push.json` (a gitignored local file). Notification payloads travel directly from the local Maestro host to the browser vendor's encrypted Web Push endpoint.
+The one-time Secure Remote Access action remembers Режиссёр 2.0's actual backend port and reuses it on future starts. On Windows it also registers a fixed, on-demand restore helper for that loopback target, so Режиссёр 2.0 can repair the private route on later starts without another UAC prompt. Users who enabled an earlier v2 preview should run the action one final time after updating. `PINOKIO_SHARE_LOCAL_PORT` controls Pinokio's separate LAN proxy and does not need to be set for Tailscale. If the saved port is occupied and Режиссёр 2.0 falls back to another one, run Secure Remote Access once to adopt the new port. Disable it from Notifications settings or run `tailscale serve --https=443 off`. Режиссёр 2.0 will refuse to overwrite a different existing Serve route. Web Push signing keys and browser subscriptions live only in `app/settings/web_push.json` (a gitignored local file). Notification payloads travel directly from the local Режиссёр 2.0 host to the browser vendor's encrypted Web Push endpoint.
 
 ### Notification and remote-access API
 
@@ -401,9 +401,9 @@ The optional [prompt enhancement test bench](app/promptbench/README.md) runs bou
 
 ## Credits
 
-Maestro is built on top of, and indebted to, the following projects:
+Режиссёр 2.0 is built on top of, and indebted to, the following projects:
 
-- [**Wan2GP / WanGP**](https://github.com/deepbeepmeep/Wan2GP) by [@deepbeepmeep](https://github.com/deepbeepmeep) — the entire generation pipeline. Maestro inherits WanGP's non-commercial license.
+- [**Wan2GP / WanGP**](https://github.com/deepbeepmeep/Wan2GP) by [@deepbeepmeep](https://github.com/deepbeepmeep) — the entire generation pipeline. Режиссёр 2.0 inherits WanGP's non-commercial license.
 - [**LTX-Video**](https://github.com/Lightricks/LTX-Video) by Lightricks — LTX-2 and LTX-2.3 distilled models.
 - [**MiniMax H3**](https://huggingface.co/MiniMaxAI/MiniMax-H3) by MiniMax — joint video-and-audio generation with text, first-frame, and first/last-frame conditioning.
 - [**Wan 2.1 / 2.2**](https://github.com/Wan-Video/Wan2.1) by Alibaba — text-to-video and image-to-video.
@@ -415,11 +415,11 @@ Maestro is built on top of, and indebted to, the following projects:
 - [**CivitAI**](https://civitai.com) — LoRA browser and weight recommendations.
 - [**llama.cpp**](https://github.com/ggml-org/llama.cpp) — local LLM inference engine.
 - [**Pinokio**](https://pinokio.computer) by [@cocktailpeanut](https://github.com/cocktailpeanut) — the launcher framework.
-- The original Pinokio Wan2GP launcher by [@cocktailpeanut](https://github.com/cocktailpeanut), which Maestro forks and extends.
+- The original Pinokio Wan2GP launcher by [@cocktailpeanut](https://github.com/cocktailpeanut), which Режиссёр 2.0 forks and extends.
 
 ## License
 
-Maestro is released under the **WanGP Non-Commercial Evaluation License 1.1**, inherited from the upstream Wan2GP project. See [LICENSE](LICENSE) for the summary and [app/LICENSE.txt](app/LICENSE.txt) for the full text. WanGP 17 / MMGP 4 contributions retain their upstream **WanGP Community License 2.0**, included in [app/mmgp/LICENSE.txt](app/mmgp/LICENSE.txt); component provenance is recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Режиссёр 2.0 is released under the **WanGP Non-Commercial Evaluation License 1.1**, inherited from the upstream Wan2GP project. See [LICENSE](LICENSE) for the summary and [app/LICENSE.txt](app/LICENSE.txt) for the full text. WanGP 17 / MMGP 4 contributions retain their upstream **WanGP Community License 2.0**, included in [app/mmgp/LICENSE.txt](app/mmgp/LICENSE.txt); component provenance is recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 **TL;DR**: free to use and modify for non-commercial purposes; the *outputs* you generate are yours to use commercially (with attribution); commercial use of the *software itself* (including hosted services and APIs) requires a separate commercial license from the WanGP licensor.
 
@@ -434,19 +434,19 @@ memory diagnostics are documented in [the troubleshooting notes](docs/V3-Workflo
 
 ### Finding logs
 
-Open Maestro's project in Pinokio and use its **Logs** page to find the session
+Open Режиссёр 2.0's project in Pinokio and use its **Logs** page to find the session
 where the problem occurred. Where available, **Get Help** can prepare a report
 from that session's logs.
 
-To find the files directly, open Maestro's top-level installation folder — the
+To find the files directly, open Режиссёр 2.0's top-level installation folder — the
 folder containing `start.js`, `install.js`, and the `app` and `ui` folders. The
 paths below are relative to that folder:
 
 | Problem | Log file |
 |---|---|
 | Startup, generation, or runtime errors | `logs/api/start.js/latest` |
-| Updating Maestro | `logs/api/update.js/latest` |
-| Installing Maestro | `logs/api/install.js/latest` |
+| Updating Режиссёр 2.0 | `logs/api/update.js/latest` |
+| Installing Режиссёр 2.0 | `logs/api/install.js/latest` |
 | Local LLM server loading or crashes | `logs/llm/llama-server.log` |
 | Linux CUDA writer build | `app/ckpts/llm/bin/llama-cuda-build.log` — [setup and troubleshooting](docs/LLM-runtime.md) |
 
@@ -457,9 +457,9 @@ session in Pinokio or use a timestamped log in the same script folder. The local
 LLM log is refreshed each time its server starts, so save the failing output
 before retrying.
 
-If you launch Maestro outside Pinokio, include the output from the terminal
+If you launch Режиссёр 2.0 outside Pinokio, include the output from the terminal
 where you started it; Pinokio's launcher log folders may not exist. If you still
-cannot find a log, explain how you launched Maestro and which log folders are
+cannot find a log, explain how you launched Режиссёр 2.0 and which log folders are
 present in your bug report.
 
 Include the last roughly 50 lines around the failure, plus your GPU, VRAM,
@@ -470,13 +470,13 @@ information before sharing it.
 
 If Windows reports that `python.exe` was blocked by a **Device Guard policy**
 or an **Application Control policy**, Windows has prevented the Python runtime
-from starting. Maestro's current uv-managed runtime has not been validated with
+from starting. Режиссёр 2.0's current uv-managed runtime has not been validated with
 Smart App Control enforcement enabled; see [issue #164](https://github.com/Blizaine/Maestro/issues/164).
 
 Keep your existing installation and Smart App Control setting while this is
 investigated. Reset recreates a managed Python environment and does not establish
 Windows trust. A signed replacement interpreter also needs verification with
-Maestro's native dependencies before it can be offered as a supported repair.
+Режиссёр 2.0's native dependencies before it can be offered as a supported repair.
 [Microsoft describes the trust requirements here](https://learn.microsoft.com/en-us/windows/apps/develop/smart-app-control/overview).
 
 For this startup failure, a short report is sufficient: the exact block message,
@@ -488,12 +488,12 @@ failure if Python cannot run.
 
 ### Testing across multiple machines
 
-While Maestro is running, its Pinokio page has a **Developer tests** menu.
+While Режиссёр 2.0 is running, its Pinokio page has a **Developer tests** menu.
 Start with **Diagnostics only**, then use the prompt regression tests or H3
 cold / warm baseline. Tests run inside that PC's managed runtime, defer if
 user work is pending, and save reports in `app/outputs/Test-Bench`.
 
 The optional fleet controller runs the same suite on several reachable PCs
-and collects their diagnostic bundles. It does not update or restart Maestro.
+and collects their diagnostic bundles. It does not update or restart Режиссёр 2.0.
 See [test bench setup and commands](docs/testing/test-bench.md) for the
 manual workflow, API access, and optional key-based Windows SSH diagnostics.

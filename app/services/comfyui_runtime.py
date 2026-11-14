@@ -1,7 +1,7 @@
 """Opt-in ComfyUI library, durable submission receipts and execution adapter.
 
 ComfyUI remains a separate process. This module owns no model or GPU; launch.py
-supplies Maestro's existing queue, generation slot and approved media resolver.
+supplies Режиссёр 2.0's existing queue, generation slot and approved media resolver.
 """
 from __future__ import annotations
 
@@ -323,7 +323,7 @@ class ComfyService:
         client = self._client()
         try:
             info = deepcopy(client.object_info())
-            # Media already uploaded to Maestro is not yet in ComfyUI's file
+            # Media already uploaded to Режиссёр 2.0 is not yet in ComfyUI's file
             # dropdown. Permit that pending filename for this read-only check;
             # execution uploads it and then validates the real returned name.
             if inputs is not None:
@@ -339,7 +339,7 @@ class ComfyService:
             check = preflight_workflow(graph, info)
         finally:
             _close_client(client)
-        # Newly uploaded Maestro media will be transferred to ComfyUI at run
+        # Newly uploaded Режиссёр 2.0 media will be transferred to ComfyUI at run
         # time. Its LoadImage combo will list only ComfyUI's existing files.
         media_inputs = {(item["node_id"], item["input"]) for item in value["bindings"] if item["type"] in {"image", "video", "audio"}}
         if media_inputs and inputs is not None:
@@ -349,7 +349,7 @@ class ComfyService:
     def save_route(self, payload: dict) -> dict:
         model_type = payload.get("model_type")
         if not isinstance(model_type, str) or not re.fullmatch(r"[A-Za-z0-9_.-]{1,160}", model_type):
-            raise ServiceError(422, "Select a valid Maestro model identifier.")
+            raise ServiceError(422, "Select a valid Режиссёр 2.0 model identifier.")
         if payload.get("enabled") is False:
             with self.lock:
                 config = self._config()
@@ -380,7 +380,7 @@ class ComfyService:
             if not media_type and base not in {"prompt", "negative_prompt"} and binding["type"] not in {"integer", "number", "choice"}:
                 raise ServiceError(422, f"Map {source} to a numeric workflow input.")
         if "prompt" not in mappings:
-            raise ServiceError(422, "A native route must bind Maestro's prompt field.")
+            raise ServiceError(422, "A native route must bind Режиссёр 2.0's prompt field.")
         required_fields = {"prompt", "seed"}
         if value["kind"] in {"image", "video"}:
             required_fields.update({"width", "height", "num_inference_steps", "guidance_scale"})
@@ -388,7 +388,7 @@ class ComfyService:
             required_fields.update({"video_length", "fps"})
         if payload.get("enabled") and not required_fields.issubset(mappings):
             missing = ", ".join(sorted(required_fields - set(mappings)))
-            raise ServiceError(422, "Map the visible Maestro generation controls before enabling this route: " + missing)
+            raise ServiceError(422, "Map the visible Режиссёр 2.0 generation controls before enabling this route: " + missing)
         defaults = payload.get("input_defaults", {})
         if not isinstance(defaults, dict):
             raise ServiceError(422, "Workflow input defaults must be an object.")
@@ -502,7 +502,7 @@ class ComfyService:
         apply_bindings(value["workflow"], value["bindings"], inputs)
         workspace = payload.get("workspace") or "default"
         if not isinstance(workspace, str) or len(workspace) > 120 or workspace in {".", ".."} or any(c in workspace for c in "/\\:\x00"):
-            raise ServiceError(422, "Use an existing Maestro workspace name.")
+            raise ServiceError(422, "Use an existing Режиссёр 2.0 workspace name.")
         return {"workflow_id": workflow_id, "workflow": deepcopy(value), "inputs": deepcopy(inputs), "client_submission_id": submission, "workspace": workspace, "native_model_type": native_model_type, "endpoint": self._config()["endpoint"], "execution_timeout": self._config()["execution_timeout"]}
 
     def reserve(self, prepared: dict, job_id: str, *, owner_id=None) -> tuple[dict, bool]:
@@ -539,7 +539,7 @@ class ComfyService:
 
     def run_workflow(self, workflow_id: str, payload: dict) -> dict:
         if self.submit_job is None:
-            raise ServiceError(409, "Maestro's workflow queue is unavailable.")
+            raise ServiceError(409, "Режиссёр 2.0's workflow queue is unavailable.")
         prepared = self.prepare(workflow_id, payload)
         return self.submit_job(prepared)
 
@@ -583,7 +583,7 @@ class ComfyService:
             if value["state"] != "prepared":
                 raise ServiceError(409, "Only an undispatched intent can be dismissed. Reconnect to existing remote work instead.")
             if self.job_exists(value["job_id"]):
-                raise ServiceError(409, "Cancel this queued job using Maestro's queue.")
+                raise ServiceError(409, "Cancel this queued job using Режиссёр 2.0's queue.")
             self._update_receipt(submission, state="cancelled", error=None)
             return self.submission_receipt(submission)
 
@@ -712,7 +712,7 @@ class ComfyService:
                         raise
                     prompt_id = self._reconcile(client, submission)
                     if not prompt_id:
-                        raise ServiceError(409, "The submission outcome is uncertain. Maestro saved its intent and did not resubmit. Reconnect to ComfyUI and review this receipt.") from None
+                        raise ServiceError(409, "The submission outcome is uncertain. Режиссёр 2.0 saved its intent and did not resubmit. Reconnect to ComfyUI and review this receipt.") from None
                     self._update_receipt(submission, state="running", prompt_id=prompt_id, error=None)
             elif not prompt_id:
                 prompt_id = self._reconcile(client, submission)

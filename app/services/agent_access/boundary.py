@@ -58,7 +58,7 @@ _SECRET_KEY = re.compile(
     r"(?:^|_)(?:api_?key|token|access_token|refresh_token|password|secret(?:_?key)?|private_key|authorization|authorization_header|bearer_token)$",
     re.IGNORECASE,
 )
-_CONSOLE_CODE = re.compile(r"(\[Maestro Agent Access\][^\r\n]*?(?:owner|browser) code\s*:)\s*[^\r\n]+", re.IGNORECASE)
+_CONSOLE_CODE = re.compile(r"(\[Режиссёр 2.0 Agent Access\][^\r\n]*?(?:owner|browser) code\s*:)\s*[^\r\n]+", re.IGNORECASE)
 _BEARER_VALUE = re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]{8,}", re.IGNORECASE)
 _HF_VALUE = re.compile(r"\bhf_[A-Za-z0-9]{20,}\b")
 _URL_IN_TEXT = re.compile(r"\b(?:https?|wss?)://[^\s\"'<>]+", re.IGNORECASE)
@@ -643,7 +643,7 @@ def validate_media_paths(
                 for name in ("uploads", "outputs", "outputs2", "storage", "ckpts", "loras", "loras_i2v", "temp")
             )
         except (OSError, RuntimeError, TypeError, ValueError) as error:
-            raise AuthError(403, "Maestro media roots could not be verified") from error
+            raise AuthError(403, "Режиссёр 2.0 media roots could not be verified") from error
     trusted_roots.extend(trusted_extra_roots)
 
     def visit(item, field_key: str, current_depth: int) -> None:
@@ -681,7 +681,7 @@ def validate_media_paths(
                 for candidate in candidates
                 for root in trusted_roots
             ):
-                raise AuthError(403, "Agents may use registered media and Maestro storage paths; upload external files first")
+                raise AuthError(403, "Agents may use registered media and Режиссёр 2.0 storage paths; upload external files first")
 
     visit(value, key, depth)
 
@@ -727,14 +727,14 @@ def login_document(
     elif local_approval_available:
         intro_markup = "<p>No code or terminal needed. Approve this browser to sign in on this computer.</p>"
     else:
-        intro_markup = "<p>Enter the one-time browser code from Pinokio's Agent Access terminal, or from another signed-in Maestro browser.</p>"
+        intro_markup = "<p>Enter the one-time browser code from Pinokio's Agent Access terminal, or from another signed-in Режиссёр 2.0 browser.</p>"
     autofocus = "" if local_approval_available else " autofocus"
     manual_form = (
         '<form method="post" action="/api/v1/agent-access/owner-login"><label for="code">Browser code</label>'
         f'<input id="code" name="code" autocomplete="off" required{autofocus}><button type="submit">Sign in</button></form>'
     )
     manual_recovery = (
-        '<details><summary>Use a browser sign-in code</summary><p>Enter a one-time code from Pinokio or another signed-in Maestro browser.</p>'
+        '<details><summary>Use a browser sign-in code</summary><p>Enter a one-time code from Pinokio or another signed-in Режиссёр 2.0 browser.</p>'
         + manual_form
         + '<button id="request" type="button">Show a code in Pinokio</button><p id="message" role="status"></p></details>'
         if local_approval_available else
@@ -750,10 +750,10 @@ def login_document(
         local_approval_script = """document.getElementById('local-approve')?.addEventListener('click',async()=>{let b=document.getElementById('local-approve'),e=document.getElementById('local-approval-message');b.disabled=true;try{let c=await fetch('/api/v1/agent-access/local-challenge',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Accept':'application/json'}}),cj=await c.json();if(!c.ok||typeof cj.nonce!=='string')throw Error();let a=await fetch('/api/v1/agent-access/local-approve',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Accept':'application/json','Content-Type':'application/json'},body:JSON.stringify({nonce:cj.nonce,approve:true})}),aj=await a.json();if(!a.ok||aj.ok!==true)throw Error();let s=await fetch('/api/v1/agent-access/status',{credentials:'same-origin',cache:'no-store'}),sj=await s.json();if(!s.ok||sj.authenticated!==true||sj.owner!==true)throw Error();let n=document.querySelector('input[name="next"]')?.value||'/';location.assign(n.startsWith('/oauth/authorize?')?n:'/')}catch{e.textContent='Local approval could not be completed. Try again or use a browser code.';b.disabled=false}});"""
     if not secure:
         address = html.escape(str(status.get("controller_url") or ""), quote=True)
-        return f'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maestro secure connection</title><main><h1>Open Maestro securely</h1>{notice_markup}<p>Browser codes are entered over HTTPS. Open the secure address and verify the certificate fingerprint shown in Pinokio.</p><p><a href="{address}">Open secure Maestro</a></p></main>'
+        return f'<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Режиссёр 2.0 secure connection</title><main><h1>Open Режиссёр 2.0 securely</h1>{notice_markup}<p>Browser codes are entered over HTTPS. Open the secure address and verify the certificate fingerprint shown in Pinokio.</p><p><a href="{address}">Open secure Режиссёр 2.0</a></p></main>'
     parts = [
-        """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content"><title>Connect to Maestro</title>
-<style>body{margin:0;background:#171b1e;color:#edf0f2;font:16px system-ui;display:grid;min-height:100svh;place-items:center}main{box-sizing:border-box;width:min(92vw,440px);padding:28px;background:#20262b;border:1px solid #3b444c;border-radius:20px}input,button{box-sizing:border-box;width:100%;font:inherit;padding:13px;border-radius:10px;margin-top:12px}input{background:#171b1e;color:#fff;border:1px solid #56616b}button{background:#ff9d61;color:#1a1a1a;border:0;cursor:pointer}p{color:#b6bfc8;line-height:1.5}a{color:#ffad7b}details{margin-top:18px}summary{cursor:pointer;color:#ffad7b}#message,#local-approval-message{white-space:pre-wrap}</style></head><body><main><h1>Connect to Maestro</h1>""",
+        """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,interactive-widget=resizes-content"><title>Connect to Режиссёр 2.0</title>
+<style>body{margin:0;background:#171b1e;color:#edf0f2;font:16px system-ui;display:grid;min-height:100svh;place-items:center}main{box-sizing:border-box;width:min(92vw,440px);padding:28px;background:#20262b;border:1px solid #3b444c;border-radius:20px}input,button{box-sizing:border-box;width:100%;font:inherit;padding:13px;border-radius:10px;margin-top:12px}input{background:#171b1e;color:#fff;border:1px solid #56616b}button{background:#ff9d61;color:#1a1a1a;border:0;cursor:pointer}p{color:#b6bfc8;line-height:1.5}a{color:#ffad7b}details{margin-top:18px}summary{cursor:pointer;color:#ffad7b}#message,#local-approval-message{white-space:pre-wrap}</style></head><body><main><h1>Connect to Режиссёр 2.0</h1>""",
         intro_markup,
         local_approval_markup,
         manual_recovery,
@@ -864,7 +864,7 @@ class AccessBoundary:
             scope, allow_insecure_remote=allow_insecure_login_transport,
         ) is None:
             response = JSONResponse(
-                {"detail": "Use the canonical Maestro endpoint, loopback, or a verified certificate IP alias on the configured port"},
+                {"detail": "Use the canonical Режиссёр 2.0 endpoint, loopback, or a verified certificate IP alias on the configured port"},
                 status_code=421,
                 headers={"Cache-Control": "no-store"},
             )
@@ -955,9 +955,9 @@ class AccessBoundary:
                         token = None
             if path not in PUBLIC and configured:
                 if principal is None:
-                    raise AuthError(401, "Sign in to Maestro or pair this agent")
+                    raise AuthError(401, "Sign in to Режиссёр 2.0 or pair this agent")
                 if not secure_transport(scope):
-                    raise AuthError(426, "Use the secure Maestro connection for authenticated access")
+                    raise AuthError(426, "Use the secure Режиссёр 2.0 connection for authenticated access")
                 if headers.get(b"origin") and not same_origin(scope):
                     raise AuthError(403, "This request origin is not allowed")
                 if principal.owner and method in MUTATIONS and not bearer and not same_origin(scope):
@@ -969,7 +969,7 @@ class AccessBoundary:
                     if needed not in principal.scopes:
                         raise AuthError(403, f"This operation requires {needed} permission")
                     if path not in {"/mcp", "/openapi.json"} and not path.startswith(("/api/v1/", "/uploads/")):
-                        raise AuthError(403, "Use the documented Maestro API for this operation")
+                        raise AuthError(403, "Use the documented Режиссёр 2.0 API for this operation")
             if local_agent_credential and path == "/openapi.json" and "observe" not in principal.scopes:
                 raise AuthError(403, "This operation requires observe permission")
             # An off server never becomes an unpaired MCP endpoint. Once an

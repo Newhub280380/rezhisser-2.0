@@ -69,7 +69,7 @@ from .download_control import (
 # during an active transfer.
 _READ_TIMEOUT_SECONDS = 30
 
-# 10s connect timeout matches Maestro's other network defaults and
+# 10s connect timeout matches Режиссёр 2.0's other network defaults and
 # is generous enough for normal HF CDN handshakes worldwide.
 _CONNECT_TIMEOUT_SECONDS = 10
 
@@ -77,7 +77,7 @@ _CONNECT_TIMEOUT_SECONDS = 10
 def _install_request_timeouts() -> None:
     """Inject default timeout into requests calls that don't specify one.
 
-    Long-polling endpoints inside Maestro that legitimately want to
+    Long-polling endpoints inside Режиссёр 2.0 that legitimately want to
     wait >30s should pass an explicit `timeout=` keyword (e.g.
     `timeout=300`) — the patch only fills in the default, doesn't
     override explicit values.
@@ -95,7 +95,7 @@ def _install_request_timeouts() -> None:
         import requests
     except ImportError:
         # `requests` not installed — should never happen in the
-        # Maestro venv (it's a transitive dep) but bail gracefully
+        # Режиссёр 2.0 venv (it's a transitive dep) but bail gracefully
         # if it does. Env var still applies.
         return
 

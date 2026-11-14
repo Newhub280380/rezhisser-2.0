@@ -106,7 +106,7 @@ export function PinokioRemoteAccess({
       }
 
       setActionMessage(browserReady && isAgentAccessPinokioRemoteReady(next)
-        ? 'Pinokio Remote MCP access is ready. Each client still needs its own authorization in Maestro.'
+        ? 'Pinokio Remote MCP access is ready. Each client still needs its own authorization in Режиссёр 2.0.'
         : 'Pinokio Remote MCP access is enabled. Checking the connection… Refresh status when ready to confirm readiness.')
       await new Promise<void>(resolve => window.setTimeout(resolve, 1100))
       const refreshedDetection = await refreshDetection()
@@ -119,11 +119,11 @@ export function PinokioRemoteAccess({
         && isAgentAccessPinokioRemoteReady(confirmed),
       )
       setActionMessage(confirmedReady
-        ? 'Pinokio Remote MCP access is ready. Each client still needs its own authorization in Maestro.'
+        ? 'Pinokio Remote MCP access is ready. Each client still needs its own authorization in Режиссёр 2.0.'
         : 'Pinokio Remote MCP access was enabled. Readiness is not confirmed yet; refresh status when ready before connecting.')
     } catch (error) {
       if (error instanceof AgentAccessApiError && error.status === 404) {
-        setActionError('Pinokio Remote MCP settings are not available on this Maestro version. Refresh after updating Maestro.')
+        setActionError('Pinokio Remote MCP settings are not available on this Режиссёр 2.0 version. Refresh after updating Режиссёр 2.0.')
       } else {
         setActionError(error instanceof Error ? error.message : 'Could not update Pinokio Remote MCP access.')
       }
@@ -198,7 +198,7 @@ export function PinokioRemoteAccess({
               ? `Could not check Pinokio Remote status: ${detectionError}`
               : status
                 ? pinokioStatusReason(status.reason, status.phase)
-                : 'Pinokio Remote status is unavailable on this Maestro version.'}
+                : 'Pinokio Remote status is unavailable on this Режиссёр 2.0 version.'}
           </div>
         )}
       </div>
@@ -207,7 +207,7 @@ export function PinokioRemoteAccess({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h4 id="pinokio-agent-access-heading" className="text-[11px] font-semibold text-text-primary">AI agent access</h4>
-            <p className="mt-1 text-[10px] leading-relaxed text-text-muted">Remote MCP must also be on. This only changes Maestro&apos;s Agent Access controller; it does not change your Pinokio account, Pinokio network, or Tailscale. The MCP URL shares Maestro&apos;s published web route, so leave Maestro and Agent Access running while using it. Existing direct MCP endpoints and Local MCP remain independent.</p>
+            <p className="mt-1 text-[10px] leading-relaxed text-text-muted">Remote MCP must also be on. This only changes Режиссёр 2.0&apos;s Agent Access controller; it does not change your Pinokio account, Pinokio network, or Tailscale. The MCP URL shares Режиссёр 2.0&apos;s published web route, so leave Режиссёр 2.0 and Agent Access running while using it. Existing direct MCP endpoints and Local MCP remain independent.</p>
           </div>
           {managedStatus && <span className={`shrink-0 rounded-full px-2 py-1 text-[9px] ${ready ? 'bg-emerald-500/10 text-emerald-300' : enabled ? 'bg-amber-500/10 text-amber-200' : 'bg-bg-tertiary text-text-muted'}`}>{ready ? 'Ready' : enabled ? 'Starting' : 'Off'}</span>}
         </div>
@@ -282,16 +282,16 @@ function isPinokioRemoteHostname(hostname: string): boolean {
 function pinokioStatusReason(reason: string | null, phase: string): string {
   const code = (reason || phase).trim().toLowerCase().replace(/[\s-]+/g, '_')
   if (['app_not_installed', 'app_not_published', 'remote_disabled'].includes(code)) {
-    return 'Start Maestro and enable Remote for this app in Pinokio, then refresh.'
+    return 'Start Режиссёр 2.0 and enable Remote for this app in Pinokio, then refresh.'
   }
   if (['controller_starting', 'starting', 'restarting', 'agent_access_restarting'].includes(code)) {
     return 'Checking the connection… Refresh status when ready.'
   }
   if (['node_unavailable', 'node_offline', 'remote_unavailable', 'unavailable', 'not_available'].includes(code)) {
-    return 'Pinokio Remote is unavailable right now. Check that Maestro is running from Pinokio and refresh.'
+    return 'Pinokio Remote is unavailable right now. Check that Режиссёр 2.0 is running from Pinokio and refresh.'
   }
   if (['ready', 'published'].includes(code)) {
     return 'Pinokio Remote reported ready without a usable HTTPS browser link. Refresh or check this app’s Remote settings in Pinokio.'
   }
-  return 'Pinokio Remote is not ready. Start Maestro and enable Remote for this app in Pinokio, then refresh.'
+  return 'Pinokio Remote is not ready. Start Режиссёр 2.0 and enable Remote for this app in Pinokio, then refresh.'
 }

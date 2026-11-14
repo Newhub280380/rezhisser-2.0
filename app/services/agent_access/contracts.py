@@ -1,4 +1,4 @@
-"""Best-effort, non-enforcing request field hints from public Maestro source.
+"""Best-effort, non-enforcing request field hints from public Режиссёр 2.0 source.
 
 This module parses installed ``launch.py`` and the single allowlisted
 ``services/director_pipeline.py`` file with :mod:`ast`. It never imports or

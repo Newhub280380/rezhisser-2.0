@@ -368,7 +368,7 @@ export function DirectorH3Optimizations() {
                 ? slaExperimental
                   ? 'Uses 90% block-sparse attention for newly generated Full or Pruned H3 shots. Off by default; compare motion, reference fidelity and audio quality. The first use compiles Triton kernels; reference and audio prefix rows stay protected.'
                   : 'Runs the fused checkpoint with its published 90% block-sparse SLA recipe. The first use compiles and caches Triton kernels.'
-                : `${slaStatus?.reason || 'SLA is unavailable in this runtime.'} Maestro will use dense attention without failing the generation.`}
+                : `${slaStatus?.reason || 'SLA is unavailable in this runtime.'} Режиссёр 2.0 will use dense attention without failing the generation.`}
             />
           </label>
         </div>

@@ -33,7 +33,7 @@ export interface MaestroNotificationEvent {
   body: string
   /** Keep the in-app toast but suppress the OS/browser notification. */
   system?: boolean
-  /** Keep the in-app toast but suppress Maestro's device chime. */
+  /** Keep the in-app toast but suppress Режиссёр 2.0's device chime. */
   sound?: boolean
   /** Test controls bypass event-category and hidden-tab preferences. */
   force?: boolean
@@ -121,7 +121,7 @@ export function updateDeviceNotificationPreferences(
     localStorage.setItem(PREFS_KEY, JSON.stringify(preferences))
   } catch {
     // Private browsing and locked-down browsers can deny localStorage.
-    // The preference still applies for the current Maestro session.
+    // The preference still applies for the current Режиссёр 2.0 session.
   }
   preferenceListeners.forEach(listener => listener(preferences))
   return preferences
@@ -172,7 +172,7 @@ export function getBrowserNotificationAvailability(): BrowserNotificationAvailab
       ios,
       standalone,
       serviceWorker,
-      reason: 'On iPhone and iPad, open Maestro from an installed Home Screen app—not a Safari or Chrome tab.',
+      reason: 'On iPhone and iPad, open Режиссёр 2.0 from an installed Home Screen app—not a Safari or Chrome tab.',
     }
   }
 
@@ -184,7 +184,7 @@ export function getBrowserNotificationAvailability(): BrowserNotificationAvailab
       ios,
       standalone,
       serviceWorker,
-      reason: 'System notifications require HTTPS. A phone opening Maestro through a local http:// address is not a secure browser context.',
+      reason: 'System notifications require HTTPS. A phone opening Режиссёр 2.0 through a local http:// address is not a secure browser context.',
     }
   }
 
@@ -198,7 +198,7 @@ export function getBrowserNotificationAvailability(): BrowserNotificationAvailab
       serviceWorker,
       reason: !serviceWorker
         ? 'This browser does not support the service worker required for mobile notifications.'
-        : 'This browser does not expose notification permission to Maestro.',
+        : 'This browser does not expose notification permission to Режиссёр 2.0.',
     }
   }
 
@@ -317,14 +317,14 @@ function markSeen(key: string): boolean {
   return true
 }
 
-let originalTitle = 'Maestro'
+let originalTitle = 'Режиссёр 2.0'
 let unseenAlertCount = 0
 let visibilityListenerInstalled = false
 
 function installVisibilityListener() {
   if (visibilityListenerInstalled || typeof document === 'undefined') return
   visibilityListenerInstalled = true
-  originalTitle = document.title || 'Maestro'
+  originalTitle = document.title || 'Режиссёр 2.0'
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       unseenAlertCount = 0
@@ -446,7 +446,7 @@ export async function enableBackgroundPush(
   }
   const host = await api.fetchWebPushStatus()
   if (!host.supported) {
-    throw new Error(host.reason || 'Background Web Push is unavailable on this Maestro host.')
+    throw new Error(host.reason || 'Background Web Push is unavailable on this Режиссёр 2.0 host.')
   }
   const registration = await readyServiceWorker()
   if (!registration || !('pushManager' in registration)) {
@@ -607,7 +607,7 @@ export async function testBrowserNotification(): Promise<boolean> {
   const event: MaestroNotificationEvent = {
     key: `test-browser-${Date.now()}`,
     category: 'test',
-    title: 'Maestro notifications are ready',
+    title: 'Режиссёр 2.0 notifications are ready',
     body: 'Completion and failure alerts will appear on this device.',
     system: false,
     sound: false,

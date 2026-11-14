@@ -1,7 +1,7 @@
-"""H3 RefMod files, with optional portable Maestro character media.
+"""H3 RefMod files, with optional portable Режиссёр 2.0 character media.
 
 The upstream ``latent`` and ``refmod_meta`` contract stays at version 2.
-Maestro owns a separate, optional namespace; see docs/Maestro-Characters.md.
+Режиссёр 2.0 owns a separate, optional namespace; see docs/Maestro-Characters.md.
 Header inspection deliberately does not import Torch or load tensor payloads.
 """
 from __future__ import annotations
@@ -88,10 +88,10 @@ def inspect_refmod(path: str | Path) -> dict:
     for key, dim in (("latent_t", 2), ("latent_h", 3), ("latent_w", 4)):
         if key in ref and ref[key] != shape[dim]:
             raise ValueError(f"RefMod {key} does not match its tensor.")
-    extension = _json_object(metadata[CHARACTER_META], "Maestro character") if CHARACTER_META in metadata else None
+    extension = _json_object(metadata[CHARACTER_META], "Режиссёр 2.0 character") if CHARACTER_META in metadata else None
     if extension is not None:
         if extension.get("schema_version") != 1:
-            raise ValueError("This Maestro character version is not supported. Update Maestro before importing it.")
+            raise ValueError("This Режиссёр 2.0 character version is not supported. Update Режиссёр 2.0 before importing it.")
         visual = extension.get("visual")
         if visual is not None:
             _validate_media_entry(header, visual, "visual")
@@ -99,7 +99,7 @@ def inspect_refmod(path: str | Path) -> dict:
                 raise ValueError("Embedded visual media does not match the RefMod kind.")
         audio = extension.get("audio", [])
         if not isinstance(audio, list) or len(audio) > 1:
-            raise ValueError("A Maestro character can contain one saved voice recording.")
+            raise ValueError("A Режиссёр 2.0 character can contain one saved voice recording.")
         for entry in audio:
             _validate_media_entry(header, entry, "audio")
             if entry.get("role") != "voice":

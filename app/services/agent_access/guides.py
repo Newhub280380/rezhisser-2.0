@@ -1,4 +1,4 @@
-"""Bundled, user-facing guides for Maestro's built-in Agent Access server.
+"""Bundled, user-facing guides for Режиссёр 2.0's built-in Agent Access server.
 
 These short guides are product instructions, not private project notes or
 development documentation. Keep the server instructions concise; clients that
@@ -22,9 +22,9 @@ SERVER_INSTRUCTIONS: Final[str] = (
 
 
 GUIDES: Final[dict[str, str]] = {
-    "overview": """# Maestro Agent Access
+    "overview": """# Режиссёр 2.0 Agent Access
 
-Use the available tools against the paired Maestro workstation. Start with
+Use the available tools against the paired Режиссёр 2.0 workstation. Start with
 `get_status`, `list_models`, and `get_model_options` or `get_model_defaults` so
 the request matches the live installation. `list_operations` and
 `describe_operation` show routes that this installation actually registered.
@@ -125,7 +125,7 @@ validation.
 
 For Fish Audio Drama 3, use the live Fish model options and speech-writing
 defaults. A typical script uses stable speaker labels and brief audible delivery
-cues, for example `Speaker 1: [calm] Welcome to Maestro.` Voice recordings are
+cues, for example `Speaker 1: [calm] Welcome to Режиссёр 2.0.` Voice recordings are
 identity references; transcripts describe the words in each recording, not the
 new script. Keep speaker labels consistent and use only voice slots the model
 reports. Fish's Auto speech length is a safety bound, not a target pacing time;
@@ -145,7 +145,7 @@ For agent-written Director work, get a `director.story` or
 writing guides, author the complete `clips` plan, then use the authored
 prepare/submit tools. This uses prepared clip plans and bypasses local
 screenplay writing and prompt polish. The standard native v2 plan and
-short-film script operations still call Maestro's configured writer; do not
+short-film script operations still call Режиссёр 2.0's configured writer; do not
 use those to outsource a request you are supposed to write. Include the
 requested full duration, exact words/style, explicit reference IDs and
 appropriate native image/video prompts. Never silently repair by discarding
@@ -153,10 +153,10 @@ an authored scene, changing its references or restarting a render.
 
 Some Director endpoints accept native JSON without an OpenAPI body schema.
 Source hints include `params` for queue updates and `tag` for clip tags. The
-pipeline start handler passes its object to Maestro's native pipeline code;
+pipeline start handler passes its object to Режиссёр 2.0's native pipeline code;
 `describe_operation` traces that path and lists source hints such as
 `video_model`, `image_model`, `pipeline_type`, `workspace`, `auto_mode`, and
-prepared clip plans. These hints are not a complete schema; Maestro remains the
+prepared clip plans. These hints are not a complete schema; Режиссёр 2.0 remains the
 authority for accepted fields and values.
 
 The persistent Director queue can hold a project before rendering. Its `pause`
@@ -260,7 +260,7 @@ operation instead of starting another download because progress is slow.
 """,
     "assets": """# Assets and workstations
 
-Use `list_workstations` to identify paired Maestro installations. A local path
+Use `list_workstations` to identify paired Режиссёр 2.0 installations. A local path
 belongs to one machine and may be meaningless on another. To transfer media,
 begin an upload with the filename, byte size, and SHA-256 digest. MCP clients
 can send base64 chunks of at most 1 MiB decoded data in ascending offset order;
@@ -272,7 +272,7 @@ absolute paths, are portable between Mac and Windows clients.
 The server accepts only assets registered by this upload flow when a body uses
 an asset reference. Do not guess IDs, turn user text into paths, or use a media
 route as an arbitrary file browser. The workspace, gallery, project, and
-download APIs describe Maestro-managed items; use their returned IDs and names.
+download APIs describe Режиссёр 2.0-managed items; use their returned IDs and names.
 
 Named operations can return binary media as a private transfer record with a
 size and SHA-256 checksum. Read it sequentially with `read_transfer_chunk`,
@@ -296,7 +296,7 @@ mutation tool that accepts `request_id` requires a non-empty value; reuse it to
 check an uncertain result.
 
 `list_workstations` reports paired/local workstation discovery information.
-The lifecycle tool controls only the Maestro app through its supported
+The lifecycle tool controls only the Режиссёр 2.0 app through its supported
 launcher integration. It does not start model runtimes as a side effect of
 listing tools or reading status. Never use generic operations to call Agent
 Access authentication or owner-management endpoints.
@@ -307,7 +307,7 @@ Access authentication or owner-management endpoints.
 GUIDES["filmmaking"] = """# Finish an agent-directed film
 
 YOU write the screenplay, native prompts, lyrics and title copy. Read the selected
-model's guides with get_creation_context. Never forward agent writing to Maestro's
+model's guides with get_creation_context. Never forward agent writing to Режиссёр 2.0's
 local prompt enhancer unless the user explicitly requests it.
 
 ## Cards and animated typography
@@ -359,7 +359,7 @@ duration and `graphic:{version:1,width,height,elements:[...]}`. Elements are
 rect, text or image objects in design coordinates; the shared Editor graphic
 normalizer checks their exact fields and bounds, and design coordinates scale
 to the project canvas. An image element uses `asset` with an uploaded asset ID
-or `{filename,workspace}`; Maestro authorizes it and stores a project `asset_id`.
+or `{filename,workspace}`; Режиссёр 2.0 authorizes it and stores a project `asset_id`.
 Never put a local path or project asset ID directly in a graphic image element.
 Each overlay remains on its own text track above the video, so overlapping
 lower thirds and labels remain separately editable. Overlay timing must fit

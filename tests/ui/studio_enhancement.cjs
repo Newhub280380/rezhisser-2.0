@@ -493,7 +493,7 @@ async function assertExplicitEnhancement(page, sidebar, requests, llmRequests) {
   await speechResponse;
   await page.waitForFunction(() => !window.store.getState().isEnhancing);
   assert.equal(llmRequests.at(-1).tts_enhance_mode, 'dialogue');
-  assert.equal(await prompt.inputValue(), 'Blaine: Welcome to Maestro.');
+  assert.equal(await prompt.inputValue(), 'Blaine: Welcome to Режиссёр 2.0.');
   console.log('Unified Enhance, deferred queue/now, failed submission, mobile badge, reviewed/manual H3 windows, LTX and TTS passed');
 }
 module.exports = {assertExplicitEnhancement};

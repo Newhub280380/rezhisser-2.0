@@ -228,7 +228,7 @@ _H3_DIALOGUE_WORDS_PER_SECOND = DIALOGUE_MAX_WORDS_PER_SECOND
 # Dialogue polishing is deliberately split into compact, scene-sized batches.
 # Large H3 screenplays can contain 40+ turns; asking a thinking model to return
 # every row in one response caused the final JSON array to truncate and made
-# Maestro discard an otherwise useful table read in its entirety.
+# Режиссёр 2.0 discard an otherwise useful table read in its entirety.
 _H3_TABLE_READ_CHUNK_SIZE = 12
 
 # Qwen3.8's creative screenplay pass can use substantially more reasoning than
@@ -333,7 +333,7 @@ def _redact_long_form_dialogue(
         dialogue_id = str(line.get("dialogue_id") or "D?").upper()
         redacted = (
             redacted[:start]
-            + f"[{dialogue_id}: exact dialogue assigned by Maestro]"
+            + f"[{dialogue_id}: exact dialogue assigned by Режиссёр 2.0]"
             + redacted[end:]
         )
     return repair_text(redacted)
@@ -1391,7 +1391,7 @@ _H3_MICRO_REPLY_RE = re.compile(
 # must not behave like a thesaurus pass that upgrades ordinary speech into
 # consultant, academic, or production-note language.  This is deliberately a
 # *relative* guard: a character who already speaks formally keeps that voice;
-# Maestro only rejects a revision that introduces several new elevated
+# Режиссёр 2.0 only rejects a revision that introduces several new elevated
 # markers which were absent from the screenplay line it was meant to polish.
 _H3_ELEVATED_DIALOGUE_RE = re.compile(
     r"\b(?:adequate|ascertain|commence|consequently|endeavo(?:u)?r|entropy|"
@@ -2925,7 +2925,7 @@ def _complete_h3_truncated_tail(
     output-token ceiling. Recovery is safe only when every earlier shot is
     complete and the final shot already contains its semantic core: identity,
     setting, blocking, actions, and immutable dialogue. In that narrow case,
-    the missing suffix consists only of derived production fields that Maestro
+    the missing suffix consists only of derived production fields that Режиссёр 2.0
     can reconstruct deterministically. If dialogue or any other semantic core
     field is absent, leave the object untouched so normal validation rejects
     it instead of silently dropping or inventing screenplay content.
@@ -4821,7 +4821,7 @@ def _model_specific_pass2_notes(video_model: str) -> str:
     """
     # Do not import wgp from this leaf helper. Its module owns the application
     # CLI parser, so importing it from an isolated planner/test process can
-    # consume that process's argv. In Maestro proper, wgp is already loaded.
+    # consume that process's argv. In Режиссёр 2.0 proper, wgp is already loaded.
     import sys
     wgp_module = sys.modules.get("wgp")
     get_model_def = getattr(wgp_module, "get_model_def", None)
@@ -4971,7 +4971,7 @@ class ShortFilmPlanner(BasePlanner):
             multishot_lora_mode
             and self._video_model.lower().startswith("minimax_h3")
         ):
-            # Maestro's multi-shot toggle targets an LTX IC-LoRA and its
+            # Режиссёр 2.0's multi-shot toggle targets an LTX IC-LoRA and its
             # ``Shot N (Camera, Xs)`` trigger syntax. H3 has its own native
             # timeline language and must not inherit that LoRA-only format.
             multishot_lora_mode = False
@@ -5231,7 +5231,7 @@ class ShortFilmPlanner(BasePlanner):
                             f"USER CONCEPT:\n{redacted_story}"
                         ),
                         system_prompt=(
-                            "You are Maestro's complete-film continuity producer. "
+                            "You are Режиссёр 2.0's complete-film continuity producer. "
                             "Return only the requested compact JSON object. Preserve the "
                             "user's creative intent while making it executable across "
                             "many independently planned video clips."
@@ -5307,7 +5307,7 @@ class ShortFilmPlanner(BasePlanner):
                         f"USER CONCEPT:\n{redacted_story}"
                     ),
                     system_prompt=(
-                        "You are Maestro's long-form continuity editor. Return "
+                        "You are Режиссёр 2.0's long-form continuity editor. Return "
                         "only the requested complete JSON story bible."
                     ),
                     max_tokens=min(10000, 3000 + chapter_count * 420),
@@ -5461,7 +5461,7 @@ class ShortFilmPlanner(BasePlanner):
                         f"USER CONCEPT WITH DIALOGUE PLACEHOLDERS:\n{redacted_story}"
                     ),
                     system_prompt=(
-                        "You are Maestro's long-form story architect. Return only "
+                        "You are Режиссёр 2.0's long-form story architect. Return only "
                         "the requested JSON array. Build one coherent film in "
                         "bounded chapters, not unrelated shorts."
                     ),
@@ -5516,7 +5516,7 @@ class ShortFilmPlanner(BasePlanner):
                             f"{json.dumps(outline, ensure_ascii=False, indent=2)}"
                         ),
                         system_prompt=(
-                            "You are Maestro's long-form chapter editor. Return "
+                            "You are Режиссёр 2.0's long-form chapter editor. Return "
                             "only the requested complete JSON array."
                         ),
                         max_tokens=min(6500, 1300 + chapter_count * 350),
@@ -5871,7 +5871,7 @@ class ShortFilmPlanner(BasePlanner):
                                 f"{json.dumps([{'dialogue_id': item.get('dialogue_id'), 'speaker': item.get('speaker'), 'exact_text': item.get('text')} for item in chapter_dialogue], ensure_ascii=False, indent=2)}"
                             ),
                             system_prompt=(
-                                "You are Maestro's sequence architect. Return only "
+                                "You are Режиссёр 2.0's sequence architect. Return only "
                                 "the requested JSON array. Plan causally connected "
                                 "bounded sequences, not miniature restarts."
                             ),
@@ -6345,7 +6345,7 @@ class ShortFilmPlanner(BasePlanner):
             f"{profile.physical_description}"
             for profile in char_profiles or []
         ) or "- No separate character cards were supplied."
-        system_prompt = f"""You are Maestro's story architect. Build the causal scene chain for ONE complete {target_duration}-second short film before another writer turns it into screenplay prose.
+        system_prompt = f"""You are Режиссёр 2.0's story architect. Build the causal scene chain for ONE complete {target_duration}-second short film before another writer turns it into screenplay prose.
 
 Return ONLY a JSON array containing {minimum_scenes}-{maximum_scenes} scene objects. This is story architecture, not a shot list and not a screenplay. Do not write camera coverage or dialogue prose.
 
@@ -7892,7 +7892,7 @@ H3 SCREENPLAY RECOVERY — FINAL ANSWER REQUIRED:
                     "budget (" + "; ".join(budget_issues) + "); running one "
                     "focused screenplay compression pass."
                 )
-                compression_system = f"""You are Maestro's H3 screenplay timing editor. Return only a complete canonical screenplay, never analysis, JSON, or a synopsis.
+                compression_system = f"""You are Режиссёр 2.0's H3 screenplay timing editor. Return only a complete canonical screenplay, never analysis, JSON, or a synopsis.
 
 Compress the supplied screenplay so it can be performed in exactly {target_duration} seconds:
 - At most {max_total_words} total words, including action and headings.
@@ -8059,7 +8059,7 @@ SCREENPLAY TO COMPRESS:
                         f"{long_form_dialogue_density['minimum_words']} or more "
                         "spoken words, without exceeding the hard maximum."
                     )
-                compression_system = f"""You are Maestro's long-form LTX screenplay timing editor. Return only a complete canonical screenplay, never analysis, JSON, a synopsis, or planning commentary.
+                compression_system = f"""You are Режиссёр 2.0's long-form LTX screenplay timing editor. Return only a complete canonical screenplay, never analysis, JSON, a synopsis, or planning commentary.
 
 Repair and compress the supplied bounded sequence so it can be performed in exactly {target_duration} seconds:
 - At most {max_total_words} total words, including action and headings.
@@ -10218,7 +10218,7 @@ OUTPUT — one closed object per native shot:
             pass2_system += (
                 "\nPHYSICAL STATE STAGING: In this visual-planning pass, physical_state "
                 "must be {\"opening\":[],\"transitions\":[],\"closing\":[]}. "
-                "Maestro requests a separate compact state-change proposal when the "
+                "Режиссёр 2.0 requests a separate compact state-change proposal when the "
                 "source requires support/contact transitions. Concentrate on the "
                 "source action allocation, segmentation, camera and pacing here."
             )
@@ -10226,7 +10226,7 @@ OUTPUT — one closed object per native shot:
             pass2_system += "\n\n" + physical_state_contract_instructions()
         if source_contract["audio_policy"].get("generated_speech_allowed") is False:
             pass2_system += (
-                "\nSTRUCTURED SILENT COMPILATION: Maestro compiles the final native prompt "
+                "\nSTRUCTURED SILENT COMPILATION: Режиссёр 2.0 compiles the final native prompt "
                 "from your structured fields and immutable assigned source actions. "
                 "Set video_prompt to an empty string and dialogue_beats to []. "
                 "Do not write a second prose version of the scene. Keep camera_plan, "
@@ -10770,7 +10770,7 @@ sentence per descriptive metadata field and at most three action beats.
 Keep source_event_ids complete and in source order. Use compact physical
 state atoms, copied exactly across transitions and continuous boundaries;
 put motion descriptions in transition.action, never in state values.
-For a silent source, video_prompt must be empty: Maestro compiles it from
+For a silent source, video_prompt must be empty: Режиссёр 2.0 compiles it from
 structured fields and immutable actions. Otherwise put the complete native
 description with the locked dialogue in video_prompt."""
             used_contract_patch = bool(

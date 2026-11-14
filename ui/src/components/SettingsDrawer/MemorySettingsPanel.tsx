@@ -42,18 +42,18 @@ export function MemorySettingsPanel() {
         <select id={`${id}-runtime`} data-testid="memory-runtime-select" className={selectClass}
           value={savedRuntime} disabled={runtimeSaving}
           onChange={event => void saveRuntime(event.target.value as 'legacy' | 'wangp9905')}>
-          <option value="legacy">Maestro MMGP 4.0 (default)</option>
+          <option value="legacy">Режиссёр 2.0 MMGP 4.0 (default)</option>
           <option value="wangp9905" disabled={!config.experimental_runtime_selectable}>
             {config.experimental_runtime_selectable
               ? 'Experimental Profile0 (WanGP9905)'
               : 'Experimental Profile0 (WanGP9905) — VMM asset unavailable'}
           </option>
         </select>
-        <p className={helpClass}>Changing the memory runtime requires a full Maestro restart. Your profiles and manual settings are preserved.</p>
+        <p className={helpClass}>Changing the memory runtime requires a full Режиссёр 2.0 restart. Your profiles and manual settings are preserved.</p>
         <p className={helpClass}>Active: {config.active_label ?? 'MMGP source not verified'}.</p>
         {!config.experimental_runtime_selectable && <p className={helpClass}>Experimental runtime unavailable: {config.experimental_runtime_capability_reason ?? config.profile0_capability_reason ?? 'allocator support is unavailable on this installation'}.</p>}
-        {config.restart_required && <p role="status" className="text-[11px] text-indicator-warning mt-1">Restart Maestro to apply the saved memory runtime.</p>}
-        {runtimeExperimental && <p className="text-[10px] text-indicator-warning mt-1">Fish Audio is unsupported on this runtime. Profiles 1 and 3 also place model weights differently than the Maestro default.</p>}
+        {config.restart_required && <p role="status" className="text-[11px] text-indicator-warning mt-1">Restart Режиссёр 2.0 to apply the saved memory runtime.</p>}
+        {runtimeExperimental && <p className="text-[10px] text-indicator-warning mt-1">Fish Audio is unsupported on this runtime. Profiles 1 and 3 also place model weights differently than the Режиссёр 2.0 default.</p>}
         {runtimeExperimental && !config.profile0_native_available && <p className={helpClass}>Profile 0 is unavailable: {config.profile0_capability_reason ?? 'the pinned VMM binary has not passed availability checks'}.</p>}
         {runtimeExperimental && config.ram_allocator === 'mmgp' && !config.profile0_ram_native_available && <p className="text-[10px] text-indicator-warning mt-1">The saved MMGP RAM allocator has no companion binary in this runtime. Change RAM Allocator to PyTorch default explicitly before selecting this runtime.</p>}
         {runtimeError && <p role="alert" className="text-[10px] text-indicator-warning mt-1">Could not save runtime: {runtimeError}</p>}
@@ -69,7 +69,7 @@ export function MemorySettingsPanel() {
         <p className={helpClass}>MMGP recycles freed VRAM for longer videos and larger images. RAM spilling can finish a job that slightly exceeds VRAM, with a speed cost.</p>
         <p className={helpClass}>Active: {allocatorNames[active]}.</p>
         {config.vram_allocator_cli_override && <p className={helpClass}>The launch argument overrides this saved choice. Remove --vram-allocator when restarting to use the saved setting.</p>}
-        {config.vram_allocator_restart_required && <p role="status" className="text-[11px] text-indicator-warning mt-1">Restart Maestro to apply this allocator.</p>}
+        {config.vram_allocator_restart_required && <p role="status" className="text-[11px] text-indicator-warning mt-1">Restart Режиссёр 2.0 to apply this allocator.</p>}
         {config.vram_allocator_fallback_reason && <p className="text-[10px] text-indicator-warning mt-1">Using PyTorch: {config.vram_allocator_fallback_reason}</p>}
       </div>
       <div>
@@ -82,7 +82,7 @@ export function MemorySettingsPanel() {
         <p className={helpClass}>MMGP reuses freed CPU tensor buffers and returns its cache when RAM is under pressure. This can reduce allocation overhead; live model weights still need RAM.</p>
         <p className={helpClass}>Active: {config.ram_allocator_active === 'mmgp' ? 'MMGP optimized' : 'PyTorch default'}.</p>
         {config.ram_allocator_cli_override && <p className={helpClass}>The launch argument overrides this saved choice. Remove --ram-allocator when restarting to use the saved setting.</p>}
-        {config.ram_allocator_restart_required && <p role="status" className="text-[11px] text-indicator-warning mt-1">Restart Maestro to apply the RAM allocator.</p>}
+        {config.ram_allocator_restart_required && <p role="status" className="text-[11px] text-indicator-warning mt-1">Restart Режиссёр 2.0 to apply the RAM allocator.</p>}
         {config.ram_allocator_fallback_reason && <p className="text-[10px] text-indicator-warning mt-1">Using PyTorch: {config.ram_allocator_fallback_reason}</p>}
       </div>
       <label className="flex gap-2 items-start text-xs text-text-secondary">

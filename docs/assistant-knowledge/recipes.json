@@ -32,7 +32,7 @@
     },
     "face_swap": {
       "what": "Заменить лицо на фото/видео",
-      "fal_model_hint": "проверить, что уже есть в Maestro (H3-Face-Refiner, Viggle-Animate), иначе face-swap модель fal"
+      "fal_model_hint": "проверить, что уже есть в Режиссёр 2.0 (H3-Face-Refiner, Viggle-Animate), иначе face-swap модель fal"
     },
     "fetch_video": {
       "what": "Скачать ролик по ссылке (TikTok/Instagram/YouTube)",

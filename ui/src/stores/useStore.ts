@@ -681,7 +681,7 @@ function _modeBlobToFilenameKeyed(
  *  wants remembered (model settings, slider values, video_prompt_type
  *  letter codes, etc.) stays out of this list and continues to persist.
  *
- *  Workaround for users on a Maestro version before this fix: use a
+ *  Workaround for users on a Режиссёр 2.0 version before this fix: use a
  *  private/incognito browser window (skips localStorage rehydration).
  */
 const EPHEMERAL_PARAM_FIELDS: ReadonlyArray<keyof SavedModeParams> = [
@@ -1776,7 +1776,7 @@ interface AppState {
   editRecastIsolateReference: boolean
   /** Derive a tighter same-character identity view when none is supplied. */
   editRecastAutoFaceDetail: boolean
-  /** Rewrite and append Maestro's Recast identity/scene prompt guidance. */
+  /** Rewrite and append Режиссёр 2.0's Recast identity/scene prompt guidance. */
   editRecastEnhancePrompt: boolean
   /** Strict source-pixel composite outside the tracked Recast target. */
   editRecastProtectBystanders: boolean
@@ -6400,7 +6400,7 @@ export const useStore = create<AppState>((set, get) => ({
               ? _applyModelDefaults(get, set, active, _startupDefaultsPending.baseline) : Promise.resolve(true),
           ])
           if (get().params.model_type === active && (!defaultsLoaded || get().modelOptions?.model_type !== active)) {
-            throw new Error('Model settings are not available yet. Retry when Maestro is ready.')
+            throw new Error('Model settings are not available yet. Retry when Режиссёр 2.0 is ready.')
           }
         }
         return
@@ -6792,7 +6792,7 @@ export const useStore = create<AppState>((set, get) => ({
         get().loadLoras(mt)
       }
       if (preferencesReadFailed) {
-        throw new Error('Using cached preferences while Maestro reconnects. Retry to restore saved settings.')
+        throw new Error('Using cached preferences while Режиссёр 2.0 reconnects. Retry to restore saved settings.')
       }
       if (
         mode === 'video'
@@ -6836,7 +6836,7 @@ export const useStore = create<AppState>((set, get) => ({
           && (!defaultsLoaded || get().modelOptions?.model_type !== finalModel)
       }
       if (modelSettingsUnavailable) {
-        throw new Error('Model settings are not available yet. Retry when Maestro is ready.')
+        throw new Error('Model settings are not available yet. Retry when Режиссёр 2.0 is ready.')
       }
     } catch (e) {
       console.error('Failed to load models:', e)
@@ -9714,7 +9714,7 @@ export const useStore = create<AppState>((set, get) => ({
       // keeps the snapshot itself sensible.
       const vpt = (params.video_prompt_type as string) || ''
       if (vpt) {
-        // Default ref letters used by Maestro when image refs are
+        // Default ref letters used by Режиссёр 2.0 when image refs are
         // present. If imageRefType is configured we trust that;
         // otherwise fall back to the conservative "I" — the most common
         // and the one we've actually observed leaking.
@@ -10123,7 +10123,7 @@ export const useStore = create<AppState>((set, get) => ({
       set(s => ({
         jobs: s.jobs.map(job => job.id === pendingJobId ? {
           ...job,
-          message: 'Connection interrupted - checking whether Maestro accepted the job...',
+          message: 'Connection interrupted - checking whether Режиссёр 2.0 accepted the job...',
         } : job),
       }))
       for (const delayMs of [0, 400, 800, 1600]) {
@@ -14707,7 +14707,7 @@ export const useStore = create<AppState>((set, get) => ({
     const hasRecordedVideoTiming = (restoredModelMode === 'video' || restoredModelMode === 'avatar')
       && ((Number.isFinite(recordedVideoFrames) && recordedVideoFrames > 0)
         || (Number.isFinite(recordedVideoSeconds) && recordedVideoSeconds > 0))
-    // API/MCP sidecars do not include Maestro's private UI planning flag.
+    // API/MCP sidecars do not include Режиссёр 2.0's private UI planning flag.
     // When they carry a concrete video timeline, restore that recorded target
     // instead of applying prompt Auto to an already generated clip. Explicit
     // Auto and Window selections remain authoritative when they were saved.

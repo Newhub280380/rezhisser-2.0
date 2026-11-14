@@ -265,18 +265,18 @@ export function ComfyUISettingsPanel() {
 
         <label className="flex cursor-pointer items-start gap-2 text-[11px] text-text-primary">
           <input type="checkbox" checked={enabled} onChange={event => setEnabled(event.target.checked)} className="mt-0.5 accent-[var(--color-accent-blue)]" />
-          <span><span className="font-medium">Enable ComfyUI integration</span><span className="mt-0.5 block text-[10px] text-text-muted">Off by default. Maestro's native engine remains the default generation path.</span></span>
+          <span><span className="font-medium">Enable ComfyUI integration</span><span className="mt-0.5 block text-[10px] text-text-muted">Off by default. Режиссёр 2.0's native engine remains the default generation path.</span></span>
         </label>
 
         <label className="flex cursor-pointer items-start gap-2 text-[11px] text-text-primary">
           <input type="checkbox" checked={dedicated} onChange={event => setDedicated(event.target.checked)} className="mt-0.5 accent-[var(--color-accent-blue)]" />
-          <span><span className="font-medium">Dedicated ComfyUI server</span><span className="mt-0.5 block text-[10px] text-text-muted">Use only for a ComfyUI instance reserved for Maestro. When switching to Native, Maestro can release ComfyUI's cached models after its queue is idle. Shared servers are never interrupted.</span></span>
+          <span><span className="font-medium">Dedicated ComfyUI server</span><span className="mt-0.5 block text-[10px] text-text-muted">Use only for a ComfyUI instance reserved for Режиссёр 2.0. When switching to Native, Режиссёр 2.0 can release ComfyUI's cached models after its queue is idle. Shared servers are never interrupted.</span></span>
         </label>
 
         <div>
           <label htmlFor="comfyui-endpoint" className="mb-1 block text-[10px] font-medium text-text-secondary">ComfyUI endpoint</label>
           <input id="comfyui-endpoint" type="url" value={endpoint} onChange={event => setEndpoint(event.target.value)} placeholder="http://127.0.0.1:8188" className="w-full rounded-lg border border-border bg-bg-primary px-2.5 py-2 text-xs text-text-primary outline-none placeholder:text-text-muted focus:border-accent-blue" />
-          <p className="mt-1 text-[9px] leading-relaxed text-text-muted">Use an existing local or LAN ComfyUI server. Maestro will not install custom nodes.</p>
+          <p className="mt-1 text-[9px] leading-relaxed text-text-muted">Use an existing local or LAN ComfyUI server. Режиссёр 2.0 will not install custom nodes.</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" onClick={() => void discoverEndpoints()} disabled={discoveringEndpoints || loading} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-primary px-2.5 py-2 text-[10px] text-text-secondary hover:text-text-primary disabled:opacity-50">
               {discoveringEndpoints ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />} Discover endpoints

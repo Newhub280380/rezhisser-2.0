@@ -1,5 +1,5 @@
 /**
- * Theme management for Maestro.
+ * Theme management for Режиссёр 2.0.
  *
  * Themes are CSS-variable overrides applied via `[data-theme="..."]` on
  * the <html> element. The actual variable values live in src/index.css.

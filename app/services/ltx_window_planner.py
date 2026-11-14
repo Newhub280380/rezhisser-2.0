@@ -1,4 +1,4 @@
-"""Window-local prompt planning for Maestro's LTX long-form sequences.
+"""Window-local prompt planning for Режиссёр 2.0's LTX long-form sequences.
 
 LTX rolling generation has always accepted one prompt per sliding window, but
 the old Studio UI exposed that behavior implicitly: extending Duration could
@@ -340,7 +340,7 @@ def plan_ltx_sliding_windows(
     overlap_seconds: float = 0,
     discard_seconds: float = 0,
 ) -> dict:
-    """Use Maestro's configured enhancer to create exact LTX window prompts.
+    """Use Режиссёр 2.0's configured enhancer to create exact LTX window prompts.
 
     Planning deliberately uses the ordinary model-specific LTX guide so LTX
     0.9, 2.x, and 2.5 retain their established prompt vocabulary.  Geometry is

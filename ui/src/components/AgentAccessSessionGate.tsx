@@ -137,7 +137,7 @@ export function AgentAccessSessionGate() {
       setLoginCode('')
       const seconds = Number.isFinite(result.expires_in) ? Math.max(1, result.expires_in) : 600
       const expiry = seconds < 60 ? `${Math.ceil(seconds)} seconds` : `${Math.ceil(seconds / 60)} minute${seconds > 60 ? 's' : ''}`
-      setCodeMessage(`Ready in Pinokio → this Maestro app → Agent Access Terminal. Copy the latest “Browser code:” and paste it here. It works once and expires in about ${expiry}.`)
+      setCodeMessage(`Ready in Pinokio → this Режиссёр 2.0 app → Agent Access Terminal. Copy the latest “Browser code:” and paste it here. It works once and expires in about ${expiry}.`)
       codeInput.current?.focus()
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Could not request a fresh code.')
@@ -146,7 +146,7 @@ export function AgentAccessSessionGate() {
 
   if (!visible) return dismissed ? (
     <button type="button" onClick={() => { dismissedRef.current = false; setDismissed(false); openSignIn() }} className="fixed bottom-4 right-4 z-[149] inline-flex items-center gap-2 rounded-lg border border-border bg-bg-secondary px-4 py-3 text-xs text-text-primary shadow-lg">
-      <LockKeyhole size={14} /> Sign in to Maestro
+      <LockKeyhole size={14} /> Sign in to Режиссёр 2.0
     </button>
   ) : null
 
@@ -163,7 +163,7 @@ export function AgentAccessSessionGate() {
             <LockKeyhole size={17} />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 id="agent-access-session-title" className="text-sm font-semibold text-text-primary">Sign in to Maestro</h2>
+            <h2 id="agent-access-session-title" className="text-sm font-semibold text-text-primary">Sign in to Режиссёр 2.0</h2>
             <p className="mt-1 text-xs leading-relaxed text-text-secondary">
               {localApproval ? 'Approve local management on this PC. Your current work stays open behind this panel.' : 'Sign in once in this browser. Your current work stays open behind this panel.'}
             </p>
@@ -181,17 +181,17 @@ export function AgentAccessSessionGate() {
         <div className="space-y-4 px-5 py-4">
           {backendMissing ? (
             <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-relaxed text-text-secondary">
-              Agent Access is not available from this backend yet. Restart Maestro after installing the update, then sign in again.
+              Agent Access is not available from this backend yet. Restart Режиссёр 2.0 after installing the update, then sign in again.
             </div>
           ) : !loginAllowed ? (
             <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-relaxed text-text-secondary">
-              Owner sign-in needs HTTPS or a local browser address. Open Maestro through its secure controller URL to continue.
+              Owner sign-in needs HTTPS or a local browser address. Open Режиссёр 2.0 through its secure controller URL to continue.
             </div>
           ) : (
             <>
               {status?.owner_configured === false && (
                 <p className="text-xs leading-relaxed text-text-secondary">
-                  Signing in also protects this Maestro installation. Other browsers will need to sign in once, even while agent connections are off.
+                  Signing in also protects this Режиссёр 2.0 installation. Other browsers will need to sign in once, even while agent connections are off.
                 </p>
               )}
               {localApproval && (
@@ -209,7 +209,7 @@ export function AgentAccessSessionGate() {
                   {requestingCode ? 'Requesting code…' : 'Request a fresh code'}
                 </button>
                 <ol className="list-decimal space-y-1 pl-4 leading-relaxed" id="agent-access-sign-in-steps">
-                  <li>Open this Maestro app in Pinokio, then <strong>Agent Access Terminal</strong>.</li>
+                  <li>Open this Режиссёр 2.0 app in Pinokio, then <strong>Agent Access Terminal</strong>.</li>
                   <li>Copy the newest line labeled <strong>Browser code:</strong> and paste it below.</li>
                 </ol>
                 {codeMessage && <p className="text-accent-blue" role="status">{codeMessage}</p>}
@@ -238,7 +238,7 @@ export function AgentAccessSessionGate() {
                   disabled={submitting || requestingCode || !loginCode.trim()}
                   className="w-full rounded-lg bg-accent-blue px-4 py-2.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45"
                 >
-                  {submitting ? 'Signing in…' : 'Sign in to Maestro'}
+                  {submitting ? 'Signing in…' : 'Sign in to Режиссёр 2.0'}
                 </button>
               </form>
               </details>
@@ -254,12 +254,12 @@ export function AgentAccessSessionGate() {
               rel="noreferrer"
               className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs text-text-primary transition-colors hover:bg-bg-hover"
             >
-              Open secure Maestro controller <ExternalLink size={13} />
+              Open secure Режиссёр 2.0 controller <ExternalLink size={13} />
             </a>
           )}
 
           <p className="text-[10px] leading-relaxed text-text-muted">
-            {localApproval ? 'Local access stays available on this PC after a restart. You approve each agent separately.' : 'Maestro remembers this browser until you sign out or the session expires. You approve each agent separately.'}
+            {localApproval ? 'Local access stays available on this PC after a restart. You approve each agent separately.' : 'Режиссёр 2.0 remembers this browser until you sign out or the session expires. You approve each agent separately.'}
           </p>
         </div>
       </section>

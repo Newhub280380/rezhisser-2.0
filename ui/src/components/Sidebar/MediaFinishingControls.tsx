@@ -59,7 +59,7 @@ export function MediaFinishingControls({ spatial, temporal, onTemporal, options,
         ? `Experimental Windows 10 backend. ${spatial === 'dlss5*1' ? 'Enhances at the original resolution.' : 'DLSS upscaling followed by neural enhancement.'} Video uses NVIDIA optical flow. Frame Generation is installed separately and requires RTX 40 or newer with HAGS enabled.`
         : 'Depth and motion are estimated from your footage. Results depend on the content.'}</p>
       {hasNeural && capabilities?.neural_rendering.available && !capabilities.neural_rendering.scales.includes(Number(spatial.split('*')[1])) && <p className="text-indicator-warning">Choose a supported DLSS scale: {capabilities.neural_rendering.scales.join('×, ')}×.</p>}
-      {hasNeural && capabilities && !capabilities.neural_rendering.available && <p className="text-indicator-warning">DLSS Neural Rendering: {capabilities.neural_rendering.reason}. See docs/DLSS5.md in the Maestro project.</p>}
+      {hasNeural && capabilities && !capabilities.neural_rendering.available && <p className="text-indicator-warning">DLSS Neural Rendering: {capabilities.neural_rendering.reason}. See docs/DLSS5.md in the Режиссёр 2.0 project.</p>}
     </div>}
     {error && <p className="text-indicator-warning">{error}</p>}
     <button type="button" className="text-text-muted underline text-[10px]" onClick={() => { setError(''); setRefreshCount(count => count + 1); window.dispatchEvent(new Event('maestro-dlss-refresh')) }}>Refresh DLSS availability</button>
