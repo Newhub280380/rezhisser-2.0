@@ -14,7 +14,7 @@ def test_request_from_params_video_and_image(tmp_path, monkeypatch):
         {"prompt": " neon ", "resolution": "720x1280", "video_length": 121, "image_start": [str(ref)]},
         {"fps": 24}, tmp_path)
     assert video == {"kind": "video", "prompt": "neon", "image": ref, "image_end": None, "width": 720, "height": 1280,
-                     "ratio": "9:16", "resolution": "768P", "duration": 5}
+                     "ratio": "9:16", "resolution": "768P", "duration": 5, "video": None}
     image = cg.request_from_params({"prompt": "p", "resolution": "1920x1080", "image_mode": 1}, {}, tmp_path)
     assert (image["kind"], image["ratio"], image["resolution"], image["image"]) == ("image", "16:9", "2K", None)
 
@@ -265,3 +265,18 @@ def test_execute_studio_video_job_on_fal_wan22(tmp_path, monkeypatch):
     assert url == "https://queue.fal.run/fal-ai/wan/v2.2-a14b/text-to-video" and body["num_frames"] == 81
     assert finished["status"] == "completed" and (tmp_path / finished["output_files"][0]).read_bytes() == b"mp4"
     assert job["params"]["generation_engine"] == "cloud:fal"
+
+
+def test_wan_takes_source_video_via_video_to_video(tmp_path, monkeypatch):
+    """Extend / Control video on fal + Wan 2.2 goes to the v2v endpoint (mocked, nothing is sent)."""
+    monkeypatch.setenv("FAL_KEY", "k")
+    monkeypatch.setenv("CLOUD_VIDEO_ENGINE", "wan22")
+    clip = tmp_path / "src.mp4"
+    clip.write_bytes(b"\x00\x00\x00\x18ftypmp42")
+    params = {"prompt": "p", "video_source": str(clip), "video_length": 81}
+    assert cg.unsupported_reason(params, {"fps": 16}, "fal") is None
+    assert cg.unsupported_reason(params, {"fps": 16}, "minimax") == "source video"
+    req = cg.request_from_params(params, {"fps": 16}, tmp_path)
+    model, body = cg.Fal().endpoint_and_body(req)
+    assert model.endswith("/video-to-video")
+    assert body["video_url"].startswith("data:video/mp4;base64,")

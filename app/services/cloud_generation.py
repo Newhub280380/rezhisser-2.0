@@ -128,7 +128,7 @@ def get_json(url, headers, timeout=60):
 
 
 def data_uri(path: Path) -> str:
-    mime = mimetypes.guess_type(str(path))[0] or "image/png"
+    mime = mimetypes.guess_type(str(path))[0] or ("video/mp4" if str(path).lower().endswith((".mp4", ".mov")) else "image/png")
     return f"data:{mime};base64,{base64.b64encode(Path(path).read_bytes()).decode()}"
 
 
@@ -173,10 +173,25 @@ UNSUPPORTED_PARAMS = {
 }
 
 
-def unsupported_reason(params: dict, model_def: dict | None) -> str | None:
+# fal Wan 2.2 has a video-to-video endpoint, so a source video (Extend / Control video) runs in the cloud.
+WAN_VIDEO_PARAMS = ("video_source", "video_guide")
+WAN_VIDEO_MAX_BYTES = 40 * 1024 * 1024
+
+
+def unsupported_reason(params: dict, model_def: dict | None, provider: str | None = None) -> str | None:
     if (model_def or {}).get("audio_only"):
         return "audio generation"
-    return next((label for key, label in UNSUPPORTED_PARAMS.items() if params.get(key)), None)
+    skip = WAN_VIDEO_PARAMS if provider == "fal" and video_engine() == "wan22" else ()
+    return next((label for key, label in UNSUPPORTED_PARAMS.items() if key not in skip and params.get(key)), None)
+
+
+def _first_video(params: dict) -> Path | None:
+    for key in WAN_VIDEO_PARAMS:
+        value = params.get(key)
+        value = value[0] if isinstance(value, (list, tuple)) and value else value
+        if isinstance(value, str) and value and Path(value).is_file():
+            return Path(value)
+    return None
 
 
 def request_from_params(params: dict, model_def: dict | None, work_dir: Path) -> dict:
@@ -194,6 +209,7 @@ def request_from_params(params: dict, model_def: dict | None, work_dir: Path) ->
         "prompt": str(params.get("prompt") or "").strip(),
         "image": image,
         "image_end": None if is_image else _first_image(params.get("image_end"), work_dir),
+        "video": None if is_image else _first_video(params),
         "width": w, "height": h, "ratio": _ratio(w, h),
         # MiniMax H3 and fal H3 both accept 768P (native) and 2K (upscaled); 1080P is not valid.
         "resolution": "2K" if min(w, h) >= 1080 else "768P",
@@ -307,6 +323,8 @@ class Fal:
 
     def wan_fits(self, req: dict) -> bool:
         """Wan needs a start frame for i2v and caps clips at 10 s; otherwise H3 takes the job."""
+        if req.get("video"):
+            return True
         return req["duration"] <= self.WAN_MAX_SECONDS and not (req.get("image_end") and not req["image"])
 
     def wan_endpoint_and_body(self, req: dict) -> tuple[str, dict]:
@@ -314,7 +332,13 @@ class Fal:
         body = {"prompt": req["prompt"], "resolution": "480p" if short < 540 else "580p" if short < 680 else "720p"}
         if req.get("negative_prompt"):
             body["negative_prompt"] = req["negative_prompt"]
-        if req["image"]:
+        if req.get("video"):
+            if Path(req["video"]).stat().st_size > WAN_VIDEO_MAX_BYTES:
+                raise CloudError("Исходное видео больше 40 МБ — укоротите или сожмите его для облака.")
+            model = env("FAL_WAN_V2V_MODEL", "fal-ai/wan/v2.2-a14b/video-to-video")
+            body["video_url"] = data_uri(req["video"])
+            body["aspect_ratio"] = "auto"
+        elif req["image"]:
             model = env("FAL_WAN_I2V_MODEL", "fal-ai/wan/v2.2-a14b/image-to-video")
             body["image_url"] = data_uri(req["image"])
             body["aspect_ratio"] = "auto"
@@ -346,7 +370,7 @@ class Fal:
             return model, post_json(f"https://queue.fal.run/{model}", self.headers, body)
         except CloudError as error:
             # Wan endpoint gone or rejecting the input (nothing was generated, nothing billed): use H3 once.
-            if "/wan/" not in model or getattr(error, "status", None) not in (404, 410, 422):
+            if "/wan/" not in model or req.get("video") or getattr(error, "status", None) not in (404, 410, 422):
                 raise
             model, body = self.endpoint_and_body(req, engine="h3")
             return model, post_json(f"https://queue.fal.run/{model}", self.headers, body)
@@ -436,7 +460,7 @@ def execute(job: dict, provider: str, model_def: dict | None, *, finalize: bool 
     if not ready(provider):
         raise CloudError(f"Нет ключа облака '{provider}'. Впишите его: Settings → Integrations → Cloud.")
     params = job["params"]
-    reason = unsupported_reason(params, model_def)
+    reason = unsupported_reason(params, model_def, provider)
     if reason:
         raise CloudError(f"Cloud generation does not support {reason}. Switch Generation backend to Local models for this job.")
     out_dir = Path(job.get("out_dir") or "outputs")
