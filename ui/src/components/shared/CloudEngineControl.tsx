@@ -5,7 +5,7 @@ import { ApiKeyField } from './ApiKeyField'
 const LABELS: Record<string, string> = {
   local: 'Local models (this PC)',
   minimax: 'Cloud · MiniMax API',
-  fal: 'Cloud · fal',
+  fal: 'Cloud · fal — Wan 2.2',
   muapi: 'Cloud · MuAPI',
 }
 const KEY_OF: Record<string, string> = { minimax: 'MINIMAX_API_KEY', fal: 'FAL_KEY', muapi: 'MUAPI_API_KEY' }
@@ -34,7 +34,9 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
 
   if (!config) return null
   const missingKey = config.provider !== 'local' && !config.providers.find(p => p.name === config.provider)?.ready
-  const options = ['local', ...config.providers.map(p => p.name)].map(name => (
+  // fal (Wan 2.2, open model) is the primary cloud video engine, so it is listed first.
+  const cloudNames = config.providers.map(p => p.name).sort((a, b) => Number(b === 'fal') - Number(a === 'fal'))
+  const options = ['local', ...cloudNames].map(name => (
     <option key={name} value={name}>{LABELS[name] || name}</option>
   ))
   const change = (e: ChangeEvent<HTMLSelectElement>) => void save({ CLOUD_PROVIDER: e.target.value }).catch(() => {})
@@ -64,6 +66,11 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
       >
         {options}
       </select>
+      {config.provider === 'fal' && (
+        <p className="text-[10px] text-text-muted">
+          Video: {config.video_engine === 'h3' ? 'MiniMax H3' : 'Wan 2.2 (open model); MiniMax H3 for clips over 10 s or if Wan is unavailable'}.
+        </p>
+      )}
       {missingKey && (
         <p role="status" className="text-xs text-amber-400">API key for this provider is not set — Settings → Integrations → Cloud.</p>
       )}

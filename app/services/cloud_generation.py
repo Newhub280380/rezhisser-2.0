@@ -27,6 +27,9 @@ PROVIDERS = {
 # Every .env key the settings endpoint may write; values are never echoed back.
 SECRET_KEYS = ("MINIMAX_API_KEY", "FAL_KEY", "MUAPI_API_KEY", "LLM_API_KEY")
 PLAIN_KEYS = ("CLOUD_PROVIDER", "LLM_BASE_URL", "LLM_MODEL")
+# fal video engines: Wan 2.2 (open model, default) and MiniMax H3 (fallback). Read-only override via the
+# CLOUD_VIDEO_ENGINE environment variable (not written from the UI).
+VIDEO_ENGINES = ("wan22", "h3")
 
 
 class CloudError(RuntimeError):
@@ -83,9 +86,15 @@ def public_config() -> dict:
         "provider": env("CLOUD_PROVIDER", "local").lower(),
         "providers": [{"name": n, "ready": ready(n)} for n in PROVIDERS],
         "keys": {k: bool(env(k)) for k in SECRET_KEYS},
+        "video_engine": video_engine(),
         "llm_base_url": env("LLM_BASE_URL"),
         "llm_model": env("LLM_MODEL"),
     }
+
+
+def video_engine() -> str:
+    value = env("CLOUD_VIDEO_ENGINE", "wan22").lower()
+    return value if value in VIDEO_ENGINES else "wan22"
 
 
 def llm_override() -> dict | None:
@@ -103,7 +112,9 @@ def llm_override() -> dict | None:
 
 def _check(r: requests.Response, url: str) -> dict:
     if r.status_code >= 400:
-        raise CloudError(f"{url} -> HTTP {r.status_code}: {r.text[:400]}")
+        error = CloudError(f"{url} -> HTTP {r.status_code}: {r.text[:400]}")
+        error.status = r.status_code
+        raise error
     return r.json()
 
 
@@ -277,11 +288,45 @@ class Fal:
     def headers(self):
         return {"Authorization": f"Key {env('FAL_KEY')}", "Content-Type": "application/json"}
 
-    def endpoint_and_body(self, req: dict) -> tuple[str, dict]:
+    # Wan 2.2 A14B on fal (checked against fal.ai docs 2026-11-14): text-to-video takes aspect_ratio
+    # 16:9|9:16|1:1; image-to-video takes image_url (+ end_image_url); both take num_frames 17..161 at
+    # frames_per_second (default 16) and resolution 480p|580p|720p; output video.url. The /turbo i2v
+    # variant has no num_frames. fal lists these models for removal on 2027-01-04 -> H3 fallback.
+    WAN_FPS = 16
+    WAN_MAX_SECONDS = (161 - 1) // WAN_FPS  # 10 s
+
+    def endpoint_and_body(self, req: dict, engine: str | None = None) -> tuple[str, dict]:
         if req["kind"] == "image":
             body = {"prompt": req["prompt"], "num_images": 1, "output_format": "png",
                     "image_size": {"width": req["width"], "height": req["height"]}}
             return env("FAL_IMAGE_MODEL", "fal-ai/moss-image"), body
+        if (engine or video_engine()) == "wan22" and self.wan_fits(req):
+            return self.wan_endpoint_and_body(req)
+        return self.h3_endpoint_and_body(req)
+
+    def wan_fits(self, req: dict) -> bool:
+        """Wan needs a start frame for i2v and caps clips at 10 s; otherwise H3 takes the job."""
+        return req["duration"] <= self.WAN_MAX_SECONDS and not (req.get("image_end") and not req["image"])
+
+    def wan_endpoint_and_body(self, req: dict) -> tuple[str, dict]:
+        short = min(req["width"], req["height"])
+        body = {"prompt": req["prompt"], "resolution": "480p" if short < 540 else "580p" if short < 680 else "720p"}
+        if req["image"]:
+            model = env("FAL_WAN_I2V_MODEL", "fal-ai/wan/v2.2-a14b/image-to-video")
+            body["image_url"] = data_uri(req["image"])
+            body["aspect_ratio"] = "auto"
+            if req.get("image_end"):
+                body["end_image_url"] = data_uri(req["image_end"])
+        else:
+            model = env("FAL_WAN_T2V_MODEL", "fal-ai/wan/v2.2-a14b/text-to-video")
+            body["aspect_ratio"] = req["ratio"] if req["ratio"] in ("16:9", "9:16", "1:1") else (
+                "16:9" if req["width"] > req["height"] else "9:16" if req["height"] > req["width"] else "1:1")
+        if not model.endswith("/turbo"):  # turbo has a fixed length
+            body["num_frames"] = req["duration"] * self.WAN_FPS + 1
+            body["frames_per_second"] = self.WAN_FPS
+        return model, body
+
+    def h3_endpoint_and_body(self, req: dict) -> tuple[str, dict]:
         body = {"prompt": req["prompt"], "duration": max(5, req["duration"]), "resolution": req["resolution"]}
         if req["image"] or req.get("image_end"):
             if req["image"]:
@@ -292,9 +337,19 @@ class Fal:
         body["aspect_ratio"] = req["ratio"]
         return env("FAL_T2V_MODEL", "minimax/h3/text-to-video"), body
 
-    def run(self, req, out, cancelled):
+    def submit(self, req: dict) -> tuple[str, dict]:
         model, body = self.endpoint_and_body(req)
-        sub = post_json(f"https://queue.fal.run/{model}", self.headers, body)
+        try:
+            return model, post_json(f"https://queue.fal.run/{model}", self.headers, body)
+        except CloudError as error:
+            # Wan endpoint gone or rejecting the input (nothing was generated, nothing billed): use H3 once.
+            if "/wan/" not in model or getattr(error, "status", None) not in (404, 410, 422):
+                raise
+            model, body = self.endpoint_and_body(req, engine="h3")
+            return model, post_json(f"https://queue.fal.run/{model}", self.headers, body)
+
+    def run(self, req, out, cancelled):
+        model, sub = self.submit(req)
         status_url, response_url = sub.get("status_url"), sub.get("response_url")
         if not (status_url and response_url):
             raise CloudError(f"fal: unexpected queue response: {sub}")

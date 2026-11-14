@@ -2349,6 +2349,8 @@ export interface CloudConfig {
   keys: Record<string, boolean>
   llm_base_url: string
   llm_model: string
+  /** fal video engine: 'wan22' (default) or 'h3'. */
+  video_engine?: string
 }
 
 export async function fetchCloudConfig(): Promise<CloudConfig> {

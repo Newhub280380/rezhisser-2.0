@@ -19,7 +19,8 @@ def test_request_from_params_video_and_image(tmp_path, monkeypatch):
     assert (image["kind"], image["ratio"], image["resolution"], image["image"]) == ("image", "16:9", "2K", None)
 
 
-def test_provider_routes(tmp_path):
+def test_provider_routes(tmp_path, monkeypatch):
+    monkeypatch.setenv("CLOUD_VIDEO_ENGINE", "h3")  # H3 routes; Wan 2.2 (default) is covered below
     ref = tmp_path / "ref.png"
     ref.write_bytes(b"x")
     t2v = {"kind": "video", "prompt": "p", "image": None, "width": 1280, "height": 720,
@@ -58,7 +59,8 @@ def test_env_settings_and_llm_override(tmp_path, monkeypatch):
                                           "MUAPI_API_KEY": False, "LLM_API_KEY": True}
 
 
-def test_last_frame_and_unsupported_modes(tmp_path):
+def test_last_frame_and_unsupported_modes(tmp_path, monkeypatch):
+    monkeypatch.delenv("CLOUD_VIDEO_ENGINE", raising=False)
     first, last = tmp_path / "a.png", tmp_path / "b.png"
     first.write_bytes(b"a")
     last.write_bytes(b"b")
@@ -73,6 +75,74 @@ def test_last_frame_and_unsupported_modes(tmp_path):
     assert cg.unsupported_reason({"video_guide": "v.mp4"}, {}) == "source video"
     assert cg.unsupported_reason({"edit_outpaint_shot_aware": True}, {}) == "outpaint"
     assert cg.unsupported_reason({}, {"audio_only": True}) == "audio generation"
+
+
+def _video_req(**extra):
+    return dict({"kind": "video", "prompt": "p", "image": None, "image_end": None, "width": 1280, "height": 720,
+                 "ratio": "16:9", "resolution": "768P", "duration": 5}, **extra)
+
+
+def test_fal_wan22_is_default_video_engine(tmp_path, monkeypatch):
+    for key in ("CLOUD_VIDEO_ENGINE", "FAL_WAN_T2V_MODEL", "FAL_WAN_I2V_MODEL"):
+        monkeypatch.delenv(key, raising=False)
+    first, last = tmp_path / "a.png", tmp_path / "b.png"
+    first.write_bytes(b"a")
+    last.write_bytes(b"b")
+    assert cg.video_engine() == "wan22" and cg.public_config()["video_engine"] == "wan22"
+    model, body = cg.Fal().endpoint_and_body(_video_req())
+    assert model == "fal-ai/wan/v2.2-a14b/text-to-video"
+    assert body == {"prompt": "p", "resolution": "720p", "aspect_ratio": "16:9",
+                    "num_frames": 81, "frames_per_second": 16}
+    model, body = cg.Fal().endpoint_and_body(_video_req(image=first, image_end=last, width=480, height=832,
+                                                        ratio="9:16", duration=10))
+    assert model == "fal-ai/wan/v2.2-a14b/image-to-video"
+    assert body["image_url"].startswith("data:image/png;base64,") and body["end_image_url"]
+    assert (body["aspect_ratio"], body["resolution"], body["num_frames"]) == ("auto", "480p", 161)
+    # 4:3 is not a Wan t2v ratio -> nearest orientation
+    assert cg.Fal().endpoint_and_body(_video_req(ratio="4:3", width=960, height=720))[1]["aspect_ratio"] == "16:9"
+    # turbo i2v has a fixed length: no frame fields
+    monkeypatch.setenv("FAL_WAN_I2V_MODEL", "fal-ai/wan/v2.2-a14b/image-to-video/turbo")
+    model, body = cg.Fal().endpoint_and_body(_video_req(image=first))
+    assert model.endswith("/turbo") and "num_frames" not in body and "frames_per_second" not in body
+    # Wan cannot: clips over 10 s, or an end frame without a start frame -> MiniMax H3 fallback
+    assert cg.Fal().endpoint_and_body(_video_req(duration=12))[0] == "minimax/h3/text-to-video"
+    assert cg.Fal().endpoint_and_body(_video_req(image_end=last))[0] == "minimax/h3/image-to-video"
+    # images are unchanged
+    assert cg.Fal().endpoint_and_body(_video_req(kind="image"))[0] == "fal-ai/moss-image"
+    monkeypatch.setenv("CLOUD_VIDEO_ENGINE", "bogus")
+    assert cg.video_engine() == "wan22"
+
+
+def test_fal_falls_back_to_h3_when_wan_endpoint_is_gone(monkeypatch):
+    monkeypatch.delenv("CLOUD_VIDEO_ENGINE", raising=False)
+    monkeypatch.delenv("FAL_WAN_T2V_MODEL", raising=False)
+    calls = []
+
+    def fake_post(url, headers, body, timeout=120):
+        calls.append(url)
+        if "/wan/" in url:
+            error = cg.CloudError("gone")
+            error.status = 410
+            raise error
+        return {"status_url": "s", "response_url": "r"}
+
+    monkeypatch.setattr(cg, "post_json", fake_post)
+    model, sub = cg.Fal().submit(_video_req())
+    assert model == "minimax/h3/text-to-video" and sub["status_url"] == "s"
+    assert calls == ["https://queue.fal.run/fal-ai/wan/v2.2-a14b/text-to-video",
+                     "https://queue.fal.run/minimax/h3/text-to-video"]
+
+    def bad_key(url, headers, body, timeout=120):  # auth errors are not retried on another model
+        error = cg.CloudError("unauthorized")
+        error.status = 401
+        raise error
+
+    monkeypatch.setattr(cg, "post_json", bad_key)
+    try:
+        cg.Fal().submit(_video_req())
+        raise AssertionError("401 must not fall back")
+    except cg.CloudError as error:
+        assert error.status == 401
 
 
 def test_execute_rejects_unsupported_job(tmp_path, monkeypatch):
@@ -153,3 +223,25 @@ def test_preflight_cuda_check_is_a_warning_in_cloud_mode():
     body = source[start:source.index("\n@api.", start)]
     assert body.index('"level": "warning"') < body.index("generation runs in the cloud")
     assert "requires an NVIDIA GPU" in body  # local-mode error kept unchanged
+
+
+def test_execute_studio_video_job_on_fal_wan22(tmp_path, monkeypatch):
+    """A Studio/Director video job (same _run_generation path) ends as an mp4 made by Wan 2.2 on fal."""
+    monkeypatch.setenv("FAL_KEY", "k")
+    for key in ("CLOUD_VIDEO_ENGINE", "FAL_WAN_T2V_MODEL"):
+        monkeypatch.delenv(key, raising=False)
+    posted, finished = [], {}
+    monkeypatch.setattr(cg, "post_json", lambda url, headers, body, timeout=120: (
+        posted.append((url, body)) or {"status_url": "https://q/status", "response_url": "https://q/result"}))
+    monkeypatch.setattr(cg, "get_json", lambda url, headers, timeout=60: (
+        {"status": "COMPLETED"} if url.endswith("status") else {"video": {"url": "https://cdn/out.mp4"}}))
+    monkeypatch.setattr(cg, "download", lambda url, out: (out.write_bytes(b"mp4"), out)[1])
+    monkeypatch.setattr(cg, "update_job", lambda job, **kw: None)
+    monkeypatch.setattr(cg, "finish_job", lambda job, status, **kw: finished.update(status=status, **kw) or True)
+    job = {"id": "w1", "out_dir": str(tmp_path),
+           "params": {"prompt": "neon city", "resolution": "1280x720", "video_length": 24 * 5}}
+    assert cg.execute(job, "fal", {"fps": 24})
+    url, body = posted[0]
+    assert url == "https://queue.fal.run/fal-ai/wan/v2.2-a14b/text-to-video" and body["num_frames"] == 81
+    assert finished["status"] == "completed" and (tmp_path / finished["output_files"][0]).read_bytes() == b"mp4"
+    assert job["params"]["generation_engine"] == "cloud:fal"
