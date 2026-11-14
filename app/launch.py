@@ -8432,6 +8432,31 @@ def assistant_knowledge_summary():
     return assistant_knowledge.summary()
 
 
+@api.get("/api/v1/assistant/knowledge/search")
+def assistant_knowledge_search(q: str = "", limit: int = 5):
+    """Graph memory: 1–5 matching nodes (paths, titles, links, images), never whole files."""
+    from services import assistant_knowledge
+    return {"nodes": assistant_knowledge.search(q, max(1, min(5, limit)))}
+
+
+@api.get("/api/v1/assistant/knowledge/read")
+def assistant_knowledge_read(path: str):
+    from services import assistant_knowledge
+    try:
+        return assistant_knowledge.read(path)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="No such knowledge file.")
+
+
+@api.get("/api/v1/assistant/knowledge/ref/{path:path}")
+def assistant_knowledge_ref(path: str):
+    from services import assistant_knowledge
+    try:
+        return FileResponse(assistant_knowledge.ref_image(path))
+    except KeyError:
+        raise HTTPException(status_code=404, detail="No such reference image.")
+
+
 @api.post("/api/v1/assistant/autopilot")
 async def assistant_autopilot_start(request: Request):
     """Run a recipe (photo_to_film, viral_remake) end to end; poll the returned id for progress."""
@@ -8443,7 +8468,7 @@ async def assistant_autopilot_start(request: Request):
     try:
         options = {
             "request": str(body.get("request") or "")[:2000],
-            "total_seconds": int(body.get("total_seconds") or 60),
+            "total_seconds": int(body.get("total_seconds") or 0),  # 0 -> the recipe's default
             "aspect": body.get("aspect") or "9:16",
             "remove_background": bool(body.get("remove_background", True)),
             "quality": "final" if body.get("quality") == "final" else "draft",
@@ -8468,6 +8493,19 @@ def assistant_autopilot_status(run_id: str):
     if not state:
         raise HTTPException(status_code=404, detail="Unknown autopilot run.")
     return state
+
+
+@api.post("/api/v1/assistant/autopilot/{run_id}/scene/{index}")
+async def assistant_autopilot_regenerate_scene(run_id: str, index: int, request: Request):
+    """Re-shoot one scene of a one-prompt film (optional new prompt); the rest is reused."""
+    from services import autopilot
+    body = await request.json() if (await request.body()) else {}
+    uploads = Path(os.getcwd()) / "uploads"
+    try:
+        return autopilot.regenerate_scene(run_id, index, str((body or {}).get("prompt") or "")[:2000],
+                                          out_dir=Path(wgp.save_path), work_root=uploads / "_autopilot")
+    except autopilot.AutopilotError as error:
+        raise HTTPException(status_code=400, detail=str(error))
 
 
 @api.post("/api/v1/assistant/autopilot/{run_id}/cancel")

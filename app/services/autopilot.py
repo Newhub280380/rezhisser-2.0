@@ -80,13 +80,35 @@ def start(recipe_id: str, options: dict, *, out_dir: Path, work_root: Path,
     run_id = uuid.uuid4().hex[:12]
     state = {"id": run_id, "recipe": recipe_id, "status": "running", "step": "", "label": "",
              "progress": 0, "log": [], "scenes": 0, "warnings": [], "output": None, "error": None,
-             "_cancel": False}
+             "_cancel": False, "_options": options}
     with _LOCK:
         RUNS[run_id] = state
     runner = Runner(state, options, out_dir=Path(out_dir), work_dir=Path(work_root) / f"autopilot_{run_id}",
                     deps=deps or Deps())
     if background:
         threading.Thread(target=runner.run, name=f"autopilot-{run_id}", daemon=True).start()
+    else:
+        runner.run()
+    return get_run(run_id)
+
+
+def regenerate_scene(run_id: str, index: int, prompt: str = "", *, out_dir: Path, work_root: Path,
+                     deps: "Deps | None" = None, background: bool = True) -> dict:
+    """Re-shoot one scene of a finished one_prompt_film run and re-assemble (other scenes reused)."""
+    with _LOCK:
+        state = RUNS.get(run_id)
+        if not state:
+            raise AutopilotError("Нет такого запуска.")
+        if state["status"] == "running":
+            raise AutopilotError("Запуск ещё идёт.")
+        if not state.get("_project"):
+            raise AutopilotError("Перегенерация сцены есть только у ролика «Одной фразой».")
+        state.update(status="running", error=None, _cancel=False, progress=0)
+    options = dict(state["_options"], regenerate_scene=int(index), prompt=str(prompt or ""))
+    runner = Runner(state, options, out_dir=Path(out_dir), work_dir=Path(work_root) / f"autopilot_{run_id}",
+                    deps=deps or Deps())
+    if background:
+        threading.Thread(target=runner.run, name=f"autopilot-{run_id}-scene{index}", daemon=True).start()
     else:
         runner.run()
     return get_run(run_id)
@@ -127,10 +149,58 @@ class Deps:
                    "ffmpeg_location": str(Path(self.ffmpeg()).parent)}
         with yt_dlp.YoutubeDL(options) as ydl:
             info = ydl.extract_info(url, download=True)
-        files = sorted(work_dir.glob("source.*"))
+        files = sorted(p for p in work_dir.glob("source.*") if p.suffix != ".part")
         if not files:
             raise AutopilotError(f"Не удалось скачать ролик: {info.get('title') if info else url}")
         return files[0]
+
+
+    def tts(self, text: str, language: str, out: Path, cancelled) -> Path:
+        """Kokoro on fal for English (it has no Russian); free edge-tts for Russian and as the fallback."""
+        out.parent.mkdir(parents=True, exist_ok=True)
+        if language != "ru":
+            try:
+                result = self.fal_call("fal-ai/kokoro/american-english", {"prompt": text, "voice": "af_heart"}, cancelled)
+                url = (result.get("audio") or {}).get("url")
+                if url:
+                    return self.download(url, out.with_suffix(".wav"))
+            except (cg.CloudError, AutopilotError):
+                pass
+        import asyncio
+        import edge_tts
+        voice = "ru-RU-SvetlanaNeural" if language == "ru" else "en-US-AriaNeural"
+        target = out.with_suffix(".mp3")
+        asyncio.run(edge_tts.Communicate(text, voice).save(str(target)))
+        return target
+
+    def music(self, seconds: float, out: Path) -> Path:
+        """Royalty-free bed: a track from app/data/music if the owner put one there, else a synthesized ambient pad."""
+        library = Path(__file__).resolve().parents[1] / "data" / "music"
+        tracks = sorted(p for p in library.glob("*") if p.suffix.lower() in (".mp3", ".wav", ".m4a", ".ogg")) \
+            if library.is_dir() else []
+        if tracks:
+            return tracks[0]  # shortcut: first track regardless of mood; pick by mood when a library exists
+        # Soft A-minor chord with slow tremolo, low-passed, faded in/out: generated here, so no rights issues.
+        expr = ("0.10*sin(2*PI*220*t)*(0.7+0.3*sin(2*PI*0.13*t))+0.07*sin(2*PI*261.63*t)*(0.7+0.3*sin(2*PI*0.09*t))"
+                "+0.06*sin(2*PI*329.63*t)*(0.7+0.3*sin(2*PI*0.11*t))+0.05*sin(2*PI*110*t)")
+        length = max(1.0, seconds)
+        cmd = [self.ffmpeg(), "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi",
+               "-i", f"aevalsrc={expr}:s=44100:d={length:.2f}",
+               "-af", f"lowpass=f=1800,afade=t=in:d=1.5,afade=t=out:st={max(0.0, length - 2):.2f}:d=2", str(out)]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise AutopilotError(f"Музыка не собралась: {result.stderr.strip()[-300:]}")
+        return out
+
+    def duration(self, path: Path) -> float:
+        from services.title_cards import _resolve_ffprobe
+        probe = _resolve_ffprobe(self.ffmpeg())
+        result = subprocess.run([probe, "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
+                                capture_output=True, text=True)
+        try:
+            return float(result.stdout.strip())
+        except ValueError as error:
+            raise AutopilotError(f"Не удалось узнать длительность {Path(path).name}") from error
 
 
 # ---------------------------------------------------------------- runner
@@ -143,7 +213,9 @@ class Runner:
         self.cancelled = lambda: bool(state.get("_cancel"))
 
     def label(self, index: int, **values) -> str:
-        labels = kb.recipe("photo_to_film")["progress_labels"]
+        # viral_remake has no labels of its own and shares photo_to_film's.
+        own = kb.recipe(self.state["recipe"]).get("progress_labels")
+        labels = own or kb.recipe("photo_to_film")["progress_labels"]
         text = labels[index]
         for key, value in values.items():
             text = text.replace("{" + key + "}", str(value))
@@ -152,13 +224,17 @@ class Runner:
     def run(self) -> None:
         try:
             self.work_dir.mkdir(parents=True, exist_ok=True)
-            if self.state["recipe"] == "photo_to_film":
+            if self.options.get("regenerate_scene"):
+                output = self.regenerate(int(self.options["regenerate_scene"]))
+            elif self.state["recipe"] == "photo_to_film":
                 output = self.photo_to_film()
+            elif self.state["recipe"] == "one_prompt_film":
+                output = self.one_prompt_film()
             else:
                 output = self.viral_remake()
             with _LOCK:
                 self.state.update(status="done", output={"filename": output.name, "url": f"/api/v1/file/{output.name}"})
-            _progress(self.state, self.label(6), 100, "done")
+            _progress(self.state, self.label(-1), 100, "done")
         except InterruptedError:
             with _LOCK:
                 self.state.update(status="cancelled", error="Остановлено.")
@@ -262,13 +338,13 @@ class Runner:
         name = f"{time.strftime('%Y-%m-%d-%Hh%Mm%Ss')}_autopilot_{tag}_{self.state['id']}.mp4"
         return self.concat(clips, self.out_dir / name)
 
-    def keyframe(self, scene: dict, index: int) -> Path:
+    def keyframe(self, scene: dict, index: int, tag: str = "") -> Path:
         w, h = FRAME[self.aspect]
         req = {"kind": "image", "prompt": scene["prompt"], "image": None, "width": w, "height": h,
                "ratio": self.aspect, "resolution": "2K", "duration": 0}
-        return self.deps.fal_media(req, self.work_dir / f"key_{index}.png", self.cancelled)
+        return self.deps.fal_media(req, self.work_dir / f"key_{index}{tag}.png", self.cancelled)
 
-    def scene(self, scene: dict, image: Path | None, size: tuple[int, int], index: int) -> Path:
+    def scene(self, scene: dict, image: Path | None, size: tuple[int, int], index: int, tag: str = "") -> Path:
         w, h = size
         req = {"kind": "video", "prompt": scene["prompt"], "negative_prompt": scene["negative_prompt"],
                "image": image, "image_end": None, "width": w, "height": h, "ratio": self.aspect,
@@ -279,7 +355,7 @@ class Runner:
         for attempt, engine in enumerate(engines):
             self.check()
             try:
-                out = self.work_dir / f"scene_{index:02d}_try{attempt}.mp4"
+                out = self.work_dir / f"scene_{index:02d}{tag}_try{attempt}.mp4"
                 return self.deps.fal_media(dict(req, engine=engine), out, self.cancelled)
             except cg.CloudError as error:
                 errors.append(str(error))
@@ -299,6 +375,186 @@ class Runner:
                 "-b:v", "16M", "-maxrate", "20M", "-bufsize", "32M", "-pix_fmt", "yuv420p",
                 "-movflags", "+faststart", str(out)]
         result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0 or not out.is_file():
+            raise AutopilotError(f"Склейка не удалась: {result.stderr.strip()[-400:]}")
+        return out
+
+    # ------------------------------------------------------------ one_prompt_film
+
+    XFADE = 0.3  # seconds of crossfade between scenes
+
+    @staticmethod
+    def fill(template: str, **values) -> str:
+        for key, value in values.items():  # str.format would trip on the JSON braces in the templates
+            template = template.replace("{" + key + "}", str(value))
+        return template
+
+    def ask(self, template: str, **values) -> dict:
+        return parse_json(self.deps.llm([{"role": "user", "content": self.fill(template, **values)}]))
+
+    @staticmethod
+    def product_note(products: list[str]) -> str:
+        """Beautyart products in the phrase: their hard rules and product file go into every LLM step."""
+        if not products:
+            return ""
+        texts = [kb.read(kb.BEAUTYART_RULES)["text"]] + [kb.read(p)["text"] for p in products]
+        return ("В ролике товар Beautyart — соблюдай эти правила и факты, ничего не выдумывай. Упаковку не генерировать "
+                "и не описывать её надписи: в сценах с товаром будет реальное фото.\n" + "\n\n".join(texts) + "\n")
+
+    def one_prompt_film(self) -> Path:
+        phrase = (self.options.get("request") or "").strip()
+        if not phrase:
+            raise AutopilotError("Нужна фраза: о чём ролик.")
+        total = max(10, min(180, int(self.options.get("total_seconds") or 30)))
+        prompts = kb.recipe("one_prompt_film")["prompts"]
+        products = kb.product_in_text(phrase)
+        common = {"phrase": phrase, "total_seconds": total, "aspect": self.aspect, "product_note": self.product_note(products)}
+
+        _progress(self.state, self.label(0), 3, "write_script")
+        draft = self.ask(prompts["script"], **common)
+        _progress(self.state, self.label(1), 8, "script_doctor")
+        doctored = self.ask(prompts["doctor"], **common, script=json.dumps(draft, ensure_ascii=False))
+        fixed = doctored.get("script") if isinstance(doctored.get("script"), dict) else doctored
+        script = fixed if isinstance(fixed.get("scenes"), list) and fixed["scenes"] else draft
+        with _LOCK:
+            self.state["script"] = {"title": script.get("title", ""), "hook": script.get("hook", ""),
+                                    "ideas": draft.get("ideas", []), "grade": doctored.get("grade"),
+                                    "issues": doctored.get("issues", []), "products": products}
+        script_json = json.dumps(script, ensure_ascii=False)
+
+        _progress(self.state, self.label(2), 12, "extract_assets")
+        assets = self.ask(prompts["assets"], **common, script=script_json).get("assets") or []
+        images = []
+        photo = kb.product_photo(products[0]) if products else None
+        if photo:  # the real product photo; packaging is never generated
+            images.append(self.to_jpeg(photo, 1))
+
+        _progress(self.state, self.label(3), 16, "write_storyboard")
+        board = self.ask(prompts["storyboard"], **common, script=script_json, rules=kb.rules(),
+                         assets=json.dumps(assets, ensure_ascii=False))
+        for scene in board.get("scenes", []) if isinstance(board, dict) else []:
+            scene["photo_index"] = 1 if scene.get("product") and images else None
+        scenes = normalize_scenes(board, len(images), total, self.recipes.get("negative_prompt_default", ""),
+                                  keep=("voiceover", "product", "shot", "camera"))
+        language = "ru" if re.search("[а-яё]", phrase.lower()) else str(script.get("language") or "en")[:2]
+        return self.produce(scenes, images, language)
+
+    def produce(self, scenes: list[dict], images: list[Path], language: str) -> Path:
+        n = len(scenes)
+        size = (FINAL if self.options.get("quality") == "final" else DRAFT)[self.aspect]
+        keyframes = {}
+        for i, scene in enumerate(scenes, 1):  # cheap stills first, video only after the look is fixed
+            self.check()
+            if not scene["photo_index"]:
+                _progress(self.state, self.label(4, i=i, n=n), 20 + 15 * (i - 1) / n, "generate_keyframe")
+                keyframes[i] = self.keyframe(scene, i)
+        clips = []
+        for i, scene in enumerate(scenes, 1):
+            self.check()
+            _progress(self.state, self.label(5, i=i, n=n), 35 + 40 * (i - 1) / n, "generate_scene")
+            image = images[scene["photo_index"] - 1] if scene["photo_index"] else keyframes[i]
+            clips.append(self.scene(scene, image, size, i))
+        _progress(self.state, self.label(6), 77, "voiceover")
+        voices = {}
+        for i, scene in enumerate(scenes, 1):
+            self.check()
+            if scene.get("voiceover", "").strip():
+                voices[i] = self.deps.tts(scene["voiceover"].strip(), language, self.work_dir / f"voice_{i:02d}",
+                                          self.cancelled)
+        project = {"scenes": scenes, "images": [str(p) for p in images], "language": language, "size": list(size),
+                   "keyframes": {str(k): str(v) for k, v in keyframes.items()}, "clips": [str(c) for c in clips],
+                   "voices": {str(k): str(v) for k, v in voices.items()}, "version": 0}
+        with _LOCK:
+            self.state.update(_project=project, scenes=n, scenes_detail=_scene_details(scenes))
+        return self.assemble(project)
+
+    def regenerate(self, index: int) -> Path:
+        """Re-shoot one scene (new keyframe if the prompt changed) and re-assemble; other scenes are reused."""
+        project = self.state.get("_project")
+        if not project or not 1 <= index <= len(project["scenes"]):
+            raise AutopilotError("Такой сцены нет.")
+        scene = project["scenes"][index - 1]
+        prompt = (self.options.get("prompt") or "").strip()
+        if prompt:
+            scene["prompt"] = prompt
+        project["version"] += 1
+        tag = f"_v{project['version']}"
+        _progress(self.state, f"Перегенерирую сцену {index}", 10, "generate_scene")
+        if scene["photo_index"]:
+            image = Path(project["images"][scene["photo_index"] - 1])
+        elif prompt or str(index) not in project["keyframes"]:
+            image = self.keyframe(scene, index, tag)
+            project["keyframes"][str(index)] = str(image)
+        else:
+            image = Path(project["keyframes"][str(index)])
+        project["clips"][index - 1] = str(self.scene(scene, image, tuple(project["size"]), index, tag))
+        with _LOCK:
+            self.state["scenes_detail"] = _scene_details(project["scenes"])
+        return self.assemble(project)
+
+    def assemble(self, project: dict) -> Path:
+        clips = [Path(c) for c in project["clips"]]
+        durations = [self.deps.duration(c) for c in clips]
+        fade = min(self.XFADE, min(durations) / 3)
+        starts = [sum(durations[:k]) - k * fade for k in range(len(clips))]
+        total = sum(durations) - (len(clips) - 1) * fade
+        _progress(self.state, self.label(7), 85, "music")
+        music = self.deps.music(total, self.work_dir / "music.wav")
+        _progress(self.state, self.label(8), 89, "subtitles")
+        voices = {int(k): Path(v) for k, v in project["voices"].items()}
+        cues = []
+        for i, scene in enumerate(project["scenes"], 1):
+            if i in voices:
+                cues += subtitle_cues(scene["voiceover"], starts[i - 1], self.deps.duration(voices[i]))
+        (self.work_dir / "subs.srt").write_text(to_srt(cues), encoding="utf-8")
+        _progress(self.state, self.label(9), 93, "concat_clips")
+        suffix = f"_v{project['version']}" if project["version"] else ""
+        name = f"{time.strftime('%Y-%m-%d-%Hh%Mm%Ss')}_autopilot_one_prompt_film_{self.state['id']}{suffix}.mp4"
+        return self.mix(clips, starts, fade, total, voices, music, self.out_dir / name)
+
+    def mix(self, clips, starts, fade, total, voices, music, out: Path) -> Path:
+        """Scenes with xfade, burned-in subtitles, voice per scene, music −18 dB under it -> H.264 + AAC."""
+        w, h = FRAME[self.aspect]
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fonts = self.work_dir / "fonts"
+        fonts.mkdir(exist_ok=True)
+        system_font = Path("C:/Windows/Fonts/arial.ttf")
+        if system_font.is_file() and not (fonts / "arial.ttf").is_file():
+            # shortcut: Windows Arial (has Cyrillic); on other systems libass falls back to fontconfig fonts.
+            (fonts / "arial.ttf").write_bytes(system_font.read_bytes())
+        voice_items = sorted(voices.items())
+        cmd = [self.deps.ffmpeg(), "-y", "-hide_banner", "-loglevel", "error"]
+        for clip in clips:
+            cmd += ["-i", str(clip)]
+        for _, voice in voice_items:
+            cmd += ["-i", str(voice)]
+        cmd += ["-stream_loop", "-1", "-i", str(music)]
+        graph = [f"[{k}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=black,"
+                 f"setsar=1,fps=30,format=yuv420p,settb=AVTB[v{k}]" for k in range(len(clips))]
+        last = "v0"
+        for k in range(1, len(clips)):
+            graph.append(f"[{last}][v{k}]xfade=transition=fade:duration={fade:.3f}:offset={starts[k]:.3f}[x{k}]")
+            last = f"x{k}"
+        style = ("FontName=Arial,FontSize=11,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,"
+                 "BorderStyle=1,Outline=1.2,Shadow=0,Alignment=2,MarginV=36")
+        graph.append(f"[{last}]subtitles=subs.srt:fontsdir=fonts:force_style='{style}'[vout]")
+        base = len(clips)
+        stereo = "aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo"
+        for j, (i, _) in enumerate(voice_items):
+            ms = int(starts[i - 1] * 1000)
+            graph.append(f"[{base + j}:a]{stereo},adelay={ms}|{ms}[a{j}]")
+        music_index = base + len(voice_items)
+        graph.append(f"[{music_index}:a]{stereo},volume=-18dB,atrim=0:{total:.3f}[bgm]")
+        if voice_items:
+            graph.append("".join(f"[a{j}]" for j in range(len(voice_items)))
+                         + f"amix=inputs={len(voice_items)}:normalize=0:duration=longest[voice]")
+            graph.append(f"[voice][bgm]amix=inputs=2:normalize=0:duration=longest,atrim=0:{total:.3f}[aout]")
+        else:
+            graph.append("[bgm]anull[aout]")
+        cmd += ["-filter_complex", ";".join(graph), "-map", "[vout]", "-map", "[aout]", "-t", f"{total:.3f}",
+                "-c:v", "libx264", "-preset", "medium", "-b:v", "16M", "-maxrate", "20M", "-bufsize", "32M",
+                "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(out)]
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.work_dir)  # cwd: subs.srt, fonts/
         if result.returncode != 0 or not out.is_file():
             raise AutopilotError(f"Склейка не удалась: {result.stderr.strip()[-400:]}")
         return out
@@ -365,6 +621,31 @@ class Runner:
 
 
 # ---------------------------------------------------------------- helpers
+
+def _scene_details(scenes: list[dict]) -> list[dict]:
+    return [{k: s.get(k) for k in ("index", "seconds", "prompt", "voiceover", "product")} for s in scenes]
+
+
+def subtitle_cues(text: str, start: float, duration: float, max_words: int = 6) -> list[tuple[float, float, str]]:
+    """Split a scene's voiceover into short cues timed by the real audio length (word count proportional)."""
+    words = (text or "").split()
+    if not words or duration <= 0:
+        return []
+    cues, t = [], start
+    for k in range(0, len(words), max_words):
+        chunk = words[k:k + max_words]
+        length = duration * len(chunk) / len(words)
+        cues.append((t, t + length, " ".join(chunk)))
+        t += length
+    return cues
+
+
+def to_srt(cues: list[tuple[float, float, str]]) -> str:
+    def stamp(seconds: float) -> str:
+        ms = int(round(seconds * 1000))
+        return f"{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}"
+    return "".join(f"{i}\n{stamp(a)} --> {stamp(b)}\n{text}\n\n" for i, (a, b, text) in enumerate(cues, 1))
+
 
 def _has_alpha(im: Image.Image) -> bool:
     return im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info)

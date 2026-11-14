@@ -1,0 +1,360 @@
+{
+ "name": "products-knowledge-graph",
+ "entry": "INDEX.md",
+ "how_to_use": "Read INDEX.md first, pick 1-3 nodes by tags/title, open only them; rules/beautyart-card-rules.md is mandatory for any Beautyart card or video.",
+ "nodes": [
+  {
+   "id": "INDEX",
+   "path": "INDEX.md",
+   "title": "Товарка эстетической медицины — граф-память помощника",
+   "group": "INDEX.md",
+   "links": [
+    "brands/belotero.md",
+    "brands/botox.md",
+    "brands/dysport.md",
+    "brands/juvederm.md",
+    "brands/korean-market.md",
+    "brands/profhilo.md",
+    "brands/restylane.md",
+    "brands/teoxane-rha.md",
+    "brands/xeomin.md",
+    "cards/instagram-cards.md",
+    "cards/leader-patterns.md",
+    "cards/marketplace-cards.md",
+    "categories/biorevitalizants.md",
+    "categories/botulinum-toxins.md",
+    "categories/ha-fillers.md",
+    "categories/packaging-anatomy.md",
+    "categories/pdo-threads.md",
+    "ours/melagenta-ha-body.md",
+    "ours/sagitta-pdo.md",
+    "ours/zishel-glam.md",
+    "ours/zishel-rose-lidocaine.md",
+    "refs/REFS.md",
+    "rules/beautyart-card-rules.md",
+    "rules/visual-checklist.md",
+    "video/product-video-recipe.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "rules/beautyart-card-rules",
+   "path": "rules/beautyart-card-rules.md",
+   "title": "Правила карточек Beautyart (жёсткие)",
+   "group": "rules",
+   "links": [
+    "cards/instagram-cards.md",
+    "ours/zishel-glam.md",
+    "rules/visual-checklist.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "rules/visual-checklist",
+   "path": "rules/visual-checklist.md",
+   "title": "Самопроверка картинки перед отдачей",
+   "group": "rules",
+   "links": [
+    "rules/beautyart-card-rules.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "categories/ha-fillers",
+   "path": "categories/ha-fillers.md",
+   "title": "Филлеры гиалуроновой кислоты (ГК): как выглядят",
+   "group": "categories",
+   "links": [
+    "brands/juvederm.md",
+    "brands/restylane.md",
+    "categories/packaging-anatomy.md",
+    "ours/zishel-glam.md"
+   ],
+   "images": [
+    "refs/brands/juvederm_syringe_center_brandsite.jpg",
+    "refs/commons/ha_packshot_box_syringe_commons.jpg",
+    "refs/commons/prefilled_syringe_lidocaine_commons.jpg"
+   ]
+  },
+  {
+   "id": "categories/botulinum-toxins",
+   "path": "categories/botulinum-toxins.md",
+   "title": "Ботулотоксины: как выглядят",
+   "group": "categories",
+   "links": [
+    "brands/botox.md",
+    "brands/dysport.md",
+    "brands/xeomin.md",
+    "categories/packaging-anatomy.md"
+   ],
+   "images": [
+    "refs/brands/xeomin_vial_brandsite.webp",
+    "refs/commons/botox_injection_vial_commons.jpg",
+    "refs/commons/botox_vial_ruler_commons.jpg"
+   ]
+  },
+  {
+   "id": "categories/pdo-threads",
+   "path": "categories/pdo-threads.md",
+   "title": "Нити PDO: как выглядят",
+   "group": "categories",
+   "links": [
+    "ours/sagitta-pdo.md"
+   ],
+   "images": [
+    "refs/makers/sagitta_pdo_maker_1.jpg",
+    "refs/ours/sagitta_box_phone.jpg"
+   ]
+  },
+  {
+   "id": "categories/biorevitalizants",
+   "path": "categories/biorevitalizants.md",
+   "title": "Биоревитализанты и скинбустеры: как выглядят",
+   "group": "categories",
+   "links": [
+    "brands/korean-market.md",
+    "brands/profhilo.md"
+   ],
+   "images": [
+    "refs/brands/profhilo_banner_brandsite.jpg",
+    "refs/brands/profhilo_packshot_brandsite.png",
+    "refs/commons/skinbooster_syringes_commons.png"
+   ]
+  },
+  {
+   "id": "categories/packaging-anatomy",
+   "path": "categories/packaging-anatomy.md",
+   "title": "Анатомия упаковки инъекционного препарата",
+   "group": "categories",
+   "links": [
+    "categories/botulinum-toxins.md",
+    "categories/ha-fillers.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "cards/marketplace-cards",
+   "path": "cards/marketplace-cards.md",
+   "title": "Карточки товара на маркетплейсах",
+   "group": "cards",
+   "links": [
+    "cards/leader-patterns.md",
+    "rules/beautyart-card-rules.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "cards/instagram-cards",
+   "path": "cards/instagram-cards.md",
+   "title": "Карточки для Instagram (врачам)",
+   "group": "cards",
+   "links": [
+    "ours/zishel-glam.md",
+    "rules/beautyart-card-rules.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "cards/leader-patterns",
+   "path": "cards/leader-patterns.md",
+   "title": "Чему учиться у лидеров рынка",
+   "group": "cards",
+   "links": [],
+   "images": []
+  },
+  {
+   "id": "brands/juvederm",
+   "path": "brands/juvederm.md",
+   "title": "Juvéderm (Allergan Aesthetics / AbbVie)",
+   "group": "brands",
+   "links": [
+    "cards/leader-patterns.md"
+   ],
+   "images": [
+    "refs/brands/juvederm_hero_brandsite.jpg",
+    "refs/brands/juvederm_syringe_center_brandsite.jpg"
+   ]
+  },
+  {
+   "id": "brands/restylane",
+   "path": "brands/restylane.md",
+   "title": "Restylane (Galderma)",
+   "group": "brands",
+   "links": [
+    "cards/leader-patterns.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "brands/belotero",
+   "path": "brands/belotero.md",
+   "title": "Belotero (Merz Aesthetics)",
+   "group": "brands",
+   "links": [
+    "cards/leader-patterns.md"
+   ],
+   "images": [
+    "refs/brands/belotero_balance_tab_brandsite.webp"
+   ]
+  },
+  {
+   "id": "brands/botox",
+   "path": "brands/botox.md",
+   "title": "Botox Cosmetic (Allergan)",
+   "group": "brands",
+   "links": [
+    "cards/leader-patterns.md"
+   ],
+   "images": [
+    "refs/brands/botox_vial_brandsite.jpg",
+    "refs/brands/botox_vial_cutout_brandsite.png",
+    "refs/brands/botox_vial_footer_brandsite.jpg",
+    "refs/brands/botox_vial_in_air_brandsite.jpg",
+    "refs/brands/botox_vial_wide_brandsite.jpg",
+    "refs/commons/botox_vial_ruler_commons.jpg"
+   ]
+  },
+  {
+   "id": "brands/dysport",
+   "path": "brands/dysport.md",
+   "title": "Dysport (Galderma)",
+   "group": "brands",
+   "links": [
+    "cards/leader-patterns.md"
+   ],
+   "images": [
+    "refs/brands/dysport_hero_brandsite.webp",
+    "refs/brands/dysport_share_brandsite.png"
+   ]
+  },
+  {
+   "id": "brands/xeomin",
+   "path": "brands/xeomin.md",
+   "title": "Xeomin / Bocouture (Merz)",
+   "group": "brands",
+   "links": [
+    "cards/leader-patterns.md"
+   ],
+   "images": [
+    "refs/brands/xeomin_vial_brandsite.webp"
+   ]
+  },
+  {
+   "id": "brands/teoxane-rha",
+   "path": "brands/teoxane-rha.md",
+   "title": "Teoxane (RHA, Teosyal), Швейцария",
+   "group": "brands",
+   "links": [
+    "cards/leader-patterns.md"
+   ],
+   "images": [
+    "refs/brands/teoxane_rha_hero_brandsite.jpeg"
+   ]
+  },
+  {
+   "id": "brands/profhilo",
+   "path": "brands/profhilo.md",
+   "title": "Profhilo (IBSA)",
+   "group": "brands",
+   "links": [
+    "cards/leader-patterns.md"
+   ],
+   "images": [
+    "refs/brands/profhilo_banner_brandsite.jpg",
+    "refs/brands/profhilo_packshot_brandsite.png"
+   ]
+  },
+  {
+   "id": "brands/korean-market",
+   "path": "brands/korean-market.md",
+   "title": "Корейские и азиатские бренды (рынок СНГ / Казахстана)",
+   "group": "brands",
+   "links": [
+    "cards/marketplace-cards.md",
+    "categories/ha-fillers.md",
+    "ours/zishel-glam.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "ours/zishel-glam",
+   "path": "ours/zishel-glam.md",
+   "title": "ZISHÉL Glam — флагман Beautyart",
+   "group": "ours",
+   "links": [
+    "ours/melagenta-ha-body.md",
+    "rules/beautyart-card-rules.md"
+   ],
+   "images": [
+    "refs/ours/zishel_brand_mood.jpg",
+    "refs/ours/zishel_glam_and_rose_lidocaine_touch_phone.jpg",
+    "refs/ours/zishel_glam_box_cropped.jpg",
+    "refs/ours/zishel_glam_box_phone.jpg",
+    "refs/ours/zishel_glam_cutout.png"
+   ]
+  },
+  {
+   "id": "ours/zishel-rose-lidocaine",
+   "path": "ours/zishel-rose-lidocaine.md",
+   "title": "ZISHÉL Rose Lidocaine — линейка 1 мл",
+   "group": "ours",
+   "links": [
+    "categories/ha-fillers.md",
+    "ours/zishel-glam.md"
+   ],
+   "images": [
+    "refs/ours/zishel_glam_and_rose_lidocaine_touch_phone.jpg",
+    "refs/ours/zishel_rose_lidocaine_touch_box_cropped.jpg"
+   ]
+  },
+  {
+   "id": "ours/melagenta-ha-body",
+   "path": "ours/melagenta-ha-body.md",
+   "title": "MELAGENTA H.A Body 60 мл",
+   "group": "ours",
+   "links": [
+    "ours/zishel-glam.md",
+    "rules/beautyart-card-rules.md"
+   ],
+   "images": [
+    "refs/ours/melagenta_body_60_cropped.jpg",
+    "refs/ours/melagenta_body_60_cutout.png",
+    "refs/ours/melagenta_body_60_phone.jpg"
+   ]
+  },
+  {
+   "id": "ours/sagitta-pdo",
+   "path": "ours/sagitta-pdo.md",
+   "title": "Нити PDO Sagitta",
+   "group": "ours",
+   "links": [
+    "categories/pdo-threads.md"
+   ],
+   "images": [
+    "refs/makers/sagitta_pdo_maker_1.jpg",
+    "refs/makers/sagitta_pdo_maker_2.jpg",
+    "refs/makers/sagitta_pdo_maker_3.jpg",
+    "refs/makers/sagitta_pdo_maker_4.jpg",
+    "refs/ours/sagitta_box_phone.jpg"
+   ]
+  },
+  {
+   "id": "video/product-video-recipe",
+   "path": "video/product-video-recipe.md",
+   "title": "Рецепт: короткий ролик с товаром (Wan 2.2 / fal)",
+   "group": "video",
+   "links": [
+    "rules/beautyart-card-rules.md"
+   ],
+   "images": []
+  },
+  {
+   "id": "refs/REFS",
+   "path": "refs/REFS.md",
+   "title": "Подписи к картинкам-референсам",
+   "group": "refs",
+   "links": [],
+   "images": []
+  }
+ ]
+}

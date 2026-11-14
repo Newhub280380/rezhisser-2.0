@@ -213,9 +213,11 @@ def test_parse_and_normalize_storyboard():
 def test_knowledge_comes_from_the_folder(monkeypatch):
     summary = kb.summary()
     ids = [c["id"] for c in summary["categories"]]
-    assert ids == ["photo_to_film", "photo_to_video", "text_to_video", "face_swap", "viral_remake", "talking_head"]
+    assert ids == ["photo_to_film", "photo_to_video", "text_to_video", "face_swap", "viral_remake", "talking_head",
+                   "one_prompt_film"]
     assert len(summary["commands"]) == 19 and summary["commands"][0]["command"].startswith("/")
-    assert [c["id"] for c in summary["categories"] if c["autopilot"]] == ["photo_to_film", "viral_remake"]
+    assert [c["id"] for c in summary["categories"] if c["autopilot"]] == ["photo_to_film", "viral_remake",
+                                                                          "one_prompt_film"]
     # the chat system prompt is built from the folder, and a slash command pulls in its template
     monkeypatch.setattr(assistant_chat.cloud_generation, "env",
                         lambda name: {"LLM_API_KEY": "k", "LLM_BASE_URL": "https://openrouter.ai/api/v1"}.get(name, ""))
