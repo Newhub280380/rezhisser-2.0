@@ -79,14 +79,15 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
             />
           ))}
           <TextSetting label="Cloud LLM URL (OpenAI-compatible)" value={config.llm_base_url}
-            placeholder="https://api.minimax.io/v1" onSave={v => save({ LLM_BASE_URL: v })} />
+            placeholder="https://openrouter.ai/api/v1" onSave={v => save({ LLM_BASE_URL: v })} />
           <TextSetting label="Cloud LLM model" value={config.llm_model}
-            placeholder="MiniMax-M2" onSave={v => save({ LLM_MODEL: v })} />
+            placeholder="nvidia/nemotron-3.5-lightning:free" onSave={v => save({ LLM_MODEL: v })} />
           <ApiKeyField label="Cloud LLM key" maskedValue="••••••••" isSet={config.keys.LLM_API_KEY}
             onSave={value => save({ LLM_API_KEY: value })} />
           <p className="text-[10px] text-text-muted">
             Keys are stored in .env. With a cloud backend selected, Director and Studio planners use the cloud LLM
-            when the LLM provider above is Local.
+            when the LLM provider above is Local. The built-in assistant uses the same Cloud LLM key; if the model
+            is empty it uses nvidia/nemotron-3.5-lightning:free, with z-ai/glm-5.3-flash as fallback.
           </p>
         </>
       )}
