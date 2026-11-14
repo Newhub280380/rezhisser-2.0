@@ -8266,8 +8266,8 @@ def system_preflight():
         checks.append({
             "id": "ffmpeg",
             "level": "error",
-            "message": "ffmpeg was not found on PATH. Video and audio "
-                       "export will fail. Install ffmpeg and restart Maestro.",
+            "message": "Не найден ffmpeg — сохранение видео и звука не сработает. "
+                       "Переустановите приложение или поставьте ffmpeg.",
         })
 
     # CUDA — the generation pipeline is NVIDIA-only.
@@ -8278,23 +8278,23 @@ def system_preflight():
             checks.append({
                 "id": "cuda",
                 "level": "warning",
-                "message": "No CUDA GPU detected. Local models are unavailable; "
-                           f"generation runs in the cloud ({_cloud_provider()}).",
+                "message": "Видеокарты NVIDIA нет — локальные модели недоступны, "
+                           f"генерация идёт в облаке ({_cloud_provider()}).",
             })
         elif not _torch.cuda.is_available():
             checks.append({
                 "id": "cuda",
                 "level": "error",
-                "message": "No CUDA GPU detected. Maestro's generation "
-                           "pipeline requires an NVIDIA GPU; generation will "
-                           "not work on this machine.",
+                "message": "Видеокарты NVIDIA нет и облако не выбрано. "
+                           "Выберите облако fal (Wan 2.2) в Settings → Integrations → Cloud, "
+                           "иначе генерация на этом компьютере работать не будет.",
             })
     except Exception:
         checks.append({
             "id": "torch",
             "level": "error",
-            "message": "PyTorch failed to import — the install may be "
-                       "incomplete. Try Reset then Install in Pinokio.",
+            "message": "Не загрузился PyTorch — установка, похоже, неполная. "
+                       "Переустановите приложение.",
         })
 
     # Free disk on the output drive.
@@ -8306,17 +8306,15 @@ def system_preflight():
             checks.append({
                 "id": "disk",
                 "level": "error",
-                "message": f"Only {free_gb:.1f} GB free on the output drive. "
-                           "Generation writes large files and will fail soon. "
-                           "Free up space.",
+                "message": f"На диске для результатов свободно всего {free_gb:.1f} ГБ. "
+                           "Ролики занимают много места — освободите диск.",
             })
         elif free_gb < 20:
             checks.append({
                 "id": "disk",
                 "level": "warn",
-                "message": f"{free_gb:.0f} GB free on the output drive. Model "
-                           "downloads and long runs can exhaust this — keep an "
-                           "eye on free space.",
+                "message": f"На диске для результатов свободно {free_gb:.0f} ГБ. "
+                           "Следите за местом.",
             })
     except Exception:
         pass

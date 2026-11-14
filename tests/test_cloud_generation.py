@@ -159,15 +159,32 @@ def test_execute_rejects_unsupported_job(tmp_path, monkeypatch):
         raise AssertionError("mask job must not reach the cloud")
 
 
-def test_execute_rejects_clip_longer_than_15s(tmp_path, monkeypatch):
+def test_execute_shortens_long_clip_to_5s_on_wan(tmp_path, monkeypatch):
+    """A 20 s request on fal + Wan 2.2 is made as the default 5 s Wan clip, never sent to MiniMax H3."""
     monkeypatch.setenv("FAL_KEY", "k")
+    monkeypatch.setenv("CLOUD_VIDEO_ENGINE", "wan22")
+    seen = []
+    monkeypatch.setattr(cg.Fal, "run", lambda self, req, out, cancelled: seen.append(
+        (dict(req), self.endpoint_and_body(req)[0])) or out)
+    monkeypatch.setattr(cg, "update_job", lambda job, **kw: job.update(kw))
     job = {"id": "j2", "out_dir": str(tmp_path), "params": {"prompt": "p", "video_length": 24 * 20}}
+    assert cg.execute(job, "fal", {"fps": 24}, finalize=False)
+    req, endpoint = seen[0]
+    assert req["duration"] == cg.DEFAULT_WAN_SECONDS == 5
+    assert "wan" in endpoint and "minimax" not in endpoint.lower()
+
+
+def test_execute_rejects_clip_longer_than_15s_on_h3(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAL_KEY", "k")
+    monkeypatch.setenv("CLOUD_VIDEO_ENGINE", "h3")
+    monkeypatch.setattr(cg.Fal, "run", lambda *a, **k: (_ for _ in ()).throw(AssertionError("must not reach the cloud")))
+    job = {"id": "j3", "out_dir": str(tmp_path), "params": {"prompt": "p", "video_length": 24 * 20}}
     try:
         cg.execute(job, "fal", {"fps": 24})
     except cg.CloudError as error:
         assert "15 s" in str(error)
     else:
-        raise AssertionError("20 s clip must not be silently clamped")
+        raise AssertionError("20 s H3 clip must not be silently clamped")
 
 
 def test_launch_wiring_routes_cloud_before_native():
@@ -224,8 +241,8 @@ def test_preflight_cuda_check_is_a_warning_in_cloud_mode():
     source = (Path(__file__).resolve().parents[1] / "app" / "launch.py").read_text(encoding="utf-8")
     start = source.index("def system_preflight():")
     body = source[start:source.index("\n@api.", start)]
-    assert body.index('"level": "warning"') < body.index("generation runs in the cloud")
-    assert "requires an NVIDIA GPU" in body  # local-mode error kept unchanged
+    assert body.index('"level": "warning"') < body.index("генерация идёт в облаке")
+    assert "облако не выбрано" in body  # local-mode error kept (now in Russian)
 
 
 def test_execute_studio_video_job_on_fal_wan22(tmp_path, monkeypatch):

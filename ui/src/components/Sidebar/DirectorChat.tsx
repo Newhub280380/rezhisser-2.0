@@ -827,7 +827,7 @@ export function DirectorChat() {
         {/* Welcome message */}
         <SystemBubble>
           <p className="text-xs text-text-secondary">
-            Welcome to Maestro Director. Choose a skill to get started.
+            Это Режиссёр. Выберите навык или опишите идею одной фразой.
           </p>
         </SystemBubble>
 

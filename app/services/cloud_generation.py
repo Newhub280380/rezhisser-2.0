@@ -30,6 +30,7 @@ PLAIN_KEYS = ("CLOUD_PROVIDER", "LLM_BASE_URL", "LLM_MODEL")
 # fal video engines: Wan 2.2 (open model, default) and MiniMax H3 (fallback). Read-only override via the
 # CLOUD_VIDEO_ENGINE environment variable (not written from the UI).
 VIDEO_ENGINES = ("wan22", "h3")
+DEFAULT_WAN_SECONDS = 5  # default clip length on Wan 2.2 (fal bills per second of video)
 
 
 class CloudError(RuntimeError):
@@ -433,7 +434,7 @@ CLIENTS = {"minimax": MiniMax, "fal": Fal, "muapi": MuApi}
 def execute(job: dict, provider: str, model_def: dict | None, *, finalize: bool = True) -> bool:
     """Run one queued job in the cloud and finish it like a native job."""
     if not ready(provider):
-        raise CloudError(f"Cloud provider '{provider}' has no API key. Add it in Settings → Cloud.")
+        raise CloudError(f"Нет ключа облака '{provider}'. Впишите его: Settings → Integrations → Cloud.")
     params = job["params"]
     reason = unsupported_reason(params, model_def)
     if reason:
@@ -441,13 +442,20 @@ def execute(job: dict, provider: str, model_def: dict | None, *, finalize: bool 
     out_dir = Path(job.get("out_dir") or "outputs")
     req = request_from_params(params, model_def, out_dir / ".cloud_refs")
     if not req["prompt"]:
-        raise CloudError("prompt is required for cloud generation")
+        raise CloudError("Нужен текст задания (промпт) для облачной генерации.")
     seconds = int(params.get("video_length") or 0) / float((model_def or {}).get("fps") or 24)
-    if req["kind"] == "video" and seconds > 15.5:
+    shortened = False
+    if req["kind"] == "video" and provider == "fal" and video_engine() == "wan22" and req["duration"] > Fal.WAN_MAX_SECONDS:
+        # Wan 2.2 makes up to 10 s per clip. Longer requests (Studio's "Auto" length) get the default
+        # 5 s on Wan instead of silently going to MiniMax H3; H3 only when CLOUD_VIDEO_ENGINE=h3.
+        req["duration"] = DEFAULT_WAN_SECONDS
+        shortened = True
+    elif req["kind"] == "video" and seconds > 15.5:
         raise CloudError(f"Cloud H3 makes clips up to 15 s; this job asks for {seconds:.1f} s. "
                          "Shorten it or switch Generation backend to Local models.")
     started = time.monotonic()
-    update_job(job, phase="cloud", message=f"Generating · {provider} {req['kind']}")
+    update_job(job, phase="cloud", message=(f"Генерация · {provider} Wan 2.2 · {DEFAULT_WAN_SECONDS} с (Wan делает до 10 с за раз)"
+                                            if shortened else f"Генерация · {provider} {req['kind']}"))
     ext = ".png" if req["kind"] == "image" else ".mp4"
     name = f"{time.strftime('%Y-%m-%d-%Hh%Mm%Ss')}_cloud_{provider}_{job['id']}{ext}"
     CLIENTS[provider]().run(req, out_dir / name, lambda: is_cancel_requested(job))

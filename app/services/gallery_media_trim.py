@@ -127,6 +127,13 @@ def _seconds(value: float) -> str:
     return f"{value:.9f}".rstrip("0").rstrip(".") or "0"
 
 
+def _rate(fps: float) -> str:
+    """Source frame rate as an exact fraction for -r (25 -> 25/1, 29.97 -> 30000/1001)."""
+    from fractions import Fraction
+    rate = Fraction(fps).limit_denominator(1001)
+    return f"{rate.numerator}/{rate.denominator}"
+
+
 def _run_ffmpeg(command: list[str], *, timeout: int) -> None:
     try:
         result = subprocess.run(
@@ -263,7 +270,8 @@ def trim_gallery_media(
             command.extend([
                 "-map", "0:v:0", "-vf", "setpts=PTS-STARTPTS",
                 "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
-                "-pix_fmt", "yuv420p", "-fps_mode", "passthrough",
+                "-pix_fmt", "yuv420p", "-fps_mode", "cfr",
+                "-r", _rate(fps),
                 "-threads", str(FFMPEG_THREADS),
             ])
             if source_info.get("has_audio"):

@@ -1,12 +1,13 @@
 import { useEffect, useId, useState, type ChangeEvent } from 'react'
 import { fetchCloudConfig, updateCloudConfig, type CloudConfig } from '../../api/client'
 import { ApiKeyField } from './ApiKeyField'
+import { useStore } from '../../stores/useStore'
 
 const LABELS: Record<string, string> = {
-  local: 'Local models (this PC)',
-  minimax: 'Cloud · MiniMax API',
-  fal: 'Cloud · fal — Wan 2.2',
-  muapi: 'Cloud · MuAPI',
+  local: 'Локальные модели (этот ПК)',
+  minimax: 'Облако · MiniMax API',
+  fal: 'Облако · fal — Wan 2.2',
+  muapi: 'Облако · MuAPI',
 }
 const KEY_OF: Record<string, string> = { minimax: 'MINIMAX_API_KEY', fal: 'FAL_KEY', muapi: 'MUAPI_API_KEY' }
 
@@ -32,6 +33,14 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
     }
   }
 
+  // Wan 2.2 makes up to 10 s per clip; the Studio default ("Auto" 20.9 s) is set to 5 s when the fal cloud is on.
+  const duration = useStore(s => s.durationSeconds)
+  const setDurationSeconds = useStore(s => s.setDurationSeconds)
+  const wanCloud = config?.provider === 'fal' && config?.video_engine !== 'h3'
+  useEffect(() => {
+    if (wanCloud && duration > 10) setDurationSeconds(5)
+  }, [wanCloud, duration, setDurationSeconds])
+
   if (!config) return null
   const missingKey = config.provider !== 'local' && !config.providers.find(p => p.name === config.provider)?.ready
   // fal (Wan 2.2, open model) is the primary cloud video engine, so it is listed first.
@@ -47,7 +56,7 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] text-text-muted uppercase tracking-wider w-11 shrink-0">Engine</span>
         <select aria-label="Generation backend" value={config.provider} onChange={change}
-          title={missingKey ? 'API key for this provider is not set — Settings → Integrations → Cloud.' : undefined}
+          title={missingKey ? 'Ключ для этого облака не задан — Settings → Integrations → Cloud.' : undefined}
           className={`flex-1 min-w-0 bg-bg-tertiary border rounded-lg px-2 py-1 text-[11px] text-text-primary focus:outline-none focus:border-accent-blue ${missingKey ? 'border-amber-400' : 'border-border'}`}>
           {options}
         </select>
@@ -57,7 +66,7 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
 
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="text-[11px] text-text-muted uppercase tracking-wider block">Generation backend</label>
+      <label htmlFor={id} className="text-[11px] text-text-muted uppercase tracking-wider block">Где генерировать</label>
       <select
         id={id}
         value={config.provider}
@@ -68,11 +77,11 @@ export function CloudEngineControl({ full = false, compact = false }: { full?: b
       </select>
       {config.provider === 'fal' && (
         <p className="text-[10px] text-text-muted">
-          Video: {config.video_engine === 'h3' ? 'MiniMax H3' : 'Wan 2.2 (open model); MiniMax H3 for clips over 10 s or if Wan is unavailable'}.
+          Видео: {config.video_engine === 'h3' ? 'MiniMax H3' : 'Wan 2.2 (открытая модель), 5 с по умолчанию; длиннее 10 с за раз Wan не делает, такие задания укорачиваются до 5 с'}.
         </p>
       )}
       {missingKey && (
-        <p role="status" className="text-xs text-amber-400">API key for this provider is not set — Settings → Integrations → Cloud.</p>
+        <p role="status" className="text-xs text-amber-400">Ключ для этого облака не задан — Settings → Integrations → Cloud.</p>
       )}
       {full && (
         <>

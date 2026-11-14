@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Sparkles, Download, Cpu, ShieldAlert, X } from 'lucide-react'
+import { Sparkles, Cloud, Wand2, ShieldAlert, X } from 'lucide-react'
 
-const SEEN_KEY = 'maestro_welcome_seen_v1'
+const SEEN_KEY = 'maestro_welcome_seen_v2'
 
 /**
  * WelcomeModal — a one-time first-run intro. Sets the expectations that
@@ -34,33 +34,31 @@ export function WelcomeModal() {
             <Sparkles size={22} className="text-accent-blue" />
           </div>
           <div className="flex-1">
-            <h2 className="text-base font-semibold text-text-primary">Welcome to Maestro</h2>
+            <h2 className="text-base font-semibold text-text-primary">Добро пожаловать в Режиссёр 2.0</h2>
             <p className="text-xs text-text-muted mt-0.5">
-              A local AI studio for video, images, and music — including a Director mode
-              that plans a whole music video or short film from a sentence.
+              Студия видео, картинок и музыки. Режим «Режиссёр» по одной фразе
+              продумывает целый клип или короткий фильм.
             </p>
           </div>
-          <button onClick={dismiss} className="p-1 rounded text-text-muted hover:text-text-primary" aria-label="Close">
+          <button onClick={dismiss} className="p-1 rounded text-text-muted hover:text-text-primary" aria-label="Закрыть">
             <X size={16} />
           </button>
         </div>
 
         {/* Points */}
         <div className="px-6 pb-2 space-y-3.5">
-          <Row icon={<Download size={16} className="text-accent-blue" />} title="Models download on first use">
-            The install set up the app, not the model weights. The first time you use a
-            given model, its files download once — often <span className="text-text-secondary">tens of GB</span> for
-            a video model — before anything appears. Later runs are fast. Watch progress
-            at the bottom-right; the very first video can take a while.
+          <Row icon={<Cloud size={16} className="text-accent-blue" />} title="Видео делается в облаке (Wan 2.2)">
+            Ролики генерируются через облако fal на модели Wan 2.2 — по умолчанию
+            по <span className="text-text-secondary">5 секунд</span>, это дешевле всего. Ключ облака
+            вписывается один раз: Settings → Integrations → Cloud.
           </Row>
-          <Row icon={<Cpu size={16} className="text-accent-blue" />} title="Director runs on a local LLM">
-            Director mode plans your video with a local language model (Gemma 4, ~5 GB,
-            downloaded on first Director use) — nothing is sent to the cloud. You can
-            switch models, or plug in an external API, under Settings → Services.
+          <Row icon={<Wand2 size={16} className="text-accent-blue" />} title="Режиссёр и помощник">
+            Опишите идею одной фразой — Режиссёр разложит её на сцены, а помощник
+            ответит на вопросы. Для этого нужен облачный ключ текстовой модели (там же, в настройках).
           </Row>
-          <Row icon={<ShieldAlert size={16} className="text-red-400" />} title="Mature mode is off by default">
-            Adult content generation is an explicit opt-in behind a disclaimer in
-            Settings → Services. Leave it off and content stays PG-13.
+          <Row icon={<ShieldAlert size={16} className="text-red-400" />} title="Взрослый режим выключен">
+            Откровенный контент включается только вручную, с предупреждением,
+            в Settings → Services. Если не включать, всё остаётся в рамках 16+.
           </Row>
         </div>
 
@@ -70,7 +68,7 @@ export function WelcomeModal() {
             onClick={dismiss}
             className="px-5 py-2 text-xs bg-accent-blue text-white rounded-lg hover:bg-accent-blue-hover transition-colors font-medium"
           >
-            Get started
+            Начать
           </button>
         </div>
       </div>
