@@ -7,7 +7,7 @@ import { matchCommands, useKnowledge, type AssistantCategory } from './knowledge
 import { callFrontendTool, frontendToolsAsOpenAI } from './useFrontendTool'
 
 type ChatRole = 'user' | 'assistant' | 'system'
-type ChatMessage = { role: ChatRole; content: string }
+type ChatMessage = { role: ChatRole; content: string; image?: string }
 
 type AssistantStatus = {
   ready: boolean
@@ -46,7 +46,15 @@ export function AssistantChat({ onClose }: { onClose: () => void }) {
   const [uploading, setUploading] = useState(false)
   const [runIds, setRunIds] = useState<string[]>([])
   const attachInputRef = useRef<HTMLInputElement | null>(null)
-  const onAutopilot = useCallback((runId: string) => setRunIds(current => [...current, runId]), [])
+  const onAutopilot = useCallback(
+    (runId: string) => setRunIds(current => (current.includes(runId) ? current : [...current, runId])),
+    [],
+  )
+  const onImage = useCallback(
+    (url: string, caption: string) =>
+      setMessages(current => [...current, { role: 'assistant', content: caption, image: url }]),
+    [],
+  )
   const [status, setStatus] = useState<AssistantStatus | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -198,6 +206,7 @@ export function AssistantChat({ onClose }: { onClose: () => void }) {
         fileInputRef={fileInputRef}
         attachments={attachments.map(item => item.filename)}
         onAutopilot={onAutopilot}
+        onImage={onImage}
       />
       <input
         ref={fileInputRef}
@@ -258,6 +267,7 @@ export function AssistantChat({ onClose }: { onClose: () => void }) {
                 : 'bg-bg-tertiary text-text-primary'
             }`}
           >
+            {message.image && <img src={message.image} alt={message.content} className="mb-1 max-h-64 rounded-lg" />}
             {message.content}
           </div>
         ))}

@@ -10,7 +10,15 @@ import {
 } from '../api/client'
 import { useStore } from '../stores/useStore'
 import type { GenerateParams } from '../types'
-import { cancelAutopilot, fetchAutopilot, startAutopilot } from './autopilotApi'
+import {
+  cancelAutopilot,
+  fetchAutopilot,
+  readKnowledge,
+  refImageUrl,
+  regenerateScene,
+  searchKnowledge,
+  startAutopilot,
+} from './autopilotApi'
 import { findPreset, type AssistantCategory } from './knowledge'
 import { useFrontendTool } from './useFrontendTool'
 
@@ -31,6 +39,7 @@ export function AssistantTools({
   fileInputRef,
   attachments,
   onAutopilot,
+  onImage,
 }: {
   category: AssistantCategory | null
   fileInputRef: React.RefObject<HTMLInputElement | null>
@@ -38,6 +47,8 @@ export function AssistantTools({
   attachments: string[]
   /** Called with the run id so the chat shows live progress and the final player. */
   onAutopilot: (runId: string) => void
+  /** Shows a reference picture in the chat. */
+  onImage: (url: string, caption: string) => void
 }) {
   const lastUpload = useRef<{ filename: string; path: string; url: string } | null>(null)
 
@@ -273,13 +284,14 @@ export function AssistantTools({
       description:
         'Автопилот: сам проходит весь рецепт и отдаёт готовый mp4. photo_to_film — ролик из фото ' +
         '(фон → 4К → JPEG → раскадровка → сцены Wan 2.2 → склейка 1080x1920). viral_remake — ремейк ролика по ссылке. ' +
-        'Прогресс и плеер чат показывает сам.',
+        'one_prompt_film — ролик одной фразой (сценарий → доктор → активы → раскадровка → сцены → озвучка → музыка → ' +
+        'субтитры → склейка); фразу передай в request. Прогресс и плеер чат показывает сам.',
       parameters: {
         type: 'object',
         properties: {
-          recipe: { type: 'string', enum: ['photo_to_film', 'viral_remake'] },
+          recipe: { type: 'string', enum: ['photo_to_film', 'viral_remake', 'one_prompt_film'] },
           request: { type: 'string', description: 'Задача словами человека' },
-          total_seconds: { type: 'number', description: 'Длина ролика, с. По умолчанию 60; «2–3 минуты» = 150' },
+          total_seconds: { type: 'number', description: 'Длина ролика, с. Фото: по умолчанию 60, одна фраза: 30; «2–3 минуты» = 150' },
           aspect: { type: 'string', enum: ['9:16', '16:9', '1:1'] },
           remove_background: { type: 'boolean', description: 'false для пейзажей и интерьеров' },
           quality: { type: 'string', enum: ['draft', 'final'], description: 'draft = 480p, final = 720p' },
@@ -306,6 +318,82 @@ export function AssistantTools({
       },
     },
     [attachments, onAutopilot],
+  )
+
+  useFrontendTool(
+    {
+      name: 'regenerate_scene',
+      description: 'Переснять одну сцену готового ролика «Одной фразой» (можно с новым промптом); остальное не пересобирается.',
+      parameters: {
+        type: 'object',
+        properties: {
+          run_id: { type: 'string' },
+          index: { type: 'number', description: 'Номер сцены, с 1' },
+          prompt: { type: 'string', description: 'Новый промпт сцены для Wan 2.2 (по желанию)' },
+        },
+        required: ['run_id', 'index'],
+        additionalProperties: false,
+      },
+      handler: async ({ run_id, index, prompt }) => {
+        const run = await regenerateScene(asString(run_id), asNumber(index) ?? 1, asString(prompt))
+        onAutopilot(run.id)
+        return { ok: true, status: run.status }
+      },
+    },
+    [onAutopilot],
+  )
+
+  useFrontendTool(
+    {
+      name: 'search_knowledge',
+      description:
+        'Поиск по памяти знаний (товарка, правила Beautyart, рецепты, rules.md, slash-команды): 1–5 узлов с путями. ' +
+        'Потом read_knowledge только нужных файлов.',
+      parameters: {
+        type: 'object',
+        properties: { query: { type: 'string' } },
+        required: ['query'],
+        additionalProperties: false,
+      },
+      handler: async ({ query }) => ({ ok: true, ...(await searchKnowledge(asString(query))) }),
+    },
+    [],
+  )
+
+  useFrontendTool(
+    {
+      name: 'read_knowledge',
+      description: 'Прочитать один файл памяти знаний по пути из search_knowledge.',
+      parameters: {
+        type: 'object',
+        properties: { path: { type: 'string' } },
+        required: ['path'],
+        additionalProperties: false,
+      },
+      handler: async ({ path }) => ({ ok: true, ...(await readKnowledge(asString(path))) }),
+    },
+    [],
+  )
+
+  useFrontendTool(
+    {
+      name: 'open_ref_image',
+      description: 'Показать картинку-референс из products/refs (для наших товаров — только products/refs/ours).',
+      parameters: {
+        type: 'object',
+        properties: { path: { type: 'string' }, caption: { type: 'string' } },
+        required: ['path'],
+        additionalProperties: false,
+      },
+      handler: async ({ path, caption }) => {
+        const url = refImageUrl(asString(path))
+        const response = await fetch(url)  // the ref route is GET-only
+        if (!response.ok) return { ok: false, error: 'Нет такой картинки.' }
+        onImage(url, asString(caption) || asString(path))
+        return { ok: true, url }
+      },
+    },
+    [onImage],
   )
 
   useFrontendTool(

@@ -12,6 +12,9 @@ export type AutopilotRun = {
   warnings: string[]
   output: { filename: string; url: string } | null
   error: string | null
+  /** one_prompt_film only */
+  script?: { title: string; hook: string; grade?: string | null; issues?: string[] }
+  scenes_detail?: Array<{ index: number; seconds: number; prompt: string; voiceover?: string; product?: boolean }>
 }
 
 async function send(url: string, init?: RequestInit): Promise<AutopilotRun> {
@@ -38,6 +41,36 @@ export function startAutopilot(body: Record<string, unknown>): Promise<Autopilot
 
 export function fetchAutopilot(id: string): Promise<AutopilotRun> {
   return send(`/api/v1/assistant/autopilot/${encodeURIComponent(id)}`)
+}
+
+/** One-prompt films: re-shoot one scene (optionally with a new prompt); the rest of the film is reused. */
+export function regenerateScene(id: string, index: number, prompt = ''): Promise<AutopilotRun> {
+  return send(`/api/v1/assistant/autopilot/${encodeURIComponent(id)}/scene/${index}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  })
+}
+
+export type KnowledgeNode = { path: string; title: string; group: string; description: string; links: string[]; images: string[] }
+
+async function getJson<T>(url: string): Promise<T> {
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`Ошибка ${response.status}`)
+  return response.json()
+}
+
+export function searchKnowledge(query: string): Promise<{ nodes: KnowledgeNode[] }> {
+  return getJson(`/api/v1/assistant/knowledge/search?q=${encodeURIComponent(query)}`)
+}
+
+export function readKnowledge(path: string): Promise<{ path: string; text: string; truncated?: boolean }> {
+  return getJson(`/api/v1/assistant/knowledge/read?path=${encodeURIComponent(path)}`)
+}
+
+export function refImageUrl(path: string): string {
+  const clean = path.replace(/^products\//, '').split('/').map(encodeURIComponent).join('/')
+  return `/api/v1/assistant/knowledge/ref/${clean}`
 }
 
 export function cancelAutopilot(id: string): Promise<AutopilotRun> {
