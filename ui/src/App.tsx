@@ -16,6 +16,7 @@ import { useIsMobileSidecar } from './lib/useIsMobile'
 import { DeferredPanel } from './components/DeferredPanel'
 import { createAppStartup, RETRY_STARTUP_EVENT } from './lib/appStartup'
 import { AssistantDock } from './assistant/AssistantDock'
+import { FreefieldAppsDock } from './components/FreefieldApps/FreefieldApps'
 
 const SettingsDrawer = lazy(() => import('./components/SettingsDrawer/SettingsDrawer').then(module => ({default: module.SettingsDrawer})))
 const LoraBrowser = lazy(() => import('./components/LoraBrowser/LoraBrowser').then(module => ({default: module.LoraBrowser})))
@@ -187,6 +188,7 @@ function App() {
       <NotificationCoordinator />
       <NotificationToastHost />
       <EditorRoundTripBanner />
+      <FreefieldAppsDock />
       <AssistantDock />
     </div>
   )

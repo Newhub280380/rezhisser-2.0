@@ -8404,6 +8404,67 @@ async def update_cloud_config(request: Request):
     return cloud_generation.public_config()
 
 
+# ---------------------------------------------------------------- Freefield apps (services/freefield_apps.py)
+# One app per function, like github.com/neuregex/freefield, on fal hosted endpoints. GET and dry-run are free;
+# only POST .../run submits to fal (paid) and the UI asks for confirmation first.
+
+def _freefield_resolve(name: str) -> Path:
+    uploads = (Path(os.getcwd()) / "uploads").resolve()
+    path = (uploads / Path(str(name)).name).resolve()
+    if path.parent != uploads or not path.is_file():
+        raise HTTPException(status_code=400, detail=f"Файл {Path(str(name)).name} не найден среди загрузок.")
+    return path
+
+
+@api.get("/api/v1/freefield/apps")
+def freefield_apps_catalog():
+    from services import cloud_generation, freefield_apps
+    return {**freefield_apps.catalog(), "fal_ready": cloud_generation.ready("fal")}
+
+
+async def _freefield_body(request: Request) -> dict:
+    body = await request.json() if (await request.body()) else {}
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Expected a JSON object.")
+    return body.get("inputs") if isinstance(body.get("inputs"), dict) else body
+
+
+@api.post("/api/v1/freefield/apps/{app_id}/dry-run")
+async def freefield_app_dry_run(app_id: str, request: Request):
+    """Builds the exact fal request without sending it (no cost)."""
+    from services import freefield_apps
+    inputs = await _freefield_body(request)
+    try:
+        return freefield_apps.dry_run(app_id, inputs, _freefield_resolve)
+    except freefield_apps.AppError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+
+@api.post("/api/v1/freefield/apps/{app_id}/run")
+async def freefield_app_run(app_id: str, request: Request):
+    """PAID: submits the app to fal. The UI calls this only after the person confirms the price."""
+    from services import cloud_generation, freefield_apps
+    if not cloud_generation.ready("fal"):
+        raise HTTPException(status_code=400, detail="Нет ключа fal. Впишите его: Settings → Integrations → Cloud.")
+    inputs = await _freefield_body(request)
+    try:
+        return freefield_apps.start_run(
+            app_id, inputs, resolve_file=_freefield_resolve, file_to_url=cloud_generation.data_uri,
+            client=cloud_generation.Fal(), out_dir=Path(wgp.save_path), download=cloud_generation.download,
+            url_for=lambda name: f"/api/v1/file/{name}")
+    except freefield_apps.AppError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+
+@api.get("/api/v1/freefield/runs/{run_id}")
+def freefield_run_status(run_id: str):
+    from services import freefield_apps
+    state = freefield_apps.get_run(run_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Неизвестный запуск.")
+    return state
+
+
 @api.get("/api/v1/assistant/status")
 def assistant_status():
     """Assistant readiness. The API key never leaves .env."""
