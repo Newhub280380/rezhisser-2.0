@@ -8425,6 +8425,59 @@ async def assistant_chat_route(request: Request):
         raise HTTPException(status_code=error.status, detail=error.detail)
 
 
+@api.get("/api/v1/assistant/knowledge")
+def assistant_knowledge_summary():
+    """Categories and slash commands from docs/assistant-knowledge."""
+    from services import assistant_knowledge
+    return assistant_knowledge.summary()
+
+
+@api.post("/api/v1/assistant/autopilot")
+async def assistant_autopilot_start(request: Request):
+    """Run a recipe (photo_to_film, viral_remake) end to end; poll the returned id for progress."""
+    from services import autopilot
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Expected a JSON object.")
+    uploads = Path(os.getcwd()) / "uploads"
+    try:
+        options = {
+            "request": str(body.get("request") or "")[:2000],
+            "total_seconds": int(body.get("total_seconds") or 60),
+            "aspect": body.get("aspect") or "9:16",
+            "remove_background": bool(body.get("remove_background", True)),
+            "quality": "final" if body.get("quality") == "final" else "draft",
+            # Only files the person uploaded may enter the pipeline.
+            "photos": [str(autopilot.resolve_upload(n, uploads)) for n in (body.get("photos") or [])],
+            "source_url": str(body.get("source_url") or ""),
+        }
+        if body.get("source_video"):
+            options["source_video"] = str(autopilot.resolve_upload(body["source_video"], uploads))
+        if body.get("replace_photo"):
+            options["replace_photo"] = str(autopilot.resolve_upload(body["replace_photo"], uploads))
+        return autopilot.start(str(body.get("recipe") or "photo_to_film"), options,
+                               out_dir=Path(wgp.save_path), work_root=uploads / "_autopilot")
+    except (autopilot.AutopilotError, ValueError) as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+
+@api.get("/api/v1/assistant/autopilot/{run_id}")
+def assistant_autopilot_status(run_id: str):
+    from services import autopilot
+    state = autopilot.get_run(run_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Unknown autopilot run.")
+    return state
+
+
+@api.post("/api/v1/assistant/autopilot/{run_id}/cancel")
+def assistant_autopilot_cancel(run_id: str):
+    from services import autopilot
+    if not autopilot.cancel_run(run_id):
+        raise HTTPException(status_code=404, detail="Unknown autopilot run.")
+    return autopilot.get_run(run_id)
+
+
 @api.get("/api/v1/services-config")
 def get_services_config():
     """Return services settings with API keys masked."""

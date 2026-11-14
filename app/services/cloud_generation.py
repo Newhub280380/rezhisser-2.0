@@ -300,7 +300,7 @@ class Fal:
             body = {"prompt": req["prompt"], "num_images": 1, "output_format": "png",
                     "image_size": {"width": req["width"], "height": req["height"]}}
             return env("FAL_IMAGE_MODEL", "fal-ai/moss-image"), body
-        if (engine or video_engine()) == "wan22" and self.wan_fits(req):
+        if (engine or req.get("engine") or video_engine()) == "wan22" and self.wan_fits(req):
             return self.wan_endpoint_and_body(req)
         return self.h3_endpoint_and_body(req)
 
@@ -311,6 +311,8 @@ class Fal:
     def wan_endpoint_and_body(self, req: dict) -> tuple[str, dict]:
         short = min(req["width"], req["height"])
         body = {"prompt": req["prompt"], "resolution": "480p" if short < 540 else "580p" if short < 680 else "720p"}
+        if req.get("negative_prompt"):
+            body["negative_prompt"] = req["negative_prompt"]
         if req["image"]:
             model = env("FAL_WAN_I2V_MODEL", "fal-ai/wan/v2.2-a14b/image-to-video")
             body["image_url"] = data_uri(req["image"])
@@ -350,6 +352,18 @@ class Fal:
 
     def run(self, req, out, cancelled):
         model, sub = self.submit(req)
+        result = self.wait(model, sub, cancelled)
+        url = ((result.get("images") or [{}])[0].get("url") if req["kind"] == "image"
+               else (result.get("video") or {}).get("url"))
+        if not url:
+            raise CloudError(f"fal {model}: no output url in {list(result)}")
+        return download(url, out)
+
+    def call(self, model: str, body: dict, cancelled=lambda: False) -> dict:
+        """Any fal queue model (background removal, upscaling, ...): submit, poll, return the result JSON."""
+        return self.wait(model, post_json(f"https://queue.fal.run/{model}", self.headers, body), cancelled)
+
+    def wait(self, model: str, sub: dict, cancelled) -> dict:
         status_url, response_url = sub.get("status_url"), sub.get("response_url")
         if not (status_url and response_url):
             raise CloudError(f"fal: unexpected queue response: {sub}")
@@ -363,12 +377,7 @@ class Fal:
             return None
 
         poll(check, cancelled, interval=4)
-        result = get_json(response_url, self.headers)
-        url = ((result.get("images") or [{}])[0].get("url") if req["kind"] == "image"
-               else (result.get("video") or {}).get("url"))
-        if not url:
-            raise CloudError(f"fal {model}: no output url in {list(result)}")
-        return download(url, out)
+        return get_json(response_url, self.headers)
 
 
 class MuApi:

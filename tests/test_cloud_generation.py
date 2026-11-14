@@ -111,6 +111,9 @@ def test_fal_wan22_is_default_video_engine(tmp_path, monkeypatch):
     assert cg.Fal().endpoint_and_body(_video_req(kind="image"))[0] == "fal-ai/moss-image"
     monkeypatch.setenv("CLOUD_VIDEO_ENGINE", "bogus")
     assert cg.video_engine() == "wan22"
+    # autopilot picks the engine per request (last retry -> H3) and passes a negative prompt to Wan
+    assert cg.Fal().endpoint_and_body(_video_req(engine="h3"))[0] == "minimax/h3/text-to-video"
+    assert cg.Fal().endpoint_and_body(_video_req(negative_prompt="blurry"))[1]["negative_prompt"] == "blurry"
 
 
 def test_fal_falls_back_to_h3_when_wan_endpoint_is_gone(monkeypatch):

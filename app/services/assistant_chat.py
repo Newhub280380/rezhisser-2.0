@@ -34,6 +34,13 @@ SYSTEM_PROMPT = """Ты встроенный помощник Режиссёра
 - Если генерация не запустилась, верни текст ошибки из инструмента и предложи,
   что проверить (модель, фото, ключ облака).
 - Не выдумывай, что ролик уже готов: сначала посмотри очередь и библиотеку.
+- Если человек просит ролик из нескольких фото («вот 5 фото, сделай мини-ролик
+  на 2–3 минуты»), вызови start_autopilot с recipe=photo_to_film: он сам уберёт
+  фон, улучшит до 4К, напишет раскадровку, сгенерирует сцены и склеит mp4.
+  «2–3 минуты» = total_seconds 150, по умолчанию 60. Ссылка на чужой ролик и
+  просьба повторить его со своим героем — recipe=viral_remake с source_url.
+- Если сообщение начинается со slash-команды (/hero и т. п.), возьми её шаблон
+  из библиотеки знаний, подставь поля из слов человека и действуй.
 """
 
 
@@ -113,7 +120,20 @@ def _post_json(url: str, payload: dict[str, Any], api_key: str, timeout: int = 9
         raise AssistantError("Нет связи с облачной моделью. Проверьте интернет.", status=502) from error
 
 
-def chat(body: dict[str, Any]) -> dict[str, Any]:
+def complete(messages: list[dict[str, Any]]) -> str:
+    """Plain completion (no tools, no assistant persona) for pipeline steps such as storyboards."""
+    message = chat({"messages": messages}, raw=True)["message"]
+    return str(message.get("content") or "")
+
+
+def _last_user_text(messages: list) -> str:
+    for message in reversed(messages):
+        if isinstance(message, dict) and message.get("role") == "user" and isinstance(message.get("content"), str):
+            return message["content"]
+    return ""
+
+
+def chat(body: dict[str, Any], *, raw: bool = False) -> dict[str, Any]:
     if not isinstance(body, dict):
         raise AssistantError("Ожидался JSON-объект.")
 
@@ -129,24 +149,22 @@ def chat(body: dict[str, Any]) -> dict[str, Any]:
         raise AssistantError("Нужен список сообщений.")
 
     tools = body.get("tools")
-    payload_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    payload_messages = [] if raw else [{"role": "system", "content": SYSTEM_PROMPT}]
     context = body.get("context")
-    if isinstance(context, dict):
-        knowledge = context.get("knowledge")
-        category = context.get("category")
-        extra = []
-        if category:
-            extra.append(f"Сейчас выбрана категория: {category}.")
-        if isinstance(knowledge, str) and knowledge.strip():
-            extra.append("Библиотека знаний:\n" + knowledge.strip())
-        if extra:
-            payload_messages[0]["content"] += "\n\n" + "\n".join(extra)
+    if not raw:
+        from services import assistant_knowledge
+        category = context.get("category") if isinstance(context, dict) else None
+        category = category if isinstance(category, str) and category else None
+        extra = [f"Сейчас выбрана категория: {category}."] if category else []
+        # Knowledge comes from docs/assistant-knowledge (recipes, slash commands, rules).
+        extra.append("Библиотека знаний:\n" + assistant_knowledge.prompt_context(category, _last_user_text(messages)))
+        payload_messages[0]["content"] += "\n\n" + "\n".join(extra)
     payload_messages.extend(messages)
 
     request_body: dict[str, Any] = {
         "messages": payload_messages,
         "temperature": 0.4,
-        "max_tokens": 2048,
+        "max_tokens": 4096,  # storyboards for 2–3 minute films run long
     }
     if isinstance(tools, list) and tools:
         request_body["tools"] = tools

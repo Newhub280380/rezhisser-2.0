@@ -1,0 +1,320 @@
+{
+  "version": 1,
+  "default_engine": "wan2.2_fal",
+  "fallback_engine": "minimax_h3",
+  "tools": {
+    "remove_background": {
+      "what": "Убрать фон с фото",
+      "fal_model_hint": "fal-ai/birefnet/v2",
+      "fallback": "fal-ai/bria/background/remove"
+    },
+    "upscale_image": {
+      "what": "Улучшить фото и поднять до 4К (длинная сторона 3840)",
+      "fal_model_hint": "fal-ai/clarity-upscaler",
+      "fallback": "fal-ai/esrgan"
+    },
+    "convert_jpeg": {
+      "what": "Перевести в JPEG (quality 95, sRGB, без альфы: прозрачный фон заливать белым или фоном сцены)",
+      "local": "Pillow"
+    },
+    "write_storyboard": {
+      "what": "LLM пишет раскадровку: список сцен по 5–10 с, на каждую промпт по правилам модели",
+      "llm": "мозг помощника (OpenRouter из настроек)"
+    },
+    "generate_keyframe": {
+      "what": "Ключевой кадр картинкой, если для сцены нет подходящего фото",
+      "fal_model_hint": "fal-ai/flux/dev или то, что уже есть в приложении"
+    },
+    "generate_scene": {
+      "what": "Оживить кадр в клип",
+      "default": "Wan 2.2 на fal (fal-ai/wan/v2.2-a14b/image-to-video; text-to-video для сцен без фото)",
+      "fallback": "MiniMax H3"
+    },
+    "face_swap": {
+      "what": "Заменить лицо на фото/видео",
+      "fal_model_hint": "проверить, что уже есть в Maestro (H3-Face-Refiner, Viggle-Animate), иначе face-swap модель fal"
+    },
+    "fetch_video": {
+      "what": "Скачать ролик по ссылке (TikTok/Instagram/YouTube)",
+      "local": "yt-dlp"
+    },
+    "video_to_prompt": {
+      "what": "Разобрать ролик/стоп-кадры в промпт: камера / действие / свет / звук / темп",
+      "llm": "мультимодальная LLM"
+    },
+    "extract_frames": {
+      "what": "Нарезать стоп-кадры и сцены из ролика",
+      "local": "ffmpeg (scene detect)"
+    },
+    "concat_clips": {
+      "what": "Склеить клипы, переходы, музыка/озвучка, субтитры, экспорт",
+      "local": "ffmpeg; 1080x1920 или 1920x1080, H.264, 15–20 Mbps"
+    }
+  },
+  "storyboard_prompt": "Ты режиссёр рекламных роликов. Дано: {n_photos} фото (описания: {photo_notes}), задача: «{user_request}», длительность {total_seconds} с, формат {aspect}. Разбей на сцены по 5–10 с (одна сцена = одно действие + одно движение камеры). Первые 2 секунды — хук. Последняя сцена — развязка/CTA. Каждой сцене назначь исходное фото (photo_index) или null, если нужен новый кадр. Персонажа и продукт описывай дословно одинаково во всех сценах. Промпт сцены для Wan 2.2 пиши тегами через запятую, глагол камеры первым. Верни JSON: {\"scenes\":[{\"index\":1,\"seconds\":5,\"photo_index\":1,\"camera\":\"slow dolly push in\",\"action\":\"...\",\"prompt\":\"...\",\"negative_prompt\":\"...\",\"caption\":\"до 3 слов или пусто\"}],\"music_mood\":\"...\",\"voiceover\":\"текст или пусто\"}",
+  "ugc_15s_structure": {
+    "0-2": "ХУК: проблема/результат/вопрос/демо",
+    "2-6": "Контекст",
+    "6-11": "Решение: продукт делает одну работу",
+    "11-15": "Развязка + CTA"
+  },
+  "negative_prompt_default": "blurry, low quality, deformed hands, morphing face, extra limbs, flicker, jitter, text artifacts, watermark, cartoon",
+  "recipes": [
+    {
+      "id": "photo_to_film",
+      "title": "Фото → мини-ролик (автопилот)",
+      "short": "5 фото и одна фраза → готовый mp4 на 1–3 минуты.",
+      "trigger_examples": [
+        "вот 5 фото, сделай мини-ролик на 2–3 минуты",
+        "собери ролик из этих фото",
+        "сделай рекламу из фото товара"
+      ],
+      "inputs": {
+        "photos": "1–20 фото",
+        "total_seconds": "по умолчанию 60; «2–3 минуты» = 150",
+        "aspect": "9:16 по умолчанию для соцсетей",
+        "style": "из фразы человека или /hero по умолчанию"
+      },
+      "steps": [
+        {
+          "n": 1,
+          "tool": "remove_background",
+          "when": "если объект/продукт/человек нужно перенести в новую сцену; для пейзажей и интерьеров пропустить"
+        },
+        {
+          "n": 2,
+          "tool": "upscale_image",
+          "params": {
+            "target_long_side": 3840
+          }
+        },
+        {
+          "n": 3,
+          "tool": "convert_jpeg",
+          "params": {
+            "quality": 95
+          }
+        },
+        {
+          "n": 4,
+          "tool": "write_storyboard",
+          "params": {
+            "scene_seconds": "5–10",
+            "prompt_template": "storyboard_prompt"
+          }
+        },
+        {
+          "n": 5,
+          "tool": "generate_keyframe",
+          "when": "для сцен с photo_index = null"
+        },
+        {
+          "n": 6,
+          "tool": "generate_scene",
+          "params": {
+            "engine": "wan2.2_fal",
+            "resolution": "480p черновик → 720p финал",
+            "seconds": "5 (Wan); длинные сцены = 2 клипа",
+            "negative_prompt": "blurry, low quality, deformed hands, morphing face, extra limbs, flicker, jitter, text artifacts, watermark, cartoon"
+          },
+          "retry": "до 2 дублей на сцену, менять только одну переменную"
+        },
+        {
+          "n": 7,
+          "tool": "concat_clips",
+          "params": {
+            "transitions": "короткий crossfade 0.3 с или жёсткий монтаж",
+            "captions": "из storyboard.caption",
+            "export": "mp4 H.264"
+          }
+        }
+      ],
+      "progress_labels": [
+        "Убираю фон",
+        "Улучшаю до 4К",
+        "Перевожу в JPEG",
+        "Пишу раскадровку",
+        "Генерирую сцену {i} из {n}",
+        "Склеиваю",
+        "Готово"
+      ],
+      "rules": [
+        "Сначала картинка, потом видео",
+        "Одна сцена = одно действие + одно движение камеры",
+        "Одинаковое описание персонажа/продукта во всех сценах",
+        "Черновик 480p, финал по запросу"
+      ]
+    },
+    {
+      "id": "photo_to_video",
+      "title": "Видео по фото",
+      "short": "Оживить одно фото в клип 5–10 с.",
+      "steps": [
+        {
+          "n": 1,
+          "tool": "upscale_image",
+          "when": "если фото меньше 1080 по короткой стороне"
+        },
+        {
+          "n": 2,
+          "tool": "convert_jpeg"
+        },
+        {
+          "n": 3,
+          "tool": "generate_scene",
+          "params": {
+            "engine": "wan2.2_fal",
+            "seconds": 5,
+            "resolution": "480p"
+          }
+        }
+      ],
+      "prompt_template_wan": "{camera}, {subject}, {action}, {place}, {light}, {style}, photorealistic, natural motion, stable composition",
+      "default_camera": "slow dolly push in",
+      "negative_prompt": "blurry, low quality, deformed hands, morphing face, extra limbs, flicker, jitter, text artifacts, watermark, cartoon"
+    },
+    {
+      "id": "text_to_video",
+      "title": "Текст в видео",
+      "short": "Ролик по описанию без фото: сначала ключевой кадр, потом оживление.",
+      "steps": [
+        {
+          "n": 1,
+          "tool": "write_storyboard",
+          "when": "если ролик длиннее 10 с"
+        },
+        {
+          "n": 2,
+          "tool": "generate_keyframe"
+        },
+        {
+          "n": 3,
+          "tool": "generate_scene"
+        },
+        {
+          "n": 4,
+          "tool": "concat_clips",
+          "when": "если сцен больше одной"
+        }
+      ],
+      "rules": [
+        "Не доверять внешний вид чистому text-to-video — сначала ключевой кадр"
+      ],
+      "prompt_template_wan": "{camera}, {subject}, {action}, {place}, {light}, {style}, cinematic, photorealistic"
+    },
+    {
+      "id": "face_swap",
+      "title": "Замена лица",
+      "short": "Подставить лицо с фото в ролик или кадр.",
+      "inputs": {
+        "face_photo": "ОДНО фото анфас, ровный свет, без очков, лоб и подбородок открыты",
+        "target": "видео или фото-цель с ровной камерой"
+      },
+      "steps": [
+        {
+          "n": 1,
+          "tool": "upscale_image",
+          "when": "если лицо мелкое"
+        },
+        {
+          "n": 2,
+          "tool": "face_swap"
+        },
+        {
+          "n": 3,
+          "tool": "concat_clips",
+          "when": "длинное видео резать на куски и склеивать"
+        }
+      ],
+      "rules": [
+        "Сначала тест 5–8 с, проверить лицо, потом полный ролик",
+        "Плывёт лицо → менять только фото"
+      ]
+    },
+    {
+      "id": "viral_remake",
+      "title": "Вирусный ремейк",
+      "short": "Найти/взять вирусный ролик, разобрать в промпт, заменить людей/продукт, сгенерировать новый.",
+      "inputs": {
+        "source": "ссылка на ролик или тема для поиска трендов",
+        "replace": "фото своего человека/продукта"
+      },
+      "steps": [
+        {
+          "n": 1,
+          "tool": "fetch_video"
+        },
+        {
+          "n": 2,
+          "tool": "extract_frames",
+          "params": {
+            "mode": "scene detect, 1 стоп-кадр на сцену"
+          }
+        },
+        {
+          "n": 3,
+          "tool": "video_to_prompt",
+          "params": {
+            "prompt": "Разбери этот кадр/ролик как промпт-инженер: камера / действие / свет / звук / темп. Затем версия, где вместо [ОБЪЕКТ] — объект с прикреплённого фото. Всё остальное не менять."
+          }
+        },
+        {
+          "n": 4,
+          "tool": "face_swap",
+          "when": "если нужно заменить человека на стоп-кадрах",
+          "alt": "generate_keyframe с референсом: Replace the subject in Image 1 with the subject from Image 2, keep everything else unchanged"
+        },
+        {
+          "n": 5,
+          "tool": "generate_scene",
+          "params": {
+            "engine": "wan2.2_fal",
+            "source": "новые ключевые кадры"
+          }
+        },
+        {
+          "n": 6,
+          "tool": "concat_clips",
+          "params": {
+            "audio": "ритм исходника управляет монтажом"
+          }
+        }
+      ],
+      "rules": [
+        "Менять ТОЛЬКО объект/персонажа, свет, камеру и стиль оставлять",
+        "Удачный промпт сохранять в копилку команд"
+      ],
+      "prompt_hubs": [
+        "klingai.com",
+        "hailuoai.video",
+        "vidu.com",
+        "dreamina.capcut.com",
+        "morphic.com/resources/prompts",
+        "imaginetovideo.com/prompt-gallery",
+        "lzyprompt.com/prompts",
+        "civitai.com",
+        "prompthero.com",
+        "lexica.art",
+        "liblib.art",
+        "tusi.art"
+      ],
+      "reverse_tools": [
+        "vid2prompt.com",
+        "videotoprompt.app",
+        "videoinprompt.com",
+        "promptreverse.app"
+      ]
+    },
+    {
+      "id": "talking_head",
+      "title": "Говорящая голова",
+      "short": "Эксперт/спикер на камеру с липсинком.",
+      "prompt_template": "Realistic AI talking avatar, medium shot, steady camera, clean background. Accurate lip sync, subtle micro-expressions, minimal gestures, soft studio lighting. The speaker talks calmly and confidently.",
+      "rules": [
+        "Чистый звук без тишины по краям",
+        "Тест 5–8 с",
+        "Плывёт липсинк → менять только аудио"
+      ]
+    }
+  ]
+}

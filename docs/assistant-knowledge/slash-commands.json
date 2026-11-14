@@ -1,0 +1,269 @@
+{
+  "rule": "Скелет не переписывать, менять только [поля], 1–4 слова на поле",
+  "commands": [
+    {
+      "command": "/hero",
+      "title": "премиальный рекламный кадр продукта",
+      "result": "5-сек «реклама из ТВ»: продукт в центре, камера плавно наезжает, лёгкий пар/блики, всё дорого.",
+      "where": "кадр → **Seedream 4.5** (или любой генератор картинок), оживление → **Kling 3.0** (режим Image-to-Video)",
+      "templates": [
+        "Product photo of [PRODUCT] centered on [SURFACE]. Soft studio key light\nfrom the left, warm rim light, dark clean background, shallow depth of\nfield, style: premium TV commercial, 4K.",
+        "Slow dolly push in on the product. Gentle steam rising slowly. Camera\nmoves smoothly, product geometry unchanged, label stays sharp and readable."
+      ],
+      "fields": [
+        "PRODUCT",
+        "SURFACE"
+      ],
+      "substitute": "`[PRODUCT]` (например: perfume bottle), `[SURFACE]` (black marble)",
+      "do_not_touch": "свет, движение камеры, «geometry unchanged» — это и есть стабильный скелет."
+    },
+    {
+      "command": "/ugc",
+      "title": "ролик-отзыв «как снятый на телефон»",
+      "result": "14-сек вертикальный UGC-ролик: креатор говорит на камеру → показывает продукт → финал с призывом. Со звуком и голосом из коробки.",
+      "where": "**Vidu Q3** (режим text-to-video, нативный звук)",
+      "templates": [
+        "Scene: bright bedroom, daylight, handheld phone camera feel, 9:16 vertical.\nCharacter: friendly [CREATOR TYPE], casual clothes, talking straight to camera.\nAction: 0–2s shows [PRODUCT] close to lens and says excitedly: \"[HOOK LINE]\".\n2–8s demonstrates [PRODUCT] in use, natural movements.\n8–14s smiles at camera and says: \"[CTA LINE]\".\nCamera: handheld, slight natural shake, no cuts.\nSound: her voice, quiet room ambience, no music."
+      ],
+      "fields": [
+        "CREATOR TYPE",
+        "CTA LINE",
+        "HOOK LINE",
+        "PRODUCT"
+      ],
+      "substitute": "`[CREATOR TYPE]` (young woman / студент / мама), `[PRODUCT]`, `[HOOK LINE]` (до 12 слов!), `[CTA LINE]` (до 8 слов)",
+      "do_not_touch": "тайминги 0–2/2–8/8–14 и блок Sound."
+    },
+    {
+      "command": "/hooks3",
+      "title": "три хука на одно и то же демо",
+      "result": "3 версии начала ролика под один продукт (проблема / интрига / результат) — для теста, какой зайдёт. Делаешь один раз, тестируешь неделю.",
+      "where": "любая LLM (текст) + **Vidu Q3** или **Kling** (видео)",
+      "templates": [
+        "Продукт: [PRODUCT]. Аудитория: [AUDIENCE]. Напиши ровно 3 хука для первых\n2 секунд вертикальной рекламы, каждый до 10 слов: 1) проблема-вперёд,\n2) интрига-вперёд, 3) результат-вперёд. Без кликбейта и обещаний."
+      ],
+      "fields": [
+        "AUDIENCE",
+        "PRODUCT"
+      ],
+      "substitute": "",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/before-after",
+      "title": "трансформация «до/после»",
+      "result": "плавный переход из состояния ДО в состояние ПОСЛЕ (ремонт, похудение, макияж, уборка). Модель сама строит движение между кадрами.",
+      "where": "**Vidu Q3** или **Kling 3.0** — режим First & Last Frame (начальный и конечный кадр)",
+      "templates": [
+        "Smooth continuous transformation from the first frame to the last frame.\nCamera stays static, locked composition. Motion is gradual and realistic,\nno flicker, lighting transitions naturally."
+      ],
+      "fields": [],
+      "substitute": "только сами две картинки.",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/food",
+      "title": "фуд-коммершиал (еда и напитки)",
+      "result": "сочный макро-кадр: пар, капли, тянущийся сыр / льющийся кофе, медленная камера.",
+      "where": "**Seedream 4.5** → **Kling 3.0 I2V**",
+      "templates": [
+        "Food photography close-up of [DISH], steam rising, glistening texture,\nwarm side light, dark rustic background, macro lens, style: TV food\ncommercial, 4K.",
+        "Static camera, macro close-up. Steam drifts upward slowly, [FOOD ACTION]\nin slow motion, shallow depth of field, everything else stays still."
+      ],
+      "fields": [
+        "DISH",
+        "FOOD ACTION"
+      ],
+      "substitute": "`[DISH]` (cheese pizza slice), `[FOOD ACTION]` (cheese stretching as the slice is lifted / coffee pouring into the cup)",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/wear",
+      "title": "одежда на ИИ-модели без съёмки",
+      "result": "ролик, где виртуальная модель в твоей вещи идёт/позирует.",
+      "where": "**Kling 3.0**, режим Multi-Elements (@элементы)",
+      "templates": [
+        "@Item1 is worn by a tall fashion model walking slowly toward the camera\non a [LOCATION]. Medium full shot, steady tracking, soft daylight.\nThe outfit fits naturally, fabric moves realistically, model keeps calm\nconfident expression. Style: fashion lookbook film."
+      ],
+      "fields": [
+        "LOCATION"
+      ],
+      "substitute": "загрузи фото вещи как элемент `@Item1` (плоско, без складок — лучший результат), `[LOCATION]` (bright studio / city street)",
+      "do_not_touch": "скорость ходьбы и тип кадра."
+    },
+    {
+      "command": "/levitate",
+      "title": "мем-реклама «парящий продукт» (тренд 2026)",
+      "result": "продукт-гигант летит на креатора и уменьшается в руки — формат, который сейчас рвёт у брендов.",
+      "where": "проще всего — готовый **шаблон в CapCut** (поиск: \"levitating product\"), либо **Kling 3.0 I2V**",
+      "templates": [
+        "[PRODUCT] floats through the air toward the creator, slowly shrinking,\nand lands gently into their open hands. The creator catches it and smiles.\nStatic camera, medium shot, smooth continuous motion, no cuts."
+      ],
+      "fields": [
+        "PRODUCT"
+      ],
+      "substitute": "`[PRODUCT]`, фото-кадр с креатором.",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/dialogue-ad",
+      "title": "реклама-сценка с диалогом (звук из коробки)",
+      "result": "12–16 сек мини-сценки: два человека говорят, звук и липсинк уже внутри, без озвучки в редакторе.",
+      "where": "**Vidu Q3** (reference2video, загрузи 1–2 фото персонажей как референсы)",
+      "templates": [
+        "Scene: [LOCATION], [TIME OF DAY], natural light.\n@PersonA stands [POSITION] when @PersonB enters.\n@PersonA, curious tone: \"[LINE A]\"\n@PersonB, confident tone: \"[LINE B]\"\nTwo-shot at chest height, then a close-up on @PersonB for the second line.\nSound: their voices, [AMBIENCE], no music.\nBoth faces stay matched to their reference images throughout."
+      ],
+      "fields": [
+        "AMBIENCE",
+        "LINE A",
+        "LINE B",
+        "LOCATION",
+        "POSITION",
+        "TIME OF DAY"
+      ],
+      "substitute": "`[LOCATION]` (small office), `[TIME OF DAY]`, `[LINE A]` и `[LINE B]` — каждая до 12 слов, `[AMBIENCE]` (quiet office hum)",
+      "do_not_touch": "последнюю строку про лица — она держит постоянство."
+    },
+    {
+      "command": "/talking-head",
+      "title": "говорящая голова (эксперт/новости/спикер)",
+      "result": "стабильный «говорящий эксперт» на камеру, без переигрывания и уплывающего лица.",
+      "where": "**HeyGen / Magicroll / OmniHuman / Kling Avatars** — любое «аватарное» приложение",
+      "templates": [
+        "Realistic AI talking avatar, medium shot, steady camera, clean background.\nAccurate lip sync, subtle micro-expressions, minimal gestures, soft studio\nlighting. The speaker talks calmly and confidently."
+      ],
+      "fields": [],
+      "substitute": "свой текст речи в поле сценария + фото/аватар спикера.",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/lipsync",
+      "title": "заменить речь в готовом видео",
+      "result": "человек в твоём видео «говорит» новый текст/язык, губы перестроены.",
+      "where": "**Kling** (функция lip sync: ролик + новая аудиодорожка) или **Akool**",
+      "templates": [],
+      "fields": [],
+      "substitute": "только два файла. Промпт не нужен.",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/face-swap",
+      "title": "замена лица в видео",
+      "result": "чужое тело в видео с нужным лицом, стабильно по кадрам.",
+      "where": "",
+      "templates": [],
+      "fields": [],
+      "substitute": "",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/dance",
+      "title": "танец из одной фотки (motion copy, самый стабильный мем-формат)",
+      "result": "человек с твоего фото танцует трендовый танец, движение в движение, под трендовый звук. Это не рулетка: движение копируется с шаблона, а не генерируется.",
+      "where": "**шаблоны CapCut** (поиск по названию тренда: \"AI dance\", \"Real Madrid AI dance\", \"Bad Times\", \"I Got That Feeling\")",
+      "templates": [],
+      "fields": [],
+      "substitute": "только фото.",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/pet",
+      "title": "говорящее животное-«боец» (стендап-питомец)",
+      "result": "кот/пёс стоит как человек, жестикулирует и «говорит» под вирусную аудиодорожку.",
+      "where": "фото питомца → **Kling 3.0 I2V** (или Vidu Q3 со звуком)",
+      "templates": [
+        "The [PET] stands upright on hind legs like a human, facing the camera,\ngesturing with front paws while talking with big tough-guy energy.\nUpper body framing, static camera, natural daylight. Mouth moves as if\nspeaking, exaggerated comedic expressions."
+      ],
+      "fields": [
+        "PET"
+      ],
+      "substitute": "`[PET]` (cat / dog), фото.",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/brainrot",
+      "title": "хаотичный мем-ролик с дикой озвучкой",
+      "result": "перегруженный быстрый ролик под абсурдную озвучку (формат, который доминирует в ленте).",
+      "where": "",
+      "templates": [],
+      "fields": [
+        "ТЕМА"
+      ],
+      "substitute": "`[ТЕМА]` и текст. Скелет монтажа не меняется.",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/reveal",
+      "title": "«невозможный результат → как сделал»",
+      "result": "быстрорастущий туториал-формат: сначала шокирующий результат, потом раскрытие «как это сделано ИИ».",
+      "where": "результат → любой видео-генератор (например `/hero`), раскрытие → скрин-запись процесса.",
+      "templates": [
+        "0–3 сек: невозможный кадр (самое сочное, что есть)\n3–5 сек: крупный текст \"Как я это сделал?\"\n5–15 сек: ускоренная запись процесса + голос-комментарий"
+      ],
+      "fields": [],
+      "substitute": "только свой «невозможный» кадр и свой процесс. Структура всегда одна — она и работает.",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/poster",
+      "title": "постер/баннер с надписью (текст рендерится ровно)",
+      "result": "постер, где надпись написана без ошибок и ровно тем текстом, что ты дал.",
+      "where": "**Seedream 4.5** (или **Qwen-Image**)",
+      "templates": [
+        "Design a [TYPE] poster. Bold title \"[TEXT]\" at the top in [COLOR] bold\nletters. Below: [MAIN VISUAL]. Clean composition, high contrast, 4K."
+      ],
+      "fields": [
+        "COLOR",
+        "MAIN VISUAL",
+        "TEXT",
+        "TYPE"
+      ],
+      "substitute": "`[TYPE]` (sale / event / product), `[TEXT]` (до 5 слов — критично!), `[COLOR]`, `[MAIN VISUAL]` (a sneaker exploding into neon particles)",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/scene",
+      "title": "продукт в интерьере из вырезанного фото",
+      "result": "твой реальный продукт, вписанный в любую сцену (кухня, студия, улица), с нормальным светом.",
+      "where": "**Seedream 4.5** (режим с референсом) или **FLUX Kontext**",
+      "templates": [
+        "Place the product from the reference image into [SCENE], keep the product\nexactly unchanged: same label, shape and colors. Natural light matching\nthe environment, soft realistic shadow under the product, 4K."
+      ],
+      "fields": [
+        "SCENE"
+      ],
+      "substitute": "`[SCENE]` (modern kitchen counter at morning)",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/meme-img",
+      "title": "картинка-мем с подписью",
+      "result": "мем-изображение в нужном стиле с ровной надписью.",
+      "where": "**Seedream 4.5**",
+      "templates": [
+        "Meme-style image of [SITUATION], exaggerated funny expression, bright\ncolors, bold caption text \"[CAPTION]\" at the top in white impact font\nwith black outline."
+      ],
+      "fields": [
+        "CAPTION",
+        "SITUATION"
+      ],
+      "substitute": "`[SITUATION]` (a cat sitting at an office desk full of paperwork), `[CAPTION]` (до 5 слов)",
+      "do_not_touch": ""
+    },
+    {
+      "command": "/character",
+      "title": "лист персонажа для серии роликов/комиксов",
+      "result": "один и тот же персонаж в 4 позах/ракурсах — дальше гоняй его во все видео через референсы, лицо не поплывёт.",
+      "where": "**Seedream 4.5**",
+      "templates": [
+        "Character sheet of [CHARACTER], four views: front, side, back, smiling\nclose-up. Same person in all views, identical face, hair and outfit:\n[OUTFIT]. Plain light background, clean consistent style, 4K."
+      ],
+      "fields": [
+        "CHARACTER",
+        "OUTFIT"
+      ],
+      "substitute": "`[CHARACTER]` (25-year-old guy with red curly hair), `[OUTFIT]` (blue hoodie, jeans)",
+      "do_not_touch": ""
+    }
+  ]
+}
