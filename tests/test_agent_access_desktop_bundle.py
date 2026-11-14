@@ -148,11 +148,18 @@ def test_node_relay_preserves_stdio_and_stops_only_its_local_child(tmp_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+    # Close stdin only after the child is up: the relay gives a child 1 s after host EOF,
+    # and a cold Python start under a loaded full test run can take longer than that.
+    relay.stdin.write(payload)
+    relay.stdin.flush()
+    deadline = time.monotonic() + 60
+    while not pid_file.exists() and relay.poll() is None and time.monotonic() < deadline:
+        time.sleep(0.05)
     try:
-        stdout, stderr = relay.communicate(payload, timeout=6)
+        stdout, stderr = relay.communicate(timeout=30)
     except subprocess.TimeoutExpired:
         relay.kill()
-        relay.communicate(timeout=2)
+        relay.communicate(timeout=5)
         pytest.fail("the local extension relay did not stop after its host disconnected")
 
     assert relay.returncode == 0

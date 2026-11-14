@@ -60,7 +60,8 @@ assert not any(name == "models.wan" or name.startswith("models.wan.") for name i
             env=env,
             capture_output=True,
             text=True,
-            timeout=60,
+            # Cold torch/diffusers import alone takes ~40 s on Windows; a loaded full run needs headroom.
+            timeout=300,
         )
         self.assertEqual(result.returncode, 0, msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}")
 
