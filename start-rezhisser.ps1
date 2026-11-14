@@ -46,6 +46,14 @@ if (-not (Test-Path $Python)) {
     exit 1
 }
 
+# First start on a clean copy: create .env from .env.example (cloud fal + Wan 2.2 by default).
+# Keys stay empty; they are entered in Settings -> Integrations -> Cloud.
+$EnvFile = Join-Path $Root '.env'
+if (-not (Test-Path $EnvFile) -and (Test-Path (Join-Path $Root '.env.example'))) {
+    Copy-Item (Join-Path $Root '.env.example') $EnvFile
+    Write-Host 'Created .env from .env.example (keys are entered in Settings -> Integrations -> Cloud).'
+}
+
 # Rebuild the UI only when the built bundle is missing (same rule as start.js).
 if (-not (Test-Path (Join-Path $Root 'ui\dist\index.html'))) {
     Write-Host 'Building the interface (first start only)...'

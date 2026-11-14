@@ -26,12 +26,20 @@ export function PreflightBanner() {
     return () => { cancelled = true }
   }, [])
 
-  if (dismissed || checks.length === 0) return null
-
   const hasError = checks.some(c => c.level === 'error')
 
+  // Warnings only (e.g. no GPU while cloud generation is on, low disk) hide by themselves:
+  // the banner sits over the top tabs (Director / Studio / Editor / Settings).
+  useEffect(() => {
+    if (dismissed || checks.length === 0 || hasError) return
+    const timer = window.setTimeout(() => setDismissed(true), 12000)
+    return () => window.clearTimeout(timer)
+  }, [dismissed, checks.length, hasError])
+
+  if (dismissed || checks.length === 0) return null
+
   return (
-    <div className={`fixed top-0 inset-x-0 z-50 px-4 py-2 flex items-start gap-2.5 border-b backdrop-blur-sm ${
+    <div className={`pointer-events-none fixed top-0 inset-x-0 z-50 px-4 py-2 flex items-start gap-2.5 border-b backdrop-blur-sm ${
       hasError
         ? 'bg-red-500/20 border-red-500/40'
         : 'bg-amber-500/20 border-amber-500/40'
@@ -52,7 +60,7 @@ export function PreflightBanner() {
           sessionStorage.setItem('maestro_preflight_dismissed', '1')
           setDismissed(true)
         }}
-        className="shrink-0 p-0.5 rounded text-text-muted hover:text-text-primary transition-colors"
+        className="pointer-events-auto shrink-0 p-0.5 rounded text-text-muted hover:text-text-primary transition-colors"
         aria-label="Dismiss"
       >
         <X size={13} />
