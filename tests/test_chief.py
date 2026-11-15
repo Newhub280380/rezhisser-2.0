@@ -232,3 +232,89 @@ def test_pick_finds_the_person_in_a_long_video(tmp_path):
     start = int(pick["detail"].split("отрезок: ")[1].split("–")[0].split(":")[1])
     assert 12 <= start <= 16, pick["detail"]  # covers every second where the face is seen (clip s 2-10)
     assert any("нет звука" in w for w in job["warnings"])
+
+
+# ---------------------------------------------------------------- full clip chain (mock fal, fake faces)
+
+def _unit(i):
+    v = [0.0] * 128
+    v[i] = 1.0
+    return v
+
+
+class FakeFaces(chief.Tools):
+    """Main person (feature e0) alone in 4-8 s; someone else (e1) in 8-12 s; nobody in 0-4 s."""
+
+    def faces(self, paths):
+        out = []
+        for i, _ in enumerate(paths):
+            t = i / chief.SAMPLE_FPS
+            out.append([{"box": (300.0, 60.0, 60.0, 80.0), "feat": _unit(0)}] if 4 <= t < 8 else
+                       [{"box": (100.0, 60.0, 60.0, 80.0), "feat": _unit(1)}] if t >= 8 else [])
+        return out
+
+
+@pytest.fixture()
+def three_scenes(tmp_path):
+    video = tmp_path / "three.mp4"
+    srcs = sum([["-f", "lavfi", "-i", f"color=c={c}:size=1280x720:rate=30:duration=4"] for c in ("red", "green", "blue")], [])
+    subprocess.run([FFMPEG, "-y", "-loglevel", "error", *srcs, "-f", "lavfi", "-i", "sine=frequency=440:duration=12",
+                    "-filter_complex", "[0:v][1:v][2:v]concat=n=3:v=1:a=0[v]", "-map", "[v]", "-map", "3:a",
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", str(video)], check=True)
+    photo = tmp_path / "p.jpg"
+    Image.new("RGB", (424, 992), (90, 120, 160)).save(photo)
+    return video, photo
+
+
+def full_plan(tmp_path, fal, video, photo, **extra):
+    return chief.plan({"text": "замени человека, полный клип", "video": video, "photo": photo, **extra},
+                      tools=FakeFaces(client=fal, file_to_url=lambda p: f"file://{p}", download=fal.download),
+                      work_root=tmp_path / "work", out_dir=tmp_path / "out", url_for=lambda n: n, background=False)
+
+
+def test_full_chain_classify_and_chunks():
+    scenes = [{"start": 0, "end": 5, "kind": "solo", "crop": None}, {"start": 5, "end": 12, "kind": "solo", "crop": None},
+              {"start": 12, "end": 13, "kind": "none", "crop": None}, {"start": 13, "end": 44, "kind": "solo", "crop": None}]
+    chunks, short = chief.make_chunks(scenes)
+    assert [(round(c["start"], 3), round(c["end"], 3)) for c in chunks] == [(0, 12), (13, 23.333), (23.333, 33.667),
+                                                                           (33.667, 44)]
+    assert all(c["seconds"] <= chief.CLIP_MAX for c in chunks) and short == []
+    assert chief.isolate([(800, 100, 100, 100)], [(100, 100, 100, 100)], 1920) is not None
+    assert chief.isolate([(800, 100, 100, 100)], [(950, 100, 100, 100)], 1920) is None
+    left, right = chief.isolate([(1850, 100, 60, 60)], [(100, 100, 100, 100)], 1920)  # at the right edge
+    assert right == 1.0 and left <= 1850 / 1920 and right - left >= chief.CROP_MIN_W - 1e-9
+
+
+def test_full_chain_first_piece_preview(tmp_path, three_scenes):
+    video, photo = three_scenes
+    fal = MockFal(recast_seconds=3.5)
+    job = full_plan(tmp_path, fal, video, photo, budget_usd=16, max_chunks=1)
+    assert job["chain"] == "recast_full" and job["status"] == "awaiting_confirmation", job
+    assert fal.calls == [] and len(job["chunks"]) == 1 and job["seed"] >= 0
+    c = job["chunks"][0]
+    assert abs(c["start"] - 4) < 0.1 and abs(c["end"] - 8) < 0.1 and c["kind"] == "solo"
+    assert [i["step"] for i in job["cost"]["items"]] == ["upscale", "remove_bg", "recast", "reserve"]
+    assert job["cost"]["fits"] is True and any("СМЕТА" in line for line in job["log"])
+    done = chief.confirm(job["id"], tools=FakeFaces(client=fal, file_to_url=lambda p: f"file://{p}",
+                                                    download=fal.download), confirmed=True, background=False)
+    assert done["status"] == "done", done
+    assert fal.calls.count("fal-ai/wan/v2.2-14b/animate/replace") == 1
+    assert fal.last["fal-ai/wan/v2.2-14b/animate/replace"]["seed"] == job["seed"]  # fixed seed, not random per piece
+    seconds, streams = probe(tmp_path / "out" / done["output"]["filename"])
+    assert abs(seconds - 4.0) < 0.2 and "audio" in streams  # only that span, with its original sound
+    assert abs(done["ledger"]["spent_usd"] - 3.5 * 0.04) < 1e-6
+
+
+def test_full_chain_budget_and_retries(tmp_path, three_scenes):
+    video, photo = three_scenes
+    over = full_plan(tmp_path, MockFal(), video, photo, budget_usd=0.05)
+    assert over["status"] == "over_budget" and "больше потолка" in over["error"]
+    with pytest.raises(chief.ChiefError):
+        chief.confirm(over["id"], tools=tools(MockFal()), confirmed=True, background=False)
+    fal = MockFal(fail_recast=5)
+    job = full_plan(tmp_path, fal, video, photo, budget_usd=16)
+    failed = chief.confirm(job["id"], tools=FakeFaces(client=fal, file_to_url=lambda p: f"file://{p}",
+                                                      download=fal.download), confirmed=True, background=False)
+    assert failed["status"] == "failed" and "повтора не помогли" in failed["error"]
+    assert fal.calls.count("fal-ai/wan/v2.2-14b/animate/replace") == 1 + chief.RETRIES
+    assert failed["ledger"]["failed_attempts"] == 3 and failed["ledger"]["reserved_usd"] == pytest.approx(0)

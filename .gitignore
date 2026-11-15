@@ -136,3 +136,6 @@ docs/private/
 !/.env.example
 !/.env.sample
 app/services_config.json
+
+# SFace face recognition model, downloaded on first use by services/chief.py (sha256 checked)
+app/services/face_recognition_sface_2021dec.onnx

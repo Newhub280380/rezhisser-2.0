@@ -8488,7 +8488,7 @@ def chief_chains():
 async def chief_plan(request: Request):
     from services import assistant_knowledge, chief
     body = await _freefield_body(request)
-    req = {k: body.get(k) for k in ("text", "video_url", "resolution", "turbo", "seed") if body.get(k) not in (None, "")}
+    req = {k: body.get(k) for k in ("text", "video_url", "resolution", "turbo", "seed", "budget_usd", "max_chunks") if body.get(k) not in (None, "")}
     try:
         for key in ("video", "photo"):
             if body.get(key):
