@@ -8465,6 +8465,80 @@ def freefield_run_status(run_id: str):
     return state
 
 
+# ---------------------------------------------------------------- Руководитель (services/chief.py)
+# One request -> plan from Freefield apps + helper steps. /plan is free; fal is called only from /confirm
+# with {"confirm": true} after the person saw the price.
+
+def _chief_tools():
+    from services import cloud_generation
+    from services.chief import Tools
+    from services.title_cards import _resolve_ffmpeg
+    return Tools(client=cloud_generation.Fal() if cloud_generation.ready("fal") else None,
+                 file_to_url=cloud_generation.data_uri, download=cloud_generation.download,
+                 ffmpeg=_resolve_ffmpeg(None))
+
+
+@api.get("/api/v1/chief/chains")
+def chief_chains():
+    from services import chief, cloud_generation
+    return {**chief.chains(), "fal_ready": cloud_generation.ready("fal")}
+
+
+@api.post("/api/v1/chief/plan")
+async def chief_plan(request: Request):
+    from services import assistant_knowledge, chief
+    body = await _freefield_body(request)
+    req = {k: body.get(k) for k in ("text", "video_url", "resolution", "turbo", "seed") if body.get(k) not in (None, "")}
+    try:
+        for key in ("video", "photo"):
+            if body.get(key):
+                req[key] = _freefield_resolve(body[key])
+        uploads = Path(os.getcwd()) / "uploads"
+        return chief.plan(req, tools=_chief_tools(), work_root=uploads / "_chief", out_dir=Path(wgp.save_path),
+                          url_for=lambda name: f"/api/v1/file/{name}",
+                          notes=lambda text: [n["title"] for n in assistant_knowledge.search(text, 3)])
+    except chief.ChiefError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+
+@api.get("/api/v1/chief/jobs/{job_id}")
+def chief_job(job_id: str):
+    from services import chief
+    job = chief.get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Нет такой задачи.")
+    return job
+
+
+@api.post("/api/v1/chief/jobs/{job_id}/confirm")
+async def chief_confirm(job_id: str, request: Request):
+    """PAID: runs fal steps. Needs {"confirm": true}."""
+    from services import chief
+    body = await _freefield_body(request)
+    try:
+        return chief.confirm(job_id, tools=_chief_tools(), confirmed=body.get("confirm") is True)
+    except chief.ChiefError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+
+@api.post("/api/v1/chief/jobs/{job_id}/cancel")
+def chief_cancel(job_id: str):
+    from services import chief
+    job = chief.cancel(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Нет такой задачи.")
+    return job
+
+
+@api.get("/api/v1/chief/jobs/{job_id}/files/{name}")
+def chief_file(job_id: str, name: str):
+    from services import chief
+    path = chief.job_file(job_id, name)
+    if not path:
+        raise HTTPException(status_code=404, detail="Нет такого файла.")
+    return FileResponse(path)
+
+
 @api.get("/api/v1/assistant/status")
 def assistant_status():
     """Assistant readiness. The API key never leaves .env."""

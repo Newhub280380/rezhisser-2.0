@@ -5,6 +5,7 @@ import {
   dryRunFreefield, fetchFreefieldCatalog, fetchFreefieldRun, runFreefield,
   type FFApp, type FFCatalog, type FFInput, type FFPlan, type FFRun,
 } from './freefieldApi'
+import { ChiefPanel } from './ChiefPanel'
 
 /** Freefield-style app catalog: one app per function. Ready apps run on fal (paid, confirmed);
  *  «скоро» apps show what they still need and have no action buttons. */
@@ -30,13 +31,14 @@ function FreefieldAppsPanel({ onClose }: { onClose: () => void }) {
   const [catalog, setCatalog] = useState<FFCatalog | null>(null)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState<FFApp | null>(null)
+  const [tab, setTab] = useState<'chief' | 'apps'>('chief')
 
   useEffect(() => {
     fetchFreefieldCatalog().then(setCatalog).catch(e => setError(String(e.message || e)))
   }, [])
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-3" role="dialog" aria-label="Приложения">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-3" role="dialog" aria-label="Приложения" translate="no">
       <div className="flex h-full max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-border bg-bg-secondary shadow-2xl">
         <header className="flex items-center justify-between border-b border-border px-4 py-3">
           <div>
@@ -45,17 +47,26 @@ function FreefieldAppsPanel({ onClose }: { onClose: () => void }) {
               «Работает» — запускается в облаке fal, цена указана на карточке. «Скоро» — ещё не подключено, кнопок нет.
             </p>
           </div>
+          <div className="ml-auto mr-2 flex gap-1" role="tablist">
+            {(['chief', 'apps'] as const).map(id => (
+              <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
+                className={`rounded-lg px-3 py-1.5 text-xs ${tab === id ? 'bg-toggle-active text-white' : 'text-text-secondary hover:bg-bg-hover'}`}>
+                {id === 'chief' ? 'Руководитель' : 'Все приложения'}
+              </button>
+            ))}
+          </div>
           <button type="button" onClick={onClose} aria-label="Закрыть" className="rounded-lg p-2 text-text-secondary hover:bg-bg-hover">
             <X size={18} />
           </button>
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          {!catalog && !error && <p className="text-sm text-text-muted">Загружаю…</p>}
-          {catalog && selected && (
+          {tab === 'chief' && <ChiefPanel />}
+          {tab === 'apps' && error && <p className="text-sm text-red-400">{error}</p>}
+          {tab === 'apps' && !catalog && !error && <p className="text-sm text-text-muted">Загружаю…</p>}
+          {tab === 'apps' && catalog && selected && (
             <AppForm app={selected} falReady={catalog.fal_ready} onBack={() => setSelected(null)} />
           )}
-          {catalog && !selected && <Catalog catalog={catalog} onOpen={setSelected} />}
+          {tab === 'apps' && catalog && !selected && <Catalog catalog={catalog} onOpen={setSelected} />}
         </div>
       </div>
     </div>
