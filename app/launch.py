@@ -8444,7 +8444,9 @@ async def freefield_app_dry_run(app_id: str, request: Request):
 async def freefield_app_run(app_id: str, request: Request):
     """PAID: submits the app to fal. The UI calls this only after the person confirms the price."""
     from services import cloud_generation, freefield_apps
-    if not cloud_generation.ready("fal"):
+    freefield_apps.ENV = cloud_generation.env  # local helper apps read LLM_* from Режиссёр's .env
+    free = (freefield_apps.APPS_BY_ID.get(app_id) or {}).get("free")
+    if not free and not cloud_generation.ready("fal"):
         raise HTTPException(status_code=400, detail="Нет ключа fal. Впишите его: Settings → Integrations → Cloud.")
     inputs = await _freefield_body(request)
     try:

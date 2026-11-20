@@ -162,7 +162,7 @@ function AppForm({ app, falReady, onBack }: { app: FFApp; falReady: boolean; onB
   }
 
   const start = async () => {
-    if (!window.confirm(`Запустить «${app.name}» в облаке fal? Это платно: ${app.price}.`)) return
+    if (!app.free && !window.confirm(`Запустить «${app.name}» в облаке fal? Это платно: ${app.price}.`)) return
     setError(''); setBusy('run')
     try { setRun(await runFreefield(app.id, values)) } catch (e) { setError(String((e as Error).message || e)) }
     setBusy('')
@@ -174,7 +174,7 @@ function AppForm({ app, falReady, onBack }: { app: FFApp; falReady: boolean; onB
       <div>
         <h3 className="text-base font-semibold text-text-primary">{app.name}</h3>
         <p className="text-xs text-text-secondary">{app.summary}</p>
-        <p className="mt-1 text-[11px] text-text-muted">Модель: {app.models} · fal: {app.endpoint}</p>
+        <p className="mt-1 text-[11px] text-text-muted">Модель: {app.models}{app.free ? ' · на этом ПК, без fal' : ` · fal: ${app.endpoint}`}</p>
         <p className="text-[11px] text-text-muted">Цена: {app.price}</p>
       </div>
       {app.inputs.map(input => (
@@ -189,22 +189,24 @@ function AppForm({ app, falReady, onBack }: { app: FFApp; falReady: boolean; onB
           {busy === 'check' ? 'Проверяю…' : 'Проверить запрос (бесплатно)'}
         </button>
         <button
-          type="button" onClick={start} disabled={!!busy || missing.length > 0 || !falReady || run?.status === 'running'}
-          title={!falReady ? 'Нет ключа fal' : undefined}
+          type="button" onClick={start} disabled={!!busy || missing.length > 0 || (!falReady && !app.free) || run?.status === 'running'}
+          title={!falReady && !app.free ? 'Нет ключа fal' : undefined}
           className="rounded-lg bg-toggle-active px-3 py-1.5 text-sm font-medium text-white hover:opacity-95 disabled:opacity-50"
         >
-          {busy === 'run' ? 'Отправляю…' : 'Запустить (платно, fal)'}
+          {busy === 'run' ? 'Отправляю…' : app.free ? 'Запустить (бесплатно)' : 'Запустить (платно, fal)'}
         </button>
       </div>
       {missing.length > 0 && <p className="text-[11px] text-text-muted">Заполните: {missing.join(', ')}</p>}
       {plan && (
         <pre className="max-h-64 overflow-auto rounded-lg bg-bg-primary p-2 text-[11px] text-text-secondary">
-          {`Ничего не отправлено. Запрос, который уйдёт в fal:\nPOST ${plan.url}\n${JSON.stringify(plan.body, null, 2)}`}
+          {plan.free
+            ? `Проверено. Шаг выполнится на этом ПК, бесплатно:\n${JSON.stringify(plan.body, null, 2)}`
+            : `Ничего не отправлено. Запрос, который уйдёт в fal:\nPOST ${plan.url}\n${JSON.stringify(plan.body, null, 2)}`}
         </pre>
       )}
       {run && (
         <div className="rounded-lg border border-border p-2 text-sm">
-          {run.status === 'running' && <p className="text-text-secondary">Генерация в облаке… (можно закрыть окно, результат попадёт в галерею)</p>}
+          {run.status === 'running' && <p className="text-text-secondary">{app.free ? 'Выполняю на этом ПК…' : 'Генерация в облаке… (можно закрыть окно, результат попадёт в галерею)'}</p>}
           {run.status === 'failed' && <p className="text-red-400">Ошибка: {run.error}</p>}
           {run.status === 'done' && run.output && (
             <div className="space-y-2">
@@ -212,6 +214,7 @@ function AppForm({ app, falReady, onBack }: { app: FFApp; falReady: boolean; onB
               {run.output.kind === 'video' && <video src={run.output.url} controls className="max-h-80 w-full rounded" />}
               {run.output.kind === 'image' && <img src={run.output.url} alt="" className="max-h-80 rounded" />}
               {run.output.kind === 'audio' && <audio src={run.output.url} controls className="w-full" />}
+              {run.output.text && <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-lg bg-bg-primary p-2 text-sm text-text-primary">{run.output.text}</pre>}
             </div>
           )}
         </div>

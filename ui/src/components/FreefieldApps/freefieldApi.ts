@@ -24,21 +24,22 @@ export type FFApp = {
   inputs: FFInput[]
   endpoint: string | null
   price: string | null
-  output: 'video' | 'image' | 'audio'
+  output: 'video' | 'image' | 'audio' | 'text'
   needs: string | null
   priority: boolean
   alt_of: string | null
+  free?: boolean
 }
 
 export type FFCatalog = { checked: string; sections: Array<{ id: string; label: string }>; apps: FFApp[]; fal_ready: boolean }
-export type FFPlan = { app: string; endpoint: string; url: string; body: Record<string, unknown>; price: string; submitted: false }
+export type FFPlan = { app: string; endpoint: string; url: string; body: Record<string, unknown>; price: string; submitted: false; free?: boolean }
 export type FFRun = {
   id: string
   app: string
   name: string
   endpoint: string
   status: 'running' | 'done' | 'failed'
-  output: { filename: string; url: string; kind: string } | null
+  output: { filename: string; url: string; kind: string; text?: string | null } | null
   error: string | null
 }
 
@@ -93,7 +94,7 @@ export type ChiefJob = {
   cost: { items: Array<{ step: string; label: string; usd: number | null; text: string }>; total_usd: number | null; catalog_only: string[] } | null
   warnings: string[]
   notes: string[]
-  output: { filename: string; url: string; kind: string } | null
+  output: { filename: string; url: string; kind: string; text?: string | null } | null
   error: string | null
 }
 export type ChiefChain = { id: string; name: string; status: 'ready' | 'soon'; summary: string; needs?: string }

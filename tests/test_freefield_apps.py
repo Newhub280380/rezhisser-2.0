@@ -53,13 +53,13 @@ def test_catalog_has_priority_apps_and_no_dead_entries():
     for app in apps.values():
         assert "build" not in app
         if app["status"] == "ready":
-            assert app["endpoint"] and app["price"] and app["inputs"], app["id"]
+            assert (app["endpoint"] or app["free"]) and app["price"] and app["inputs"], app["id"]
         else:
             assert app["status"] == "soon" and app["needs"] and not app["endpoint"], app["id"]
     assert apps["dub"]["status"] == "soon" and apps["dub-cloud"]["status"] == "ready"
 
 
-@pytest.mark.parametrize("app", [a for a in ff.APPS if a["status"] == "ready"], ids=lambda a: a["id"])
+@pytest.mark.parametrize("app", [a for a in ff.APPS if a["status"] == "ready" and not a["free"]], ids=lambda a: a["id"])
 def test_payload_matches_fal_schema_for_every_option(app, uploads):
     schema, comps = _input_schema(app["endpoint"])
     props, required = schema["properties"], schema.get("required", [])
@@ -143,3 +143,50 @@ def test_run_failure_is_reported(uploads, tmp_path):
 ])
 def test_output_url(result, kind, url):
     assert ff.output_url(result, kind) == url
+
+
+def test_local_face_detect_runs_free_without_fal(tmp_path):
+    from PIL import Image
+    Image.new("RGB", (320, 240), (13, 15, 16)).save(tmp_path / "blank.png")
+    plan = ff.dry_run("face-detect", {"image": "blank.png"}, lambda n: tmp_path / n)
+    assert plan["free"] and plan["endpoint"] == "local" and plan["url"] is None
+    run = ff.start_run("face-detect", {"image": "blank.png"}, resolve_file=lambda n: tmp_path / n, file_to_url=None,
+                       client=None, out_dir=tmp_path, download=None, url_for=lambda n: n, background=False)
+    assert run["status"] == "done" and run["output"]["kind"] == "image", run
+    assert (tmp_path / run["output"]["filename"]).is_file() and run["output"]["text"].startswith("Найдено лиц: 0")
+
+
+def test_prompt_prep_uses_only_the_free_model(tmp_path, monkeypatch):
+    sent = []
+
+    class Reply:
+        def __init__(self, text):
+            self.text = text
+
+        def read(self):
+            return json.dumps({"choices": [{"message": {"content": self.text}}]}).encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def fake_urlopen(req, timeout):
+        sent.append(json.loads(req.data))
+        return Reply("" if len(sent) == 1 else "A slow push-in over black silk.")
+
+    monkeypatch.setattr(ff.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(ff, "ENV", {"LLM_API_KEY": "k"}.get)
+    run = ff.start_run("prompt-prep", {"idea": "чёрный шёлк"}, resolve_file=None, file_to_url=None, client=None,
+                       out_dir=tmp_path, download=None, url_for=lambda n: n, background=False)
+    assert run["status"] == "done" and run["output"]["text"] == "A slow push-in over black silk."
+    assert [b["model"] for b in sent] == [ff.FREE_LLM, ff.FREE_LLM]  # empty first answer -> retry, never a paid model
+
+
+def test_relight_prompt_keeps_the_person():
+    clean = {"image": Path("a.png"), "direction": "Сзади (контровой)", "tone": "Тёплый", "hard": True,
+             "details": "", "steps": 4, "seed": -1}
+    endpoint, body = ff.build_request("relight", clean, lambda p: "u")
+    assert endpoint == "fal-ai/flux-2/klein/9b/edit" and body["image_urls"] == ["u"]
+    assert "rim light" in body["prompt"] and "hard" in body["prompt"] and "exactly the same" in body["prompt"]

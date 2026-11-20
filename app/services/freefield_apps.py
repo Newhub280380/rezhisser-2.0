@@ -13,8 +13,11 @@ Nothing in this module submits anything by itself: ``dry_run`` only builds the r
 """
 from __future__ import annotations
 
+import json
+import os
 import threading
 import time
+import urllib.request
 import uuid
 from pathlib import Path
 from typing import Callable
@@ -197,13 +200,111 @@ def _sam3(v, u):
     return {"video_url": u(v["clip"]), "prompt": v["target"].strip(), "apply_mask": True}
 
 
+RELIGHT_FROM = {
+    "Слева": "from the left side", "Справа": "from the right side", "Сверху": "from above",
+    "Сзади (контровой)": "from behind as a rim light", "Спереди мягко": "softly from the front",
+}
+RELIGHT_TONE = {
+    "Тёплый": "warm golden", "Холодный": "cool blue", "Нейтральный": "neutral white",
+    "Бирюзовый неон": "turquoise neon", "Закатный": "orange sunset",
+}
+
+
+def _relight(v, u):
+    hard = "hard, high-contrast" if v["hard"] else "soft, diffused"
+    text = (f"Relight this photo: one {hard} {RELIGHT_TONE[v['tone']]} light coming {RELIGHT_FROM[v['direction']]}, "
+            "with matching shadows and highlights. Keep the person, face, pose, clothes, background and composition "
+            "exactly the same; change only the lighting.")
+    if (v.get("details") or "").strip():
+        text += " " + v["details"].strip()
+    return _put_seed({"prompt": text, "image_urls": [u(v["image"])], "num_inference_steps": int(v["steps"]),
+                      "output_format": "png", "num_images": 1}, v)
+
+
+# ---------------------------------------------------------------- local free apps (run on this PC, nothing goes to fal)
+# local(clean, out_dir) -> {"filename", "kind", "text"}
+
+ENV: Callable[[str], str | None] = os.environ.get  # Режиссёр 2.0 swaps in cloud_generation.env (reads its .env)
+FREE_LLM = "qwen/qwen4-max"
+YUNET = Path(__file__).with_name("face_detection_yunet_2023mar.onnx")  # OpenCV Zoo YuNet, shipped next to this file
+
+
+def _stamp(app_id, ext):
+    return f"{time.strftime('%Y-%m-%d-%Hh%Mm%Ss')}_ff_{app_id}_{uuid.uuid4().hex[:6]}{ext}"
+
+
+def _faces_local(v, out_dir):
+    import cv2
+    import numpy as np
+    img = cv2.imdecode(np.fromfile(str(v["image"]), np.uint8), cv2.IMREAD_COLOR)
+    if img is None:
+        raise AppError("Не удалось прочитать фото.")
+    if not YUNET.is_file():
+        raise AppError(f"Нет файла модели {YUNET.name} рядом с freefield_apps.py.")
+    h, w = img.shape[:2]
+    detector = cv2.FaceDetectorYN.create(str(YUNET), "", (w, h), float(v["threshold"]))
+    _, found = detector.detect(img)
+    faces = [] if found is None else sorted(
+        ({"x": int(f[0]), "y": int(f[1]), "w": int(f[2]), "h": int(f[3]), "score": round(float(f[14]), 2)} for f in found),
+        key=lambda f: -f["w"] * f["h"])
+    thick = max(2, w // 300)
+    for n, f in enumerate(faces, 1):
+        cv2.rectangle(img, (f["x"], f["y"]), (f["x"] + f["w"], f["y"] + f["h"]), (224, 243, 47), thick)  # #2FF3E0
+        cv2.putText(img, str(n), (f["x"], max(0, f["y"] - 6)), cv2.FONT_HERSHEY_SIMPLEX, thick / 2.5, (224, 243, 47), thick)
+    name = _stamp("face-detect", ".jpg")
+    ok, data = cv2.imencode(".jpg", img)
+    if not ok:
+        raise AppError("Не удалось сохранить картинку с рамками.")
+    data.tofile(str(Path(out_dir) / name))
+    lines = [f"{n}) x={f['x']} y={f['y']} {f['w']}×{f['h']} px, уверенность {f['score']}" for n, f in enumerate(faces, 1)]
+    return {"filename": name, "kind": "image", "faces": faces,
+            "text": f"Найдено лиц: {len(faces)}." + ("\n" + "\n".join(lines) if lines else "")}
+
+
+PROMPT_SYSTEM = ("You write prompts for the LTX-2.5 video model. Turn the user's short idea (any language) into ONE "
+                 "English paragraph of 60-120 words: subject and action, setting, camera movement, lighting, mood, and "
+                 "sound if relevant. Concrete visual words only, no lists, no quotes, no preamble.")
+
+
+def _llm(system: str, user: str) -> str:
+    key = (ENV("LLM_API_KEY") or ENV("OPENROUTER_API_KEY") or "").strip()
+    if not key:
+        raise AppError("Нет ключа помощника (LLM_API_KEY / OPENROUTER_API_KEY) в окружении Режиссёра.")
+    base = (ENV("LLM_BASE_URL") or "https://openrouter.ai/api/v1").strip().rstrip("/")
+    url = base if base.endswith("/chat/completions") else base + "/chat/completions"
+    last = None
+    model = (ENV("LLM_FREE_MODEL") or "").strip() or FREE_LLM  # only a :free model: this step must cost nothing
+    for _ in range(2):  # the free model sometimes spends its budget on reasoning and returns no text
+        body = json.dumps({"model": model, "temperature": 0.5, "max_tokens": 3000,
+                           "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]})
+        req = urllib.request.Request(url, data=body.encode("utf-8"), method="POST", headers={
+            "Content-Type": "application/json", "Authorization": f"Bearer {key}", "X-Title": "Rezhisser Freefield"})
+        try:
+            with urllib.request.urlopen(req, timeout=90) as r:
+                text = (json.loads(r.read().decode("utf-8"))["choices"][0]["message"].get("content") or "").strip()
+            if text:
+                return text
+            last = "пустой ответ"
+        except Exception as error:  # one retry
+            last = str(error)[:200]
+    raise AppError(f"Помощник не ответил: {last}")
+
+
+def _prompt_local(v, out_dir):
+    text = _llm(PROMPT_SYSTEM, v["idea"])
+    name = _stamp("prompt-prep", ".txt")
+    (Path(out_dir) / name).write_text(text, encoding="utf-8")
+    return {"filename": name, "kind": "text", "text": text}
+
+
 # ---------------------------------------------------------------- catalog
 
 def _app(id, name, section, summary, *, freefield, models, status, inputs=(), endpoint=None, build=None,
-         price=None, output="video", needs=None, priority=False, alt_of=None):
+         price=None, output="video", needs=None, priority=False, alt_of=None, local=None):
     return {"id": id, "name": name, "section": section, "summary": summary, "freefield_app": freefield,
             "models": models, "status": status, "inputs": list(inputs), "endpoint": endpoint, "build": build,
-            "price": price, "output": output, "needs": needs, "priority": priority, "alt_of": alt_of}
+            "price": price, "output": output, "needs": needs, "priority": priority, "alt_of": alt_of,
+            "local": local, "free": local is not None}
 
 
 SEED = _i("seed", "seed", "Seed (-1 = случайно)", default=-1)
@@ -302,10 +403,11 @@ APPS = [
                  _i("duration", "select", "Секунды", default=6, options=[6, 8, 10]),
                  _i("resolution", "select", "Качество", default="720p", options=["720p", "1080p"]),
                  _i("aspect", "select", "Формат", default="9:16", options=["16:9", "9:16"])]),
-    _app("prompt-prep", "Подготовка промпта для LTX (Gemma 4)", "utility",
-         "Расписывает короткую идею в подробный промпт для LTX.", freefield="video (enhance)", models="Gemma 4",
-         status="soon", needs="Подключить к уже работающему помощнику Режиссёра (ERNIE/GLM) как шаг «улучшить промпт» "
-                              "или поднять Gemma 4 на GPU-сервере. Денег за генерацию не требует."),
+    _app("prompt-prep", "Подготовка промпта для LTX (помощник)", "utility",
+         "Расписывает короткую идею в подробный промпт для LTX.", freefield="video (enhance)",
+         models="бесплатная модель помощника (ERNIE free) вместо Gemma 4", status="ready",
+         local=_prompt_local, output="text", price="бесплатно (бесплатная модель помощника, fal не нужен)",
+         inputs=[_i("idea", "textarea", "Короткая идея", required=True, default="чёрный шёлк и бирюзовый неон")]),
     _app("extend-video", "Продлить видео (MiniMax H3)", "video",
          "Продолжает ролик с последнего кадра, со звуком.", freefield="extend-video", models="MiniMax H3 Max",
          status="ready", endpoint="minimax/h3-max/extend-video", build=_extend,
@@ -338,10 +440,12 @@ APPS = [
          price="$0.005 за каждые 16 кадров",
          inputs=[_i("clip", "video", "Ролик", required=True, help="до 40 МБ"),
                  _i("target", "text", "Что отслеживать (по-английски)", required=True, default="person")]),
-    _app("face-detect", "Поиск лиц (MediaPipe)", "utility",
-         "Находит лица в кадре для кадрирования и замены.", freefield="(служебный шаг)", models="MediaPipe",
-         status="soon", needs="Работает на обычном процессоре без GPU: нужно поставить пакет mediapipe в окружение "
-                              "Режиссёра (с вашего «да») и добавить шаг. Платных запросов нет."),
+    _app("face-detect", "Поиск лиц (на этом ПК)", "utility",
+         "Находит лица в кадре для кадрирования и замены: рамки и координаты.", freefield="(служебный шаг)",
+         models="OpenCV YuNet (вместо MediaPipe, тот же детектор, что у Руководителя)", status="ready",
+         local=_faces_local, output="image", price="бесплатно (на процессоре этого ПК)",
+         inputs=[_i("image", "image", "Фото", required=True),
+                 _i("threshold", "slider", "Строгость", default=0.7, min=0.3, max=0.95, step=0.05)]),
     _app("remove-bg", "Убрать фон на фото (BiRefNet)", "image",
          "PNG с прозрачностью.", freefield="remove-bg", models="BiRefNet v2", status="ready",
          endpoint="fal-ai/birefnet/v2", build=_birefnet, output="image",
@@ -376,9 +480,17 @@ APPS = [
          inputs=[_i("image", "image", "Кадр", required=True),
                  _i("next", "select", "Что дальше", default=list(NEXT_SCENES)[0], options=list(NEXT_SCENES)),
                  _i("details", "textarea", "Уточнение (необязательно)"), SEED]),
-    _app("relight", "Переосвещение фото (Qwen Edit)", "image",
-         "Новый свет: направление, мягкость, цвет.", freefield="relight", models="Qwen-Image-Edit + Relight LoRA",
-         status="soon", needs="Отдельного relight-эндпоинта Qwen на fal нет; нужен ComfyUI-workflow Freefield apps/relight на GPU-сервере."),
+    _app("relight", "Переосвещение фото (FLUX Klein edit)", "image",
+         "Новый свет: направление, жёсткость, цвет. Человек и кадр не меняются.", freefield="relight",
+         models="FLUX.2 Klein 9B edit (вместо Qwen Relight LoRA: отдельного relight-эндпоинта на fal нет)",
+         status="ready", endpoint="fal-ai/flux-2/klein/9b/edit", build=_relight, output="image",
+         price="$0.011 за мегапиксель (вход + выход)",
+         inputs=[_i("image", "image", "Фото", required=True),
+                 _i("direction", "select", "Откуда свет", default="Слева", options=list(RELIGHT_FROM)),
+                 _i("tone", "select", "Цвет света", default="Тёплый", options=list(RELIGHT_TONE)),
+                 _i("hard", "toggle", "Жёсткий свет", default=False),
+                 _i("details", "textarea", "Уточнение (необязательно)"),
+                 _i("steps", "slider", "Шаги", default=4, min=4, max=8, step=1), SEED]),
     _app("style-reference", "Стиль по образцу (Krea 2)", "image",
          "Рисует что угодно в стиле вашей картинки-образца.", freefield="style-reference, styles",
          models="Krea 2 Turbo + style LoRA", status="ready", endpoint="fal-ai/krea-2/turbo/style", build=_krea_style,
@@ -420,7 +532,7 @@ class AppError(ValueError):
 # ---------------------------------------------------------------- public API
 
 def public_app(app: dict) -> dict:
-    return {k: v for k, v in app.items() if k != "build"}
+    return {k: v for k, v in app.items() if k not in ("build", "local")}
 
 
 def catalog() -> dict:
@@ -483,6 +595,8 @@ def validate(app_id: str, values: dict, resolve_file: Callable[[str], Path]) -> 
 
 def build_request(app_id: str, clean: dict, file_to_url: Callable[[Path], str]) -> tuple[str, dict]:
     app = APPS_BY_ID[app_id]
+    if app["local"]:  # nothing is sent anywhere: the «request» is the local step and its inputs
+        return "local", {k: (Path(x).name if isinstance(x, Path) else x) for k, x in clean.items()}
     return app["endpoint"], app["build"](clean, file_to_url)
 
 
@@ -496,8 +610,8 @@ def dry_run(app_id: str, values: dict, resolve_file: Callable[[str], Path]) -> d
     clean = validate(app_id, values, resolve_file)
     endpoint, body = build_request(app_id, clean, placeholder_url)
     app = APPS_BY_ID[app_id]
-    return {"app": app_id, "endpoint": endpoint, "url": f"https://queue.fal.run/{endpoint}", "body": body,
-            "price": app["price"], "submitted": False}
+    return {"app": app_id, "endpoint": endpoint, "url": None if app["local"] else f"https://queue.fal.run/{endpoint}",
+            "body": body, "price": app["price"], "submitted": False, "free": app["free"]}
 
 
 def output_url(result: dict, kind: str) -> str | None:
@@ -528,7 +642,8 @@ def get_run(run_id: str) -> dict | None:
 
 def start_run(app_id: str, values: dict, *, resolve_file, file_to_url, client, out_dir: Path, download,
               url_for: Callable[[str], str], background: bool = True) -> dict:
-    """Validate, build and submit to fal (PAID). ``client.call(model, body, cancelled)`` returns the result JSON."""
+    """Validate, build and submit to fal (PAID). ``client.call(model, body, cancelled)`` returns the result JSON.
+    Local apps (``app["local"]``) run on this PC instead and never touch ``client``."""
     clean = validate(app_id, values, resolve_file)
     app = APPS_BY_ID[app_id]
     run_id = uuid.uuid4().hex[:12]
@@ -539,6 +654,12 @@ def start_run(app_id: str, values: dict, *, resolve_file, file_to_url, client, o
 
     def work():
         try:
+            if app["local"]:
+                out = app["local"](clean, Path(out_dir))
+                with _LOCK:
+                    state.update(status="done", output={"filename": out["filename"], "url": url_for(out["filename"]),
+                                                        "kind": out["kind"], "text": out.get("text")})
+                return
             endpoint, body = build_request(app_id, clean, file_to_url)
             result = client.call(endpoint, body)
             url = output_url(result, app["output"])
